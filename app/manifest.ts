@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest { return { name: "Muuttobotti — Moving, Transport & Cleaning", short_name: "Muuttobotti", description: "Book moving, transport and cleaning services across Finland.", start_url: "/", display: "standalone", background_color: "#f5f5ed", theme_color: "#071b22", icons: [{ src: "/favicon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }] }; }
