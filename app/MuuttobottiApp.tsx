@@ -6,7 +6,7 @@ import {
   ArrowRight, BarChart3, Bath, Bell, Boxes, Building2, CalendarDays, Camera,
   Check, CheckCircle2, ChevronDown, ChevronRight, CircleEuro, ClipboardCheck,
   Clock3, CreditCard, Hammer, Home, Languages, LayoutDashboard,
-  MapPin, Menu, MessageCircle, Moon, Navigation, PackageCheck, Phone, Receipt,
+  Mail, MapPin, Menu, MessageCircle, Moon, Navigation, PackageCheck, Phone, Receipt,
   Recycle, Send, ShieldCheck, Sparkles, Star, Sun, Truck, UploadCloud,
   UserRound, UsersRound, X,
 } from "lucide-react";
@@ -50,6 +50,13 @@ faqs.ru = faqs.en.map(([q, a]) => [q, a]);
 
 const flags: Record<Locale, string> = { fi: "FI", en: "EN", uk: "UA", ru: "RU" };
 
+const calculatorExtras: Record<Locale, { movers: string; one: string; two: string; disclaimer: string }> = {
+  fi: { movers: "Muuttajien määrä", one: "1 muuttaja", two: "2 muuttajaa", disclaimer: "Hinta on arvio. Lopullinen hinta riippuu todellisesta työmäärästä ja voi olla arviota pienempi tai suurempi." },
+  en: { movers: "Number of movers", one: "1 mover", two: "2 movers", disclaimer: "This is an estimate. The final price depends on the actual workload and may be lower or higher than the estimate." },
+  uk: { movers: "Кількість вантажників", one: "1 вантажник", two: "2 вантажники", disclaimer: "Це орієнтовна вартість. Остаточна ціна залежить від фактичного обсягу робіт і може бути як меншою, так і більшою." },
+  ru: { movers: "Количество грузчиков", one: "1 грузчик", two: "2 грузчика", disclaimer: "Это ориентировочная стоимость. Итоговая цена зависит от фактического объёма работ и может быть как меньше, так и больше расчёта." },
+};
+
 export default function MuuttobottiApp() {
   const [locale, setLocale] = useState<Locale>("fi");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,6 +69,7 @@ export default function MuuttobottiApp() {
   const [distance, setDistance] = useState(18);
   const [windows, setWindows] = useState(6);
   const [weight, setWeight] = useState(80);
+  const [movers, setMovers] = useState<1 | 2>(2);
   const [elevator, setElevator] = useState(true);
   const [packing, setPacking] = useState(false);
   const [afterClean, setAfterClean] = useState(false);
@@ -74,6 +82,7 @@ export default function MuuttobottiApp() {
   const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const c = copy[locale];
   const u = ui[locale];
+  const extra = calculatorExtras[locale];
 
   useEffect(() => {
     const saved = window.localStorage.getItem("muuttobotti-cookie"); if (saved) window.setTimeout(() => setCookie(true), 0);
@@ -82,8 +91,10 @@ export default function MuuttobottiApp() {
 
   const estimate = useMemo(() => {
     if (calcMode === "moving") {
-      const hours = Math.max(2, 1.4 + size / 28 + Math.max(0, floor - (elevator ? 2 : 0)) * .22 + (packing ? 1.5 : 0));
-      return { price: Math.round(hours * 75 + distance * .65 + (afterClean ? size * 1.1 : 0)), hours: `${hours.toFixed(1)}–${(hours + .8).toFixed(1)} h` };
+      const workload = 1.4 + size / 28 + Math.max(0, floor - (elevator ? 2 : 0)) * .22 + (packing ? 1.5 : 0);
+      const hours = Math.max(2, movers === 1 ? workload * 1.45 : workload);
+      const hourlyRate = movers === 1 ? 59 : 75;
+      return { price: Math.round(hours * hourlyRate + distance * .65 + (afterClean ? size * 1.1 : 0)), hours: `${hours.toFixed(1)}–${(hours + .8).toFixed(1)} h` };
     }
     if (calcMode === "cleaning") {
       const multiplier = cleanType === "deep" ? 1.45 : cleanType === "moveout" ? 1.25 : 1;
@@ -92,7 +103,7 @@ export default function MuuttobottiApp() {
     }
     const hours = Math.max(1, 1 + distance / 48 + weight / 500);
     return { price: Math.round(42 + distance * 1.05 + weight * .05 + (express ? 35 : 0)), hours: `${hours.toFixed(1)}–${(hours + .5).toFixed(1)} h` };
-  }, [calcMode, size, floor, distance, windows, elevator, packing, afterClean, express, cleanType, weight]);
+  }, [calcMode, size, floor, distance, windows, elevator, packing, afterClean, express, cleanType, weight, movers]);
 
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
   const acceptCookies = (value: string) => { window.localStorage.setItem("muuttobotti-cookie", value); setCookie(true); };
@@ -143,11 +154,19 @@ export default function MuuttobottiApp() {
         <div className="calculator-card">
           <div className="calc-tabs">{(["moving", "cleaning", "transport"] as CalcMode[]).map((mode, i) => <button key={mode} className={calcMode === mode ? "active" : ""} onClick={() => setCalcMode(mode)}>{i === 0 ? <Boxes/> : i === 1 ? <Sparkles/> : <Truck/>}{u.modes[i]}</button>)}</div>
           <div className="calc-fields">
-            {calcMode === "moving" && <><label>{u.homeType}<select><option>{u.apartment}</option><option>{u.house}</option><option>{u.office}</option></select></label><label>{u.size}<div className="range-value">{size} m²</div><input type="range" min="15" max="220" value={size} onChange={e => setSize(+e.target.value)}/></label><label>{u.floor}<div className="range-value">{floor}</div><input type="range" min="0" max="12" value={floor} onChange={e => setFloor(+e.target.value)}/></label><label>{u.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="500" value={distance} onChange={e => setDistance(+e.target.value)}/></label><div className="switch-grid"><button className={elevator ? "on" : ""} onClick={() => setElevator(!elevator)}><CheckCircle2/>{u.elevator}</button><button className={packing ? "on" : ""} onClick={() => setPacking(!packing)}><Boxes/>{u.packing}</button><button className={afterClean ? "on" : ""} onClick={() => setAfterClean(!afterClean)}><Sparkles/>{u.afterClean}</button></div></>}
+            {calcMode === "moving" && <>
+              <label>{u.homeType}<select><option>{u.apartment}</option><option>{u.house}</option><option>{u.office}</option></select></label>
+              <label className="movers-field">{extra.movers}<div className="mover-selector"><button type="button" className={movers === 1 ? "active" : ""} onClick={() => setMovers(1)}><UserRound/>{extra.one}<small>59 € / h</small></button><button type="button" className={movers === 2 ? "active" : ""} onClick={() => setMovers(2)}><UsersRound/>{extra.two}<small>75 € / h</small></button></div></label>
+              <label>{u.size}<div className="range-value">{size} m²</div><input type="range" min="15" max="220" value={size} onChange={e => setSize(+e.target.value)}/></label>
+              <label>{u.floor}<div className="range-value">{floor}</div><input type="range" min="0" max="12" value={floor} onChange={e => setFloor(+e.target.value)}/></label>
+              <label>{u.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="500" value={distance} onChange={e => setDistance(+e.target.value)}/></label>
+              <div className="switch-grid"><button type="button" className={elevator ? "on" : ""} onClick={() => setElevator(!elevator)}><CheckCircle2/>{u.elevator}</button><button type="button" className={packing ? "on" : ""} onClick={() => setPacking(!packing)}><Boxes/>{u.packing}</button><button type="button" className={afterClean ? "on" : ""} onClick={() => setAfterClean(!afterClean)}><Sparkles/>{u.afterClean}</button></div>
+            </>}
             {calcMode === "cleaning" && <><label>{u.size}<div className="range-value">{size} m²</div><input type="range" min="20" max="300" value={size} onChange={e => setSize(+e.target.value)}/></label><label>{u.windows}<div className="range-value">{windows}</div><input type="range" min="0" max="30" value={windows} onChange={e => setWindows(+e.target.value)}/></label><label>{u.cleanType}<select value={cleanType} onChange={e => setCleanType(e.target.value)}><option value="regular">{u.regular}</option><option value="moveout">{u.moveout}</option><option value="deep">{u.deep}</option></select></label><div className="feature-list"><span><Bath/> Bathroom & sauna</span><span><Sparkles/> Professional supplies</span><span><ShieldCheck/> Quality guarantee</span></div></>}
             {calcMode === "transport" && <><label>{u.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="600" value={distance} onChange={e => setDistance(+e.target.value)}/></label><label>{u.weight}<div className="range-value">{weight} kg</div><input type="range" min="5" max="1200" step="5" value={weight} onChange={e => setWeight(+e.target.value)}/></label><label>{u.urgency}<select value={express ? "express" : "normal"} onChange={e => setExpress(e.target.value === "express")}><option value="normal">{u.normal}</option><option value="express">{u.express}</option></select></label><div className="route-preview"><MapPin/><span>Helsinki</span><div/><Navigation/><span>Espoo</span></div></>}
           </div>
           <div className="estimate-box"><div><span>{u.estimate}</span><strong>{estimate.price} €</strong><small>{u.vat}</small></div><div><span>{u.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button onClick={() => scrollTo("booking")}>{u.continue}<ArrowRight/></button></div>
+          <p className="estimate-disclaimer"><ShieldCheck/>{extra.disclaimer}</p>
         </div>
       </section>
 
@@ -171,11 +190,11 @@ export default function MuuttobottiApp() {
 
       <section className="faq-section"><div className="faq-title"><span className="kicker">{u.faqKicker}</span><h2>{u.faqTitle}</h2><p>Still need help? <button onClick={() => setChatOpen(true)}>Ask Muuttobotti AI</button></p></div><div className="faq-list">{faqs[locale].map(([question, answer], i) => <article key={i}><button onClick={() => setFaqOpen(faqOpen === i ? null : i)} aria-expanded={faqOpen === i}><span>{question}</span><ChevronDown className={faqOpen === i ? "rotate" : ""}/></button><AnimatePresence>{faqOpen === i && <motion.p initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}}>{answer}</motion.p>}</AnimatePresence></article>)}</div></section>
 
-      <section className="contact-section"><div className="map-card"><iframe title="Muuttobotti service area map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Uusimaa%2C%20Finland&z=8&output=embed"/></div><div className="contact-copy"><span className="kicker">HELSINKI · UUSIMAA · FINLAND</span><h2>{u.contactTitle}</h2><p>{u.contactText}</p><div className="contact-actions"><a href="tel:+358400000000"><Phone/> +358 40 000 0000</a><a href="https://wa.me/358400000000"><MessageCircle/> WhatsApp</a></div><div className="hours"><Clock3/><div><strong>Mon–Sun</strong><span>07:00–22:00 · Emergency service available</span></div></div></div></section>
+      <section className="contact-section"><div className="map-card"><iframe title="Muuttobotti service area map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Uusimaa%2C%20Finland&z=8&output=embed"/></div><div className="contact-copy"><span className="kicker">HELSINKI · UUSIMAA · FINLAND</span><h2>{u.contactTitle}</h2><p>{u.contactText}</p><div className="company-contact"><UserRound/><div><strong>Stanislav Kosytskyy</strong><span>Toimitusjohtaja · Muuttobotti / Autochemix Oy</span><small>Y-tunnus 3543357-8</small></div></div><div className="contact-actions"><a href="tel:+3584578767567"><Phone/> 045 787 67567</a><a href="mailto:autochemixfin@gmail.com"><Mail/> autochemixfin@gmail.com</a><a href="https://wa.me/3584578767567"><MessageCircle/> WhatsApp</a></div><div className="hours"><Clock3/><div><strong>Mon–Sun</strong><span>07:00–22:00 · Emergency service available</span></div></div></div></section>
 
-      <footer><div className="footer-brand"><div className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></div><p>Moving life forward — safely, simply and on time.</p><div className="footer-rating"><Star/> 4.9 on Google</div></div><div><strong>Services</strong><a href="#services">Moving</a><a href="#services">Transport</a><a href="#services">Cleaning</a><a href="#services">Window cleaning</a><a href="#services">Assembly</a></div><div><strong>Cities</strong>{["Helsinki", "Espoo", "Vantaa", "Tuusula", "Kerava", "Järvenpää", "Porvoo"].map(city => <a key={city} href={`/moving-${city.toLowerCase().replace("ä","a")}`}>{city}</a>)}</div><div><strong>Company</strong><a href="#booking">Book online</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/privacy">Privacy</a><a href="/terms">Terms & cookies</a></div><div className="footer-bottom"><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><span>Made for moving forward.</span></div></footer>
+      <footer><div className="footer-brand"><div className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></div><p>Muuttobotti / Autochemix Oy<br/>Stanislav Kosytskyy, toimitusjohtaja</p><div className="footer-contacts"><a href="tel:+3584578767567">045 787 67567</a><a href="mailto:autochemixfin@gmail.com">autochemixfin@gmail.com</a></div><div className="footer-rating"><Star/> 4.9 on Google</div></div><div><strong>Services</strong><a href="#services">Moving</a><a href="#services">Transport</a><a href="#services">Cleaning</a><a href="#services">Window cleaning</a><a href="#services">Assembly</a></div><div><strong>Cities</strong>{["Helsinki", "Espoo", "Vantaa", "Tuusula", "Kerava", "Järvenpää", "Porvoo"].map(city => <a key={city} href={`/moving-${city.toLowerCase().replace("ä","a")}`}>{city}</a>)}</div><div><strong>Company</strong><a href="#booking">Book online</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/privacy">Privacy</a><a href="/terms">Terms & cookies</a></div><div className="footer-bottom"><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><span>Made for moving forward.</span></div></footer>
 
-      <button className="whatsapp-float" onClick={() => window.open("https://wa.me/358400000000", "_blank")} aria-label="Contact on WhatsApp"><MessageCircle/><span>WhatsApp</span></button>
+      <button className="whatsapp-float" onClick={() => window.open("https://wa.me/3584578767567", "_blank")} aria-label="Contact on WhatsApp"><MessageCircle/><span>WhatsApp</span></button>
       <button className="ai-float" onClick={() => setChatOpen(!chatOpen)} aria-label="Open smart assistant">{chatOpen ? <X/> : <Sparkles/>}</button>
       <AnimatePresence>{chatOpen && <motion.div className="ai-chat" initial={{opacity:0,y:16,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:16,scale:.96}}><div className="ai-head"><span><Sparkles/> Muuttobotti AI</span><i>Online</i></div><p>{u.aiHello}</p><div className="ai-options">{u.aiOptions.map(option => <button key={option} onClick={() => setChatReply(true)}>{option}<ChevronRight/></button>)}</div>{chatReply && <motion.p className="ai-response" initial={{opacity:0}} animate={{opacity:1}}>{u.aiReply}</motion.p>}</motion.div>}</AnimatePresence>
       <AnimatePresence>{cookie === null && <motion.div className="cookie-banner" initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:30,opacity:0}}><ShieldCheck/><p>{u.cookies}</p><button onClick={() => acceptCookies("essential")}>{u.essential}</button><button className="cookie-accept" onClick={() => acceptCookies("all")}>{u.accept}</button></motion.div>}</AnimatePresence>

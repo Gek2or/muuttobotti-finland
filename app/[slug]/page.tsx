@@ -1,8 +1,51 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
 import type { Metadata } from "next";
-import { ArrowLeft, CheckCircle2, MessageCircle, PackageCheck, Phone } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mail, MessageCircle, PackageCheck, Phone, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { servicePages } from "./service-pages";
-export function generateStaticParams() { return Object.keys(servicePages).map(slug => ({ slug })); }
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const { slug } = await params; const page = servicePages[slug]; if (!page) return {}; return { title: page.title, description: page.description, alternates: { canonical: `/${slug}` }, openGraph: { title: `${page.title} | Muuttobotti`, description: page.description, images: ["/muuttobotti-hero.png"] } }; }
-export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) { const { slug } = await params; const page = servicePages[slug]; if (!page) notFound(); return <main className="seo-page"><header><a href="/" className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></a><a href="/#booking" className="quote-button">Pyydä tarjous</a></header><section><a href="/" className="back-link"><ArrowLeft/> Etusivulle</a><div className="seo-copy"><span className="kicker light">{page.eyebrow}</span><h1>{page.title}</h1><p>{page.description}</p><div className="seo-bullets">{page.bullets.map(item => <span key={item}><CheckCircle2/>{item}</span>)}</div><div className="seo-actions"><a href="/#calculator">Laske hinta</a><a href="/#booking">Varaa verkossa</a></div></div><div className="seo-contact"><strong>Tarvitsetko apua heti?</strong><a href="tel:+358400000000"><Phone/> +358 40 000 0000</a><a href="https://wa.me/358400000000"><MessageCircle/> WhatsApp</a></div></section><footer><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><a href="/privacy">Tietosuoja</a><a href="/terms">Ehdot</a></footer></main>; }
+
+export function generateStaticParams() {
+  return Object.keys(servicePages).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const page = servicePages[slug];
+  if (!page) return {};
+  return {
+    title: page.title,
+    description: page.description,
+    alternates: { canonical: `/${slug}` },
+    openGraph: { title: `${page.title} | Muuttobotti`, description: page.description, images: ["/muuttobotti-hero.png"] },
+  };
+}
+
+export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = servicePages[slug];
+  if (!page) notFound();
+  return (
+    <main className="seo-page">
+      <header>
+        <a href="/" className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></a>
+        <a href="/#booking" className="quote-button">Pyydä tarjous</a>
+      </header>
+      <section>
+        <a href="/" className="back-link"><ArrowLeft/> Etusivulle</a>
+        <div className="seo-copy">
+          <span className="kicker light">{page.eyebrow}</span><h1>{page.title}</h1><p>{page.description}</p>
+          <div className="seo-bullets">{page.bullets.map((item) => <span key={item}><CheckCircle2/>{item}</span>)}</div>
+          <div className="seo-actions"><a href="/#calculator">Laske hinta</a><a href="/#booking">Varaa verkossa</a></div>
+        </div>
+        <div className="seo-contact">
+          <strong>Tarvitsetko apua heti?</strong>
+          <span><UserRound/> Stanislav Kosytskyy</span>
+          <a href="tel:+3584578767567"><Phone/> 045 787 67567</a>
+          <a href="mailto:autochemixfin@gmail.com"><Mail/> autochemixfin@gmail.com</a>
+          <a href="https://wa.me/3584578767567"><MessageCircle/> WhatsApp</a>
+        </div>
+      </section>
+      <footer><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><a href="/privacy">Tietosuoja</a><a href="/terms">Ehdot</a></footer>
+    </main>
+  );
+}
