@@ -57,6 +57,13 @@ const calculatorExtras: Record<Locale, { movers: string; one: string; two: strin
   ru: { movers: "Количество грузчиков", one: "1 грузчик", two: "2 грузчика", disclaimer: "Это ориентировочная стоимость. Итоговая цена зависит от фактического объёма работ и может быть как меньше, так и больше расчёта." },
 };
 
+const trackingCopy: Record<Locale, { bookingNumber: string; privateLink: string; open: string; copy: string; copied: string; track: string }> = {
+  fi: { bookingNumber: "Varausnumero", privateLink: "Tallenna yksityinen seurantalinkki. Sen kautta voit seurata, muuttaa tai perua varauksen.", open: "Avaa seuranta", copy: "Kopioi linkki", copied: "Linkki kopioitu", track: "Seuraa varausta" },
+  en: { bookingNumber: "Booking number", privateLink: "Save your private tracking link. Use it to track, change or cancel your booking.", open: "Open tracking", copy: "Copy link", copied: "Link copied", track: "Track booking" },
+  uk: { bookingNumber: "Номер бронювання", privateLink: "Збережіть приватне посилання. Через нього можна стежити, змінити або скасувати замовлення.", open: "Відкрити відстеження", copy: "Копіювати посилання", copied: "Посилання скопійовано", track: "Відстежити замовлення" },
+  ru: { bookingNumber: "Номер бронирования", privateLink: "Сохраните приватную ссылку. По ней можно отслеживать, изменять или отменять заказ.", open: "Открыть отслеживание", copy: "Копировать ссылку", copied: "Ссылка скопирована", track: "Отследить заказ" },
+};
+
 export default function MuuttobottiApp() {
   const [locale, setLocale] = useState<Locale>("fi");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,9 +87,12 @@ export default function MuuttobottiApp() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatReply, setChatReply] = useState(false);
   const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [bookingResult, setBookingResult] = useState<{ bookingId: string; trackingPath: string } | null>(null);
+  const [trackingCopied, setTrackingCopied] = useState(false);
   const c = copy[locale];
   const u = ui[locale];
   const extra = calculatorExtras[locale];
+  const tracking = trackingCopy[locale];
 
   useEffect(() => {
     const saved = window.localStorage.getItem("muuttobotti-cookie"); if (saved) window.setTimeout(() => setCookie(true), 0);
@@ -112,6 +122,8 @@ export default function MuuttobottiApp() {
     try {
       const response = await fetch("/api/bookings", { method: "POST", body: new FormData(event.currentTarget) });
       if (!response.ok) throw new Error("booking failed");
+      const result = await response.json() as { bookingId: string; trackingPath: string };
+      setBookingResult(result); setTrackingCopied(false);
       setBookingState("done"); event.currentTarget.reset();
     } catch { setBookingState("error"); }
   }
@@ -192,13 +204,13 @@ export default function MuuttobottiApp() {
 
       <section className="contact-section"><div className="map-card"><iframe title="Muuttobotti service area map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Uusimaa%2C%20Finland&z=8&output=embed"/></div><div className="contact-copy"><span className="kicker">HELSINKI · UUSIMAA · FINLAND</span><h2>{u.contactTitle}</h2><p>{u.contactText}</p><div className="company-contact"><UserRound/><div><strong>Stanislav Kosytskyy</strong><span>Toimitusjohtaja · Muuttobotti / Autochemix Oy</span><small>Y-tunnus 3543357-8</small></div></div><div className="contact-actions"><a href="tel:+3584578767567"><Phone/> 045 787 67567</a><a href="mailto:autochemixfin@gmail.com"><Mail/> autochemixfin@gmail.com</a><a href="https://wa.me/3584578767567"><MessageCircle/> WhatsApp</a></div><div className="hours"><Clock3/><div><strong>Mon–Sun</strong><span>07:00–22:00 · Emergency service available</span></div></div></div></section>
 
-      <footer><div className="footer-brand"><div className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></div><p>Muuttobotti / Autochemix Oy<br/>Stanislav Kosytskyy, toimitusjohtaja</p><div className="footer-contacts"><a href="tel:+3584578767567">045 787 67567</a><a href="mailto:autochemixfin@gmail.com">autochemixfin@gmail.com</a></div><div className="footer-rating"><Star/> 4.9 on Google</div></div><div><strong>Services</strong><a href="#services">Moving</a><a href="#services">Transport</a><a href="#services">Cleaning</a><a href="#services">Window cleaning</a><a href="#services">Assembly</a></div><div><strong>Cities</strong>{["Helsinki", "Espoo", "Vantaa", "Tuusula", "Kerava", "Järvenpää", "Porvoo"].map(city => <a key={city} href={`/moving-${city.toLowerCase().replace("ä","a")}`}>{city}</a>)}</div><div><strong>Company</strong><a href="#booking">Book online</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/privacy">Privacy</a><a href="/terms">Terms & cookies</a></div><div className="footer-bottom"><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><span>Made for moving forward.</span></div></footer>
+      <footer><div className="footer-brand"><div className="brand"><span className="brand-mark"><PackageCheck/></span><span>muutto<span>botti</span></span></div><p>Muuttobotti / Autochemix Oy<br/>Stanislav Kosytskyy, toimitusjohtaja</p><div className="footer-contacts"><a href="tel:+3584578767567">045 787 67567</a><a href="mailto:autochemixfin@gmail.com">autochemixfin@gmail.com</a></div><div className="footer-rating"><Star/> 4.9 on Google</div></div><div><strong>Services</strong><a href="#services">Moving</a><a href="#services">Transport</a><a href="#services">Cleaning</a><a href="#services">Window cleaning</a><a href="#services">Assembly</a></div><div><strong>Cities</strong>{["Helsinki", "Espoo", "Vantaa", "Tuusula", "Kerava", "Järvenpää", "Porvoo"].map(city => <a key={city} href={`/moving-${city.toLowerCase().replace("ä","a")}`}>{city}</a>)}</div><div><strong>Company</strong><a href="#booking">Book online</a><a href="/track">{tracking.track}</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/privacy">Privacy</a><a href="/terms">Terms & cookies</a></div><div className="footer-bottom"><span>© 2026 Muuttobotti · Autochemix Oy · Y-tunnus 3543357-8</span><span>Made for moving forward.</span></div></footer>
 
       <button className="whatsapp-float" onClick={() => window.open("https://wa.me/3584578767567", "_blank")} aria-label="Contact on WhatsApp"><MessageCircle/><span>WhatsApp</span></button>
       <button className="ai-float" onClick={() => setChatOpen(!chatOpen)} aria-label="Open smart assistant">{chatOpen ? <X/> : <Sparkles/>}</button>
       <AnimatePresence>{chatOpen && <motion.div className="ai-chat" initial={{opacity:0,y:16,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:16,scale:.96}}><div className="ai-head"><span><Sparkles/> Muuttobotti AI</span><i>Online</i></div><p>{u.aiHello}</p><div className="ai-options">{u.aiOptions.map(option => <button key={option} onClick={() => setChatReply(true)}>{option}<ChevronRight/></button>)}</div>{chatReply && <motion.p className="ai-response" initial={{opacity:0}} animate={{opacity:1}}>{u.aiReply}</motion.p>}</motion.div>}</AnimatePresence>
       <AnimatePresence>{cookie === null && <motion.div className="cookie-banner" initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:30,opacity:0}}><ShieldCheck/><p>{u.cookies}</p><button onClick={() => acceptCookies("essential")}>{u.essential}</button><button className="cookie-accept" onClick={() => acceptCookies("all")}>{u.accept}</button></motion.div>}</AnimatePresence>
-      <AnimatePresence>{bookingState === "done" && <motion.div className="success-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><motion.div initial={{scale:.9,y:20}} animate={{scale:1,y:0}}><CheckCircle2/><h3>{u.success}</h3><p>{u.successText}</p><button onClick={() => setBookingState("idle")}>OK</button></motion.div></motion.div>}</AnimatePresence>
+      <AnimatePresence>{bookingState === "done" && bookingResult && <motion.div className="success-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><motion.div className="success-card" initial={{scale:.9,y:20}} animate={{scale:1,y:0}}><CheckCircle2/><h3>{u.success}</h3><p>{u.successText}</p><div className="booking-reference"><span>{tracking.bookingNumber}</span><strong>{bookingResult.bookingId}</strong></div><p className="private-link-note"><ShieldCheck/>{tracking.privateLink}</p><div className="success-actions"><a href={bookingResult.trackingPath}>{tracking.open}<ArrowRight/></a><button onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}${bookingResult.trackingPath}`); setTrackingCopied(true); }}>{trackingCopied ? tracking.copied : tracking.copy}</button></div><button className="success-close" onClick={() => setBookingState("idle")}>OK</button></motion.div></motion.div>}</AnimatePresence>
     </main>
   );
 }

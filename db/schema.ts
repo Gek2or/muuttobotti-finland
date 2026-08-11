@@ -14,6 +14,7 @@ export const bookings = sqliteTable("bookings", {
   notes: text("notes").notNull().default(""),
   photoCount: integer("photo_count").notNull().default(0),
   status: text("status").notNull().default("new"),
+  accessTokenHash: text("access_token_hash"),
   notificationStatus: text("notification_status").notNull().default("queued"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
