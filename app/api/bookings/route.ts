@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxFileSize = 8 * 1024 * 1024;
 
@@ -12,6 +10,7 @@ function safeFileName(name: string) {
 }
 
 export async function POST(request: Request) {
+  const { env } = await import("cloudflare:workers");
   const origin = request.headers.get("origin");
   if (origin && new URL(origin).host !== new URL(request.url).host) {
     return Response.json({ error: "Invalid origin" }, { status: 403 });
