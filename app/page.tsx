@@ -1,12 +1,14 @@
 import MuuttobottiApp from "./MuuttobottiApp";
-import V10NativeExperience from "./V10NativeExperience";
+import V11NativeExperience from "./V11NativeExperience";
+import PricingGuard from "./PricingGuard";
 import CinematicConversionLayer from "./CinematicConversionLayer";
 
 export default function Home() {
   return (
     <>
-      <V10NativeExperience />
+      <V11NativeExperience />
       <MuuttobottiApp />
+      <PricingGuard />
       <CinematicConversionLayer />
     </>
   );
