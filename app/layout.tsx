@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import BookingDateFloor from "./BookingDateFloor";
 import "./globals.css";
 import "./overrides.css";
 import "./v11-native.css";
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <script src="/generated/generated-visuals.js" defer />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+        <BookingDateFloor />
         {children}
       </body>
     </html>
