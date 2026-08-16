@@ -1,7 +1,15 @@
+import {
+  sendBookingStatusNotification,
+  type BookingNotificationPayload,
+  type NotificationEnv,
+} from "../notifications";
+
 type BookingRow = {
   id: string;
   service: string;
   customer_name: string;
+  phone: string;
+  email: string;
   pickup: string;
   destination: string;
   preferred_date: string;
@@ -35,14 +43,42 @@ function sameOrigin(request: Request) {
 async function findBooking(db: D1Database, id: string, key: string) {
   if (!validCredentials(id, key)) return null;
   const accessTokenHash = await hashAccessKey(key);
-  return db.prepare(`SELECT id, service, customer_name, pickup, destination,
+  return db.prepare(`SELECT id, service, customer_name, phone, email, pickup, destination,
     preferred_date, preferred_time, notes, photo_count, status, created_at
     FROM bookings WHERE id = ? AND access_token_hash = ? LIMIT 1`)
     .bind(id, accessTokenHash).first<BookingRow>();
 }
 
 function response(booking: BookingRow) {
-  return Response.json({ booking }, { headers: { "Cache-Control": "no-store" } });
+  return Response.json({
+    booking: {
+      id: booking.id,
+      service: booking.service,
+      customer_name: booking.customer_name,
+      pickup: booking.pickup,
+      destination: booking.destination,
+      preferred_date: booking.preferred_date,
+      preferred_time: booking.preferred_time,
+      notes: booking.notes,
+      photo_count: booking.photo_count,
+      status: booking.status,
+      created_at: booking.created_at,
+    },
+  }, { headers: { "Cache-Control": "no-store" } });
+}
+
+function notificationPayload(booking: BookingRow): BookingNotificationPayload {
+  return {
+    service: booking.service,
+    name: booking.customer_name,
+    phone: booking.phone,
+    email: booking.email,
+    pickup: booking.pickup,
+    destination: booking.destination,
+    date: booking.preferred_date,
+    time: booking.preferred_time,
+    notes: booking.notes,
+  };
 }
 
 export async function POST(request: Request) {
@@ -66,9 +102,12 @@ export async function PATCH(request: Request) {
   if (!booking) return Response.json({ error: "Booking not found" }, { status: 404 });
   if (!editableStatuses.has(booking.status)) return Response.json({ error: "Booking can no longer be changed online" }, { status: 409 });
 
+  let action: "modify" | "cancel";
   if (body.action === "cancel") {
+    action = "cancel";
     await env.DB.prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?").bind(id).run();
   } else if (body.action === "modify") {
+    action = "modify";
     const pickup = text(body.pickup);
     const destination = text(body.destination);
     const date = text(body.date, 20);
@@ -85,5 +124,16 @@ export async function PATCH(request: Request) {
   }
 
   const updated = await findBooking(env.DB, id, key);
-  return updated ? response(updated) : Response.json({ error: "Booking not found" }, { status: 404 });
+  if (!updated) return Response.json({ error: "Booking not found" }, { status: 404 });
+
+  const notificationStatus = await sendBookingStatusNotification(
+    env as typeof env & NotificationEnv,
+    id,
+    action,
+    notificationPayload(updated),
+  );
+  await env.DB.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
+    .bind(`${action}_${notificationStatus}`, id).run();
+
+  return response(updated);
 }
