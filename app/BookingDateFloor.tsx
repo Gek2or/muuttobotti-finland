@@ -15,9 +15,8 @@ function helsinkiToday() {
 
 export default function BookingDateFloor() {
   useEffect(() => {
-    const today = helsinkiToday();
     const apply = (input: HTMLInputElement) => {
-      if (input.type === "date") input.min = today;
+      if (input.type === "date") input.min = helsinkiToday();
     };
 
     document.querySelectorAll<HTMLInputElement>('input[type="date"]').forEach(apply);
