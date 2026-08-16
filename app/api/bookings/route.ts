@@ -24,11 +24,20 @@ export async function POST(request: Request) {
   const data = await request.formData();
   if (field(data, "website", 100)) return Response.json({ ok: true }, { status: 201 });
 
+  const calculatorEstimate = field(data, "calculator_estimate", 80);
+  const calculatorPlan = field(data, "calculator_plan", 600);
+  const customerNotes = field(data, "notes", 1600);
+  const calculatorNotes = [
+    calculatorEstimate ? `Muuttobotti AI estimate: ${calculatorEstimate}` : "",
+    calculatorPlan ? `Calculated plan: ${calculatorPlan}` : "",
+  ].filter(Boolean).join("\n");
+
   const payload = {
     service: field(data, "service", 50), name: field(data, "name", 100),
     phone: field(data, "phone", 50), email: field(data, "email", 160),
     pickup: field(data, "pickup", 300), destination: field(data, "destination", 300),
-    date: field(data, "date", 20), time: field(data, "time", 20), notes: field(data, "notes", 2000),
+    date: field(data, "date", 20), time: field(data, "time", 20),
+    notes: [calculatorNotes, customerNotes].filter(Boolean).join("\n\n").slice(0, 2000),
   };
 
   if (!payload.service || !payload.name || !payload.phone || !payload.email || !payload.pickup || !payload.destination || !payload.date || !payload.time) {
