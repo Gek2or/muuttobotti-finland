@@ -4,6 +4,7 @@ import "./globals.css";
 import "./overrides.css";
 import "./v11-native.css";
 import "./v11-credibility.css";
+import "./v11-plan.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
