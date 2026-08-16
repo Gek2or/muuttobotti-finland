@@ -11,9 +11,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
 type PropertyType = "apartment" | "house" | "office";
+type ServiceValue = "moving" | "transport" | "cleaning" | "windows" | "assembly" | "junk";
 
 const flags: Record<Locale, string> = { fi: "FI", en: "EN", uk: "UA", ru: "RU" };
-const serviceValues = ["moving", "transport", "cleaning", "windows", "assembly", "junk"] as const;
+const serviceValues: ServiceValue[] = ["moving", "transport", "cleaning", "windows", "assembly", "junk"];
 
 const copy = {
   fi: {
@@ -26,7 +27,7 @@ const copy = {
     estimate: "Arvioitu hinta", duration: "Arvioitu kesto", included: "Arvio sisältää ALV:n. Muuttopalvelun minimiveloitus on 2 h.", vatOnly: "Arvio sisältää ALV:n.", makePlan: "Näytä muuttosuunnitelma",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Muuttosuunnitelmasi on valmis.", planBody: "Sama arvio jatkuu suoraan varaukseen — tietoja ei tarvitse syöttää uudelleen.", finalNote: "Vahvistamme lopullisen hinnan ennen työn suorittamista.", finish: "Viimeistele varaus",
     bookingK: "VARAUS", bookingTitle: "Vielä yhteystiedot.", bookingBody: "Lähetä pyyntö. Saat varausnumeron ja yksityisen seurantalinkin heti.",
-    service: "Palvelu", name: "Nimi", phone: "Puhelin", email: "Sähköposti", pickup: "Nouto-osoite", destination: "Kohdeosoite", date: "Päivä", time: "Aika", notes: "Lisätiedot", photos: "Lisää kuvia", send: "Lähetä varaus",
+    service: "Palvelu", name: "Nimi", phone: "Puhelin", email: "Sähköposti", pickup: "Nouto-osoite", destination: "Kohdeosoite", serviceAddress: "Palveluosoite", date: "Päivä", time: "Aika", notes: "Lisätiedot", photos: "Lisää kuvia", send: "Lähetä varaus",
     services: ["Muutto", "Kuljetus", "Siivous", "Ikkunanpesu", "Kalusteiden kasaus", "Poisvienti"],
     faqK: "HYVÄ TIETÄÄ", faqTitle: "Ennen varausta.", faqs: [
       ["Miten muuton hinta lasketaan?", "Arvio perustuu tiimin kokoon, työmäärään, kerrokseen, hissiin, etäisyyteen ja valittuihin lisäpalveluihin."],
@@ -49,7 +50,7 @@ const copy = {
     estimate: "Estimated price", duration: "Estimated duration", included: "Estimate includes VAT. Moving service has a 2 h minimum charge.", vatOnly: "Estimate includes VAT.", makePlan: "Show my move plan",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Your move plan is ready.", planBody: "The same estimate continues directly into booking — no need to enter the details again.", finalNote: "We confirm the final price before the job.", finish: "Finish booking",
     bookingK: "BOOKING", bookingTitle: "Just your contact details.", bookingBody: "Send the request. You receive a booking number and private tracking link immediately.",
-    service: "Service", name: "Name", phone: "Phone", email: "Email", pickup: "Pickup address", destination: "Destination", date: "Date", time: "Time", notes: "Notes", photos: "Add photos", send: "Send booking",
+    service: "Service", name: "Name", phone: "Phone", email: "Email", pickup: "Pickup address", destination: "Destination", serviceAddress: "Service address", date: "Date", time: "Time", notes: "Notes", photos: "Add photos", send: "Send booking",
     services: ["Moving", "Transport", "Cleaning", "Window cleaning", "Furniture assembly", "Junk removal"],
     faqK: "GOOD TO KNOW", faqTitle: "Before you book.", faqs: [
       ["How is the moving price calculated?", "The estimate is based on team size, workload, floor, elevator, distance and selected extras."],
@@ -72,7 +73,7 @@ const copy = {
     estimate: "Орієнтовна ціна", duration: "Орієнтовний час", included: "Оцінка включає ПДВ. Мінімальне замовлення переїзду — 2 години.", vatOnly: "Оцінка включає ПДВ.", makePlan: "Показати мій план",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Ваш план переїзду готовий.", planBody: "Той самий розрахунок переходить прямо до бронювання — повторно вводити дані не потрібно.", finalNote: "Остаточну ціну підтвердимо до виконання роботи.", finish: "Завершити бронювання",
     bookingK: "БРОНЮВАННЯ", bookingTitle: "Залишилися контактні дані.", bookingBody: "Надішліть заявку. Ви одразу отримаєте номер бронювання та приватне посилання для відстеження.",
-    service: "Послуга", name: "Ім’я", phone: "Телефон", email: "Email", pickup: "Адреса завантаження", destination: "Адреса доставки", date: "Дата", time: "Час", notes: "Примітки", photos: "Додати фото", send: "Надіслати заявку",
+    service: "Послуга", name: "Ім’я", phone: "Телефон", email: "Email", pickup: "Адреса завантаження", destination: "Адреса доставки", serviceAddress: "Адреса послуги", date: "Дата", time: "Час", notes: "Примітки", photos: "Додати фото", send: "Надіслати заявку",
     services: ["Переїзд", "Перевезення", "Прибирання", "Миття вікон", "Складання меблів", "Вивіз речей"],
     faqK: "КОРИСНО ЗНАТИ", faqTitle: "Перед бронюванням.", faqs: [
       ["Як розраховується ціна переїзду?", "Оцінка залежить від кількості працівників, обсягу роботи, поверху, ліфта, відстані та додаткових послуг."],
@@ -95,7 +96,7 @@ const copy = {
     estimate: "Примерная цена", duration: "Примерное время", included: "Оценка включает НДС. Минимальный заказ переезда — 2 часа.", vatOnly: "Оценка включает НДС.", makePlan: "Показать мой план",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Ваш план переезда готов.", planBody: "Тот же расчёт переходит прямо к бронированию — повторно вводить данные не нужно.", finalNote: "Финальную цену подтвердим до выполнения работы.", finish: "Завершить бронирование",
     bookingK: "БРОНИРОВАНИЕ", bookingTitle: "Остались контактные данные.", bookingBody: "Отправьте заявку. Вы сразу получите номер бронирования и приватную ссылку для отслеживания.",
-    service: "Услуга", name: "Имя", phone: "Телефон", email: "Email", pickup: "Адрес загрузки", destination: "Адрес доставки", date: "Дата", time: "Время", notes: "Примечания", photos: "Добавить фото", send: "Отправить заявку",
+    service: "Услуга", name: "Имя", phone: "Телефон", email: "Email", pickup: "Адрес загрузки", destination: "Адрес доставки", serviceAddress: "Адрес услуги", date: "Дата", time: "Время", notes: "Примечания", photos: "Добавить фото", send: "Отправить заявку",
     services: ["Переезд", "Перевозка", "Уборка", "Мойка окон", "Сборка мебели", "Вывоз вещей"],
     faqK: "ПОЛЕЗНО ЗНАТЬ", faqTitle: "Перед бронированием.", faqs: [
       ["Как рассчитывается цена переезда?", "Оценка зависит от количества работников, объёма работы, этажа, лифта, расстояния и дополнительных услуг."],
@@ -115,6 +116,7 @@ export default function NativeFunctionalShell() {
   const [langOpen, setLangOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<CalcMode>("moving");
+  const [bookingService, setBookingService] = useState<ServiceValue>("moving");
   const [property, setProperty] = useState<PropertyType>("apartment");
   const [size, setSize] = useState(55);
   const [floor, setFloor] = useState(2);
@@ -139,6 +141,10 @@ export default function NativeFunctionalShell() {
       document.documentElement.lang = query;
     }
   }, []);
+
+  useEffect(() => {
+    setBookingService(mode);
+  }, [mode]);
 
   const estimate = useMemo(() => {
     if (mode === "moving") {
@@ -175,6 +181,8 @@ export default function NativeFunctionalShell() {
   const modeLabel = c.modes[["moving", "cleaning", "transport"].indexOf(mode)];
   const planText = [modeLabel, ...planChips, estimate.hours].join(" · ");
   const estimateNote = mode === "moving" ? c.included : c.vatOnly;
+  const requiresDestination = bookingService === "moving" || bookingService === "transport";
+  const estimateMatchesBooking = bookingService === mode;
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -194,7 +202,13 @@ export default function NativeFunctionalShell() {
     event.preventDefault();
     setBookingState("sending");
     try {
-      const response = await fetch("/api/bookings", { method: "POST", body: new FormData(event.currentTarget) });
+      const formData = new FormData(event.currentTarget);
+      if (!requiresDestination) formData.set("destination", String(formData.get("pickup") ?? ""));
+      if (!estimateMatchesBooking) {
+        formData.set("calculator_estimate", "");
+        formData.set("calculator_plan", "");
+      }
+      const response = await fetch("/api/bookings", { method: "POST", body: formData });
       if (!response.ok) throw new Error("booking failed");
       const result = await response.json() as { bookingId: string; trackingPath: string };
       setBookingResult(result);
@@ -249,11 +263,11 @@ export default function NativeFunctionalShell() {
       <section className="booking-section" id="booking">
         <div className="booking-copy"><span className="kicker light">{c.bookingK}</span><h2>{c.bookingTitle}</h2><p>{c.bookingBody}</p></div>
         <form className="booking-form" onSubmit={submitBooking}>
-          <input type="hidden" name="calculator_estimate" value={`${estimate.price} €`}/><input type="hidden" name="calculator_plan" value={planText}/><input type="text" name="website" className="honeypot" tabIndex={-1} autoComplete="off"/>
-          <label>{c.service}<select key={mode} name="service" defaultValue={mode} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
+          <input type="hidden" name="calculator_estimate" value={estimateMatchesBooking ? `${estimate.price} €` : ""}/><input type="hidden" name="calculator_plan" value={estimateMatchesBooking ? planText : ""}/><input type="text" name="website" className="honeypot" tabIndex={-1} autoComplete="off"/>
+          <label>{c.service}<select name="service" value={bookingService} onChange={event => setBookingService(event.target.value as ServiceValue)} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
           <div className="form-row"><label>{c.name}<input name="name" required autoComplete="name" placeholder="Anna Korhonen"/></label><label>{c.phone}<input name="phone" required autoComplete="tel" placeholder="+358 40 123 4567"/></label></div>
           <label>{c.email}<input name="email" type="email" required autoComplete="email" placeholder="anna@example.fi"/></label>
-          <div className="form-row"><label>{c.pickup}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div>
+          {requiresDestination ? <div className="form-row"><label>{c.pickup}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div> : <label>{c.serviceAddress}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label>}
           <div className="form-row"><label>{c.date}<input name="date" type="date" required/></label><label>{c.time}<input name="time" type="time" required/></label></div>
           <label>{c.notes}<textarea name="notes" rows={3} placeholder="Sofa, washing machine, 20 boxes…"/></label>
           <label className="upload-field"><UploadCloud/><span>{c.photos}<small>JPG, PNG, WebP · max 5 files · 8 MB / file</small></span><input name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple/></label>
