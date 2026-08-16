@@ -4,14 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight, Boxes, Check, CheckCircle2, ChevronDown, Languages, Mail,
   MapPin, Menu, MessageCircle, Navigation, PackageCheck, Phone, Send,
-  ShieldCheck, Sparkles, Truck, UploadCloud, UserRound, UsersRound, X,
+  Sparkles, Truck, UploadCloud, UserRound, UsersRound, X,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
 
 const flags: Record<Locale, string> = { fi: "FI", en: "EN", uk: "UA", ru: "RU" };
+const serviceValues = ["moving", "transport", "cleaning", "windows", "assembly", "junk"] as const;
 
 const copy = {
   fi: {
@@ -21,7 +22,7 @@ const copy = {
     movers: "Muuttajien määrä", one: "1 muuttaja", two: "2 muuttajaa", size: "Koko", floor: "Kerros", distance: "Etäisyys",
     elevator: "Hissi", packing: "Pakkausapua", afterClean: "Muuttosiivous", windows: "Ikkunoita", cleanType: "Siivoustyyppi",
     regular: "Perussiivous", moveout: "Muuttosiivous", deep: "Suursiivous", weight: "Arvioitu paino", urgency: "Toimitus", normal: "Normaali", express: "Pikakuljetus",
-    estimate: "Arvioitu hinta", duration: "Arvioitu kesto", included: "Arvio sisältää ALV:n. Muuttopalvelun minimiveloitus on 2 h.", makePlan: "Näytä muuttosuunnitelma",
+    estimate: "Arvioitu hinta", duration: "Arvioitu kesto", included: "Arvio sisältää ALV:n. Muuttopalvelun minimiveloitus on 2 h.", vatOnly: "Arvio sisältää ALV:n.", makePlan: "Näytä muuttosuunnitelma",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Muuttosuunnitelmasi on valmis.", planBody: "Sama arvio jatkuu suoraan varaukseen — tietoja ei tarvitse syöttää uudelleen.", finalNote: "Vahvistamme lopullisen hinnan ennen työn suorittamista.", finish: "Viimeistele varaus",
     bookingK: "VARAUS", bookingTitle: "Vielä yhteystiedot.", bookingBody: "Lähetä pyyntö. Saat varausnumeron ja yksityisen seurantalinkin heti.",
     service: "Palvelu", name: "Nimi", phone: "Puhelin", email: "Sähköposti", pickup: "Nouto-osoite", destination: "Kohdeosoite", date: "Päivä", time: "Aika", notes: "Lisätiedot", photos: "Lisää kuvia", send: "Lähetä varaus",
@@ -44,7 +45,7 @@ const copy = {
     movers: "Number of movers", one: "1 mover", two: "2 movers", size: "Size", floor: "Floor", distance: "Distance",
     elevator: "Elevator", packing: "Packing help", afterClean: "Move-out cleaning", windows: "Windows", cleanType: "Cleaning type",
     regular: "Regular", moveout: "Move-out", deep: "Deep clean", weight: "Estimated weight", urgency: "Delivery", normal: "Normal", express: "Express",
-    estimate: "Estimated price", duration: "Estimated duration", included: "Estimate includes VAT. Moving service has a 2 h minimum charge.", makePlan: "Show my move plan",
+    estimate: "Estimated price", duration: "Estimated duration", included: "Estimate includes VAT. Moving service has a 2 h minimum charge.", vatOnly: "Estimate includes VAT.", makePlan: "Show my move plan",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Your move plan is ready.", planBody: "The same estimate continues directly into booking — no need to enter the details again.", finalNote: "We confirm the final price before the job.", finish: "Finish booking",
     bookingK: "BOOKING", bookingTitle: "Just your contact details.", bookingBody: "Send the request. You receive a booking number and private tracking link immediately.",
     service: "Service", name: "Name", phone: "Phone", email: "Email", pickup: "Pickup address", destination: "Destination", date: "Date", time: "Time", notes: "Notes", photos: "Add photos", send: "Send booking",
@@ -67,7 +68,7 @@ const copy = {
     movers: "Кількість вантажників", one: "1 вантажник", two: "2 вантажники", size: "Площа", floor: "Поверх", distance: "Відстань",
     elevator: "Ліфт", packing: "Допомога з пакуванням", afterClean: "Прибирання після переїзду", windows: "Вікна", cleanType: "Тип прибирання",
     regular: "Звичайне", moveout: "Після переїзду", deep: "Генеральне", weight: "Приблизна вага", urgency: "Доставка", normal: "Звичайна", express: "Експрес",
-    estimate: "Орієнтовна ціна", duration: "Орієнтовний час", included: "Оцінка включає ПДВ. Мінімальне замовлення переїзду — 2 години.", makePlan: "Показати мій план",
+    estimate: "Орієнтовна ціна", duration: "Орієнтовний час", included: "Оцінка включає ПДВ. Мінімальне замовлення переїзду — 2 години.", vatOnly: "Оцінка включає ПДВ.", makePlan: "Показати мій план",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Ваш план переїзду готовий.", planBody: "Той самий розрахунок переходить прямо до бронювання — повторно вводити дані не потрібно.", finalNote: "Остаточну ціну підтвердимо до виконання роботи.", finish: "Завершити бронювання",
     bookingK: "БРОНЮВАННЯ", bookingTitle: "Залишилися контактні дані.", bookingBody: "Надішліть заявку. Ви одразу отримаєте номер бронювання та приватне посилання для відстеження.",
     service: "Послуга", name: "Ім’я", phone: "Телефон", email: "Email", pickup: "Адреса завантаження", destination: "Адреса доставки", date: "Дата", time: "Час", notes: "Примітки", photos: "Додати фото", send: "Надіслати заявку",
@@ -90,7 +91,7 @@ const copy = {
     movers: "Количество грузчиков", one: "1 грузчик", two: "2 грузчика", size: "Площадь", floor: "Этаж", distance: "Расстояние",
     elevator: "Лифт", packing: "Помощь с упаковкой", afterClean: "Уборка после переезда", windows: "Окна", cleanType: "Тип уборки",
     regular: "Обычная", moveout: "После переезда", deep: "Генеральная", weight: "Примерный вес", urgency: "Доставка", normal: "Обычная", express: "Экспресс",
-    estimate: "Примерная цена", duration: "Примерное время", included: "Оценка включает НДС. Минимальный заказ переезда — 2 часа.", makePlan: "Показать мой план",
+    estimate: "Примерная цена", duration: "Примерное время", included: "Оценка включает НДС. Минимальный заказ переезда — 2 часа.", vatOnly: "Оценка включает НДС.", makePlan: "Показать мой план",
     planK: "SMART ESTIMATE · PLAN READY", planTitle: "Ваш план переезда готов.", planBody: "Тот же расчёт переходит прямо к бронированию — повторно вводить данные не нужно.", finalNote: "Финальную цену подтвердим до выполнения работы.", finish: "Завершить бронирование",
     bookingK: "БРОНИРОВАНИЕ", bookingTitle: "Остались контактные данные.", bookingBody: "Отправьте заявку. Вы сразу получите номер бронирования и приватную ссылку для отслеживания.",
     service: "Услуга", name: "Имя", phone: "Телефон", email: "Email", pickup: "Адрес загрузки", destination: "Адрес доставки", date: "Дата", time: "Время", notes: "Примечания", photos: "Добавить фото", send: "Отправить заявку",
@@ -129,6 +130,14 @@ export default function NativeFunctionalShell() {
   const [bookingResult, setBookingResult] = useState<{ bookingId: string; trackingPath: string } | null>(null);
   const c = copy[locale];
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search).get("lang");
+    if (query === "fi" || query === "en" || query === "uk" || query === "ru") {
+      setLocale(query);
+      document.documentElement.lang = query;
+    }
+  }, []);
+
   const estimate = useMemo(() => {
     if (mode === "moving") {
       const workload = 1.4 + size / 28 + Math.max(0, floor - (elevator ? 2 : 0)) * 0.22 + (packing ? 1.5 : 0);
@@ -148,7 +157,7 @@ export default function NativeFunctionalShell() {
 
   const planChips = useMemo(() => {
     if (mode === "moving") {
-      const chips = [`${size} m²`, `${distance} km`, `${movers} ${locale === "fi" ? "muuttajaa" : locale === "uk" ? "вантажники" : locale === "ru" ? "грузчика" : "movers"}`];
+      const chips = [`${size} m²`, `${distance} km`, movers === 1 ? c.one : c.two];
       if (elevator) chips.push(c.elevator);
       if (packing) chips.push(c.packing);
       if (afterClean) chips.push(c.afterClean);
@@ -156,10 +165,11 @@ export default function NativeFunctionalShell() {
     }
     if (mode === "cleaning") return [`${size} m²`, `${windows} ${c.windows.toLowerCase()}`];
     return [`${distance} km`, `${weight} kg`, express ? c.express : c.normal];
-  }, [mode, size, distance, movers, locale, elevator, packing, afterClean, windows, weight, express, c]);
+  }, [mode, size, distance, movers, elevator, packing, afterClean, windows, weight, express, c]);
 
   const modeLabel = c.modes[["moving", "cleaning", "transport"].indexOf(mode)];
   const planText = [modeLabel, ...planChips, estimate.hours].join(" · ");
+  const estimateNote = mode === "moving" ? c.included : c.vatOnly;
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -204,7 +214,7 @@ export default function NativeFunctionalShell() {
       </header>
 
       <section className="calculator-section native-calculator" id="calculator">
-        <div className="calculator-intro"><span className="kicker light">{c.calcK}</span><h2>{c.calcTitle}</h2><p>{c.calcBody}</p><div className="smart-note"><Sparkles size={18}/><div><strong>{movers === 2 ? "2 ×" : "1 ×"} {modeLabel}</strong><span>{mode === "moving" ? `Crafter 13–15 m³ · ${movers === 1 ? "60" : "75"} €/h` : c.included}</span></div></div></div>
+        <div className="calculator-intro"><span className="kicker light">{c.calcK}</span><h2>{c.calcTitle}</h2><p>{c.calcBody}</p><div className="smart-note"><Sparkles size={18}/><div><strong>{mode === "moving" ? (movers === 1 ? c.one : c.two) : modeLabel}</strong><span>{mode === "moving" ? `Crafter 13–15 m³ · ${movers === 1 ? "60" : "75"} €/h` : c.vatOnly}</span></div></div></div>
         <div className="calculator-card">
           <div className="calc-tabs">{(["moving", "cleaning", "transport"] as CalcMode[]).map((item, index) => <button key={item} className={mode === item ? "active" : ""} onClick={() => setMode(item)}>{index === 0 ? <Boxes/> : index === 1 ? <Sparkles/> : <Truck/>}{c.modes[index]}</button>)}</div>
           <div className="calc-fields">
@@ -219,7 +229,7 @@ export default function NativeFunctionalShell() {
             {mode === "cleaning" && <><label>{c.size}<div className="range-value">{size} m²</div><input type="range" min="20" max="300" value={size} onChange={event => setSize(+event.target.value)}/></label><label>{c.windows}<div className="range-value">{windows}</div><input type="range" min="0" max="30" value={windows} onChange={event => setWindows(+event.target.value)}/></label><label>{c.cleanType}<select value={cleanType} onChange={event => setCleanType(event.target.value)}><option value="regular">{c.regular}</option><option value="moveout">{c.moveout}</option><option value="deep">{c.deep}</option></select></label></>}
             {mode === "transport" && <><label>{c.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="600" value={distance} onChange={event => setDistance(+event.target.value)}/></label><label>{c.weight}<div className="range-value">{weight} kg</div><input type="range" min="5" max="1200" step="5" value={weight} onChange={event => setWeight(+event.target.value)}/></label><label>{c.urgency}<select value={express ? "express" : "normal"} onChange={event => setExpress(event.target.value === "express")}><option value="normal">{c.normal}</option><option value="express">{c.express}</option></select></label><div className="route-preview"><MapPin/><span>Helsinki</span><div/><Navigation/><span>Espoo</span></div></>}
           </div>
-          <div className="estimate-box"><div><span>{c.estimate}</span><strong>{estimate.price} €</strong><small>{c.included}</small></div><div><span>{c.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button onClick={() => scrollTo("move-plan")}>{c.makePlan}<ArrowRight/></button></div>
+          <div className="estimate-box"><div><span>{c.estimate}</span><strong>{estimate.price} €</strong><small>{estimateNote}</small></div><div><span>{c.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button onClick={() => scrollTo("move-plan")}>{c.makePlan}<ArrowRight/></button></div>
         </div>
       </section>
 
@@ -235,7 +245,7 @@ export default function NativeFunctionalShell() {
         <div className="booking-copy"><span className="kicker light">{c.bookingK}</span><h2>{c.bookingTitle}</h2><p>{c.bookingBody}</p></div>
         <form className="booking-form" onSubmit={submitBooking}>
           <input type="hidden" name="calculator_estimate" value={`${estimate.price} €`}/><input type="hidden" name="calculator_plan" value={planText}/><input type="text" name="website" className="honeypot" tabIndex={-1} autoComplete="off"/>
-          <label>{c.service}<select name="service" required>{c.services.map((service, index) => <option key={service} value={["moving","transport","cleaning","windows","assembly","junk"][index]}>{service}</option>)}</select></label>
+          <label>{c.service}<select key={mode} name="service" defaultValue={mode} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
           <div className="form-row"><label>{c.name}<input name="name" required autoComplete="name" placeholder="Anna Korhonen"/></label><label>{c.phone}<input name="phone" required autoComplete="tel" placeholder="+358 40 123 4567"/></label></div>
           <label>{c.email}<input name="email" type="email" required autoComplete="email" placeholder="anna@example.fi"/></label>
           <div className="form-row"><label>{c.pickup}<input name="pickup" required placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div>
