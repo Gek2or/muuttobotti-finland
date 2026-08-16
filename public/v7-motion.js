@@ -10,6 +10,13 @@
     el.style.transform = value;
     if (opacity !== undefined) el.style.opacity = String(clamp(opacity));
   };
+  const offsetSvgLayer = (el, x, y, r, s, opacity) => {
+    if (!el) return;
+    el.style.translate = `${x}px ${y}px`;
+    el.style.rotate = `${r}deg`;
+    el.style.scale = String(s);
+    el.style.opacity = String(clamp(opacity));
+  };
 
   function mount() {
     const story = document.querySelector('.mb-v7-story');
@@ -48,7 +55,7 @@
         const boxEnd = [[-180,-90,-13],[140,-130,14],[185,100,11]];
         boxes.forEach((box,i) => {
           const [x,y,r] = boxEnd[i] || [0,0,0];
-          transform(box, `translate3d(${lerp(0,x,p)}px,${lerp(0,y,p)}px,0) rotate(${lerp(0,r,p)}deg) scale(${lerp(1,1.08,p)})`, lerp(1,.35,p));
+          offsetSvgLayer(box, lerp(0,x,p), lerp(0,y,p), lerp(0,r,p), lerp(1,1.08,p), lerp(1,.35,p));
         });
       }
 
