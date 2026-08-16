@@ -1,0 +1,255 @@
+/* Muuttobotti V11 — SEO/service landing pages */
+.seo-page{
+  --seo-ink:#061411;
+  --seo-paper:#f2efe7;
+  --seo-acid:#c8ff65;
+  --seo-line:rgba(255,255,255,.12);
+  min-height:100svh!important;
+  background:var(--seo-ink)!important;
+  color:#fff!important;
+  font-family:var(--font-geist-sans),Arial,sans-serif!important;
+}
+
+.seo-page>header{
+  position:sticky!important;
+  top:0!important;
+  z-index:50!important;
+  height:72px!important;
+  padding:0 clamp(18px,3.5vw,56px)!important;
+  background:rgba(6,20,17,.94)!important;
+  backdrop-filter:blur(20px) saturate(120%)!important;
+  border-bottom:1px solid rgba(255,255,255,.09)!important;
+}
+.seo-page .brand{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  color:#fff!important;
+  font-size:21px!important;
+  font-weight:800!important;
+  letter-spacing:-.05em!important;
+}
+.seo-page .brand-mark{
+  width:31px!important;
+  height:31px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:2px!important;
+  background:var(--seo-acid)!important;
+  color:var(--seo-ink)!important;
+}
+.seo-page .brand-mark svg{width:18px!important;height:18px!important}
+.seo-page .brand>span:last-child>span{color:var(--seo-acid)!important}
+.seo-page .quote-button{
+  min-height:42px!important;
+  padding:0 17px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:var(--seo-acid)!important;
+  color:var(--seo-ink)!important;
+  font-size:11px!important;
+  font-weight:780!important;
+  text-decoration:none!important;
+}
+
+.seo-page>section{
+  min-height:calc(100svh - 72px)!important;
+  padding:clamp(70px,8vw,128px) clamp(22px,7vw,112px) clamp(88px,9vw,145px)!important;
+  position:relative!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(200,255,101,.10),transparent 27%),
+    linear-gradient(180deg,#061411 0%,#081b17 100%)!important;
+}
+.seo-page>section:before{
+  content:"MUUTTOBOTTI / UUSIMAA"!important;
+  position:absolute!important;
+  right:-20px!important;
+  top:42%!important;
+  transform:rotate(90deg) translateY(-50%)!important;
+  transform-origin:right top!important;
+  color:rgba(255,255,255,.08)!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.22em!important;
+}
+
+.seo-page .back-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  color:#8fa19b!important;
+  font-size:10px!important;
+  font-weight:720!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+}
+.seo-page .back-link:hover{color:#fff!important}
+.seo-page .back-link svg{width:15px!important}
+
+.seo-page .seo-copy{
+  width:min(100%,980px)!important;
+  max-width:none!important;
+  margin-top:clamp(72px,9vw,132px)!important;
+  position:relative!important;
+  z-index:2!important;
+}
+.seo-page .seo-copy .kicker{
+  display:block!important;
+  color:#8fa09a!important;
+  font-size:9px!important;
+  font-weight:780!important;
+  letter-spacing:.17em!important;
+  text-transform:uppercase!important;
+}
+.seo-page .seo-copy h1{
+  max-width:1180px!important;
+  margin:20px 0 28px!important;
+  font-size:clamp(62px,8.4vw,142px)!important;
+  line-height:.80!important;
+  letter-spacing:-.078em!important;
+  font-weight:680!important;
+  text-transform:uppercase!important;
+}
+.seo-page .seo-copy>p{
+  max-width:690px!important;
+  margin:0!important;
+  color:#a9b9b4!important;
+  font-size:clamp(15px,1.35vw,19px)!important;
+  line-height:1.72!important;
+}
+
+.seo-page .seo-bullets{
+  width:min(100%,800px)!important;
+  margin:34px 0 0!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  border-top:1px solid var(--seo-line)!important;
+  border-bottom:1px solid var(--seo-line)!important;
+}
+.seo-page .seo-bullets span{
+  min-height:82px!important;
+  padding:17px 18px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:9px!important;
+  border:0!important;
+  border-right:1px solid var(--seo-line)!important;
+  border-radius:0!important;
+  color:#c6d1cd!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+}
+.seo-page .seo-bullets span:last-child{border-right:0!important}
+.seo-page .seo-bullets svg{width:15px!important;height:15px!important;flex:none!important;color:var(--seo-acid)!important}
+
+.seo-page .seo-actions{
+  margin-top:34px!important;
+  display:flex!important;
+  gap:9px!important;
+  flex-wrap:wrap!important;
+}
+.seo-page .seo-actions a{
+  min-height:48px!important;
+  padding:0 18px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:999px!important;
+  border:1px solid transparent!important;
+  background:var(--seo-acid)!important;
+  color:var(--seo-ink)!important;
+  font-size:11px!important;
+  font-weight:780!important;
+  text-decoration:none!important;
+  transition:transform .2s ease,background .2s ease!important;
+}
+.seo-page .seo-actions a:hover{transform:translateY(-2px)!important;background:#d9ff91!important}
+.seo-page .seo-actions a:last-child{
+  background:transparent!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.22)!important;
+}
+.seo-page .seo-actions a:last-child:hover{background:rgba(255,255,255,.06)!important}
+
+.seo-page .seo-contact{
+  position:absolute!important;
+  z-index:3!important;
+  right:clamp(22px,7vw,112px)!important;
+  bottom:clamp(55px,6vw,96px)!important;
+  width:min(360px,calc(100% - 44px))!important;
+  padding:22px!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  border-radius:4px!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(16px)!important;
+}
+.seo-page .seo-contact>strong{
+  margin-bottom:8px!important;
+  color:var(--seo-acid)!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.14em!important;
+  text-transform:uppercase!important;
+}
+.seo-page .seo-contact>span,
+.seo-page .seo-contact>a{
+  min-height:38px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  border-top:1px solid rgba(255,255,255,.09)!important;
+  color:#c5d2ce!important;
+  font-size:11px!important;
+  text-decoration:none!important;
+}
+.seo-page .seo-contact>a:hover{color:#fff!important}
+.seo-page .seo-contact svg{width:15px!important;color:#8fa09a!important}
+
+.seo-page>footer{
+  min-height:78px!important;
+  padding:20px clamp(18px,3.5vw,56px)!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:26px!important;
+  background:#04100d!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  color:#64766f!important;
+}
+.seo-page>footer span{margin-right:auto!important;font-size:10px!important}
+.seo-page>footer a{color:#8fa09a!important;font-size:10px!important;text-decoration:none!important}
+.seo-page>footer a:hover{color:#fff!important}
+
+@media(max-width:980px){
+  .seo-page>section{padding-bottom:330px!important}
+  .seo-page .seo-contact{left:clamp(22px,7vw,112px)!important;right:auto!important;bottom:80px!important}
+}
+
+@media(max-width:720px){
+  .seo-page>header{height:64px!important;padding:0 15px!important}
+  .seo-page .brand{font-size:18px!important}
+  .seo-page .brand-mark{width:29px!important;height:29px!important}
+  .seo-page .quote-button{min-height:40px!important;padding:0 13px!important}
+  .seo-page>section{min-height:0!important;padding:54px 16px 300px!important}
+  .seo-page>section:before{display:none!important}
+  .seo-page .seo-copy{margin-top:58px!important}
+  .seo-page .seo-copy h1{font-size:clamp(52px,16vw,86px)!important}
+  .seo-page .seo-copy>p{font-size:15px!important}
+  .seo-page .seo-bullets{grid-template-columns:1fr!important}
+  .seo-page .seo-bullets span{min-height:58px!important;border-right:0!important;border-bottom:1px solid var(--seo-line)!important}
+  .seo-page .seo-bullets span:last-child{border-bottom:0!important}
+  .seo-page .seo-actions{flex-direction:column!important}
+  .seo-page .seo-actions a{width:100%!important}
+  .seo-page .seo-contact{left:16px!important;right:16px!important;bottom:56px!important;width:auto!important}
+  .seo-page>footer{align-items:flex-start!important;flex-wrap:wrap!important;gap:12px 20px!important}
+  .seo-page>footer span{width:100%!important;margin:0!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .seo-page .seo-actions a{transition:none!important}
+}
