@@ -10,6 +10,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
+type PropertyType = "apartment" | "house" | "office";
 
 const flags: Record<Locale, string> = { fi: "FI", en: "EN", uk: "UA", ru: "RU" };
 const serviceValues = ["moving", "transport", "cleaning", "windows", "assembly", "junk"] as const;
@@ -114,6 +115,7 @@ export default function NativeFunctionalShell() {
   const [langOpen, setLangOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<CalcMode>("moving");
+  const [property, setProperty] = useState<PropertyType>("apartment");
   const [size, setSize] = useState(55);
   const [floor, setFloor] = useState(2);
   const [distance, setDistance] = useState(18);
@@ -155,17 +157,20 @@ export default function NativeFunctionalShell() {
     return { price: Math.round(42 + distance * 1.05 + weight * 0.05 + (express ? 35 : 0)), hours: `${hours.toFixed(1)}–${(hours + 0.5).toFixed(1)} h` };
   }, [mode, size, floor, distance, movers, elevator, packing, afterClean, windows, cleanType, weight, express]);
 
+  const propertyLabel = property === "house" ? c.house : property === "office" ? c.office : c.apartment;
+  const cleanTypeLabel = cleanType === "deep" ? c.deep : cleanType === "moveout" ? c.moveout : c.regular;
+
   const planChips = useMemo(() => {
     if (mode === "moving") {
-      const chips = [`${size} m²`, `${distance} km`, movers === 1 ? c.one : c.two];
+      const chips = [propertyLabel, `${size} m²`, `${c.floor} ${floor}`, `${distance} km`, movers === 1 ? c.one : c.two];
       if (elevator) chips.push(c.elevator);
       if (packing) chips.push(c.packing);
       if (afterClean) chips.push(c.afterClean);
       return chips;
     }
-    if (mode === "cleaning") return [`${size} m²`, `${windows} ${c.windows.toLowerCase()}`];
+    if (mode === "cleaning") return [cleanTypeLabel, `${size} m²`, `${windows} ${c.windows.toLowerCase()}`];
     return [`${distance} km`, `${weight} kg`, express ? c.express : c.normal];
-  }, [mode, size, distance, movers, elevator, packing, afterClean, windows, weight, express, c]);
+  }, [mode, propertyLabel, cleanTypeLabel, size, floor, distance, movers, elevator, packing, afterClean, windows, weight, express, c]);
 
   const modeLabel = c.modes[["moving", "cleaning", "transport"].indexOf(mode)];
   const planText = [modeLabel, ...planChips, estimate.hours].join(" · ");
@@ -206,30 +211,30 @@ export default function NativeFunctionalShell() {
         <button className="brand" onClick={() => scrollTo("home")} aria-label="Muuttobotti home"><span className="brand-mark"><PackageCheck size={19}/></span><span>muutto<span>botti</span></span></button>
         <nav className="desktop-nav" aria-label="Primary navigation">{c.nav.map((item, index) => <button key={item} onClick={() => scrollTo(["services", "calculator", "process", "contact"][index])}>{item}</button>)}</nav>
         <div className="header-actions">
-          <div className="language-wrap"><button className="lang-button" onClick={() => setLangOpen(!langOpen)} aria-expanded={langOpen}><Languages size={16}/>{flags[locale]}<ChevronDown size={13}/></button><AnimatePresence>{langOpen && <motion.div className="lang-menu" initial={{ opacity: 0, y: -7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -7 }}>{(["fi", "en", "uk", "ru"] as Locale[]).map(lang => <button key={lang} className={lang === locale ? "active" : ""} onClick={() => chooseLocale(lang)}>{flags[lang]}<Check size={13}/></button>)}</motion.div>}</AnimatePresence></div>
+          <div className="language-wrap"><button className="lang-button" onClick={() => setLangOpen(!langOpen)} aria-expanded={langOpen} aria-haspopup="menu"><Languages size={16}/>{flags[locale]}<ChevronDown size={13}/></button><AnimatePresence>{langOpen && <motion.div className="lang-menu" role="menu" initial={{ opacity: 0, y: -7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -7 }}>{(["fi", "en", "uk", "ru"] as Locale[]).map(lang => <button role="menuitem" key={lang} className={lang === locale ? "active" : ""} onClick={() => chooseLocale(lang)}>{flags[lang]}<Check size={13}/></button>)}</motion.div>}</AnimatePresence></div>
           <button className="quote-button" onClick={() => scrollTo("calculator")}>{c.quote}<ArrowRight size={15}/></button>
-          <button className="menu-button" aria-label="Menu" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X/> : <Menu/>}</button>
+          <button className="menu-button" aria-label="Menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X/> : <Menu/>}</button>
         </div>
-        <AnimatePresence>{menuOpen && <motion.nav className="mobile-nav" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>{c.nav.map((item, index) => <button key={item} onClick={() => scrollTo(["services", "calculator", "process", "contact"][index])}>{item}</button>)}</motion.nav>}</AnimatePresence>
+        <AnimatePresence>{menuOpen && <motion.nav className="mobile-nav" aria-label="Mobile navigation" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>{c.nav.map((item, index) => <button key={item} onClick={() => scrollTo(["services", "calculator", "process", "contact"][index])}>{item}</button>)}</motion.nav>}</AnimatePresence>
       </header>
 
       <section className="calculator-section native-calculator" id="calculator">
         <div className="calculator-intro"><span className="kicker light">{c.calcK}</span><h2>{c.calcTitle}</h2><p>{c.calcBody}</p><div className="smart-note"><Sparkles size={18}/><div><strong>{mode === "moving" ? (movers === 1 ? c.one : c.two) : modeLabel}</strong><span>{mode === "moving" ? `Crafter 13–15 m³ · ${movers === 1 ? "60" : "75"} €/h` : c.vatOnly}</span></div></div></div>
         <div className="calculator-card">
-          <div className="calc-tabs">{(["moving", "cleaning", "transport"] as CalcMode[]).map((item, index) => <button key={item} className={mode === item ? "active" : ""} onClick={() => setMode(item)}>{index === 0 ? <Boxes/> : index === 1 ? <Sparkles/> : <Truck/>}{c.modes[index]}</button>)}</div>
+          <div className="calc-tabs">{(["moving", "cleaning", "transport"] as CalcMode[]).map((item, index) => <button key={item} type="button" className={mode === item ? "active" : ""} aria-pressed={mode === item} onClick={() => setMode(item)}>{index === 0 ? <Boxes/> : index === 1 ? <Sparkles/> : <Truck/>}{c.modes[index]}</button>)}</div>
           <div className="calc-fields">
             {mode === "moving" && <>
-              <label>{c.property}<select><option>{c.apartment}</option><option>{c.house}</option><option>{c.office}</option></select></label>
-              <label className="movers-field">{c.movers}<div className="mover-selector"><button type="button" className={movers === 1 ? "active" : ""} onClick={() => setMovers(1)}><UserRound/>{c.one}<small>60 € / h</small></button><button type="button" className={movers === 2 ? "active" : ""} onClick={() => setMovers(2)}><UsersRound/>{c.two}<small>75 € / h</small></button></div></label>
-              <label>{c.size}<div className="range-value">{size} m²</div><input type="range" min="15" max="220" value={size} onChange={event => setSize(+event.target.value)}/></label>
-              <label>{c.floor}<div className="range-value">{floor}</div><input type="range" min="0" max="12" value={floor} onChange={event => setFloor(+event.target.value)}/></label>
-              <label>{c.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="500" value={distance} onChange={event => setDistance(+event.target.value)}/></label>
-              <div className="switch-grid"><button type="button" className={elevator ? "on" : ""} onClick={() => setElevator(!elevator)}><CheckCircle2/>{c.elevator}</button><button type="button" className={packing ? "on" : ""} onClick={() => setPacking(!packing)}><Boxes/>{c.packing}</button><button type="button" className={afterClean ? "on" : ""} onClick={() => setAfterClean(!afterClean)}><Sparkles/>{c.afterClean}</button></div>
+              <label>{c.property}<select value={property} onChange={event => setProperty(event.target.value as PropertyType)}><option value="apartment">{c.apartment}</option><option value="house">{c.house}</option><option value="office">{c.office}</option></select></label>
+              <label className="movers-field">{c.movers}<div className="mover-selector"><button type="button" className={movers === 1 ? "active" : ""} aria-pressed={movers === 1} onClick={() => setMovers(1)}><UserRound/>{c.one}<small>60 € / h</small></button><button type="button" className={movers === 2 ? "active" : ""} aria-pressed={movers === 2} onClick={() => setMovers(2)}><UsersRound/>{c.two}<small>75 € / h</small></button></div></label>
+              <label>{c.size}<div className="range-value">{size} m²</div><input type="range" min="15" max="220" value={size} aria-label={c.size} onChange={event => setSize(+event.target.value)}/></label>
+              <label>{c.floor}<div className="range-value">{floor}</div><input type="range" min="0" max="12" value={floor} aria-label={c.floor} onChange={event => setFloor(+event.target.value)}/></label>
+              <label>{c.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="500" value={distance} aria-label={c.distance} onChange={event => setDistance(+event.target.value)}/></label>
+              <div className="switch-grid"><button type="button" className={elevator ? "on" : ""} aria-pressed={elevator} onClick={() => setElevator(!elevator)}><CheckCircle2/>{c.elevator}</button><button type="button" className={packing ? "on" : ""} aria-pressed={packing} onClick={() => setPacking(!packing)}><Boxes/>{c.packing}</button><button type="button" className={afterClean ? "on" : ""} aria-pressed={afterClean} onClick={() => setAfterClean(!afterClean)}><Sparkles/>{c.afterClean}</button></div>
             </>}
-            {mode === "cleaning" && <><label>{c.size}<div className="range-value">{size} m²</div><input type="range" min="20" max="300" value={size} onChange={event => setSize(+event.target.value)}/></label><label>{c.windows}<div className="range-value">{windows}</div><input type="range" min="0" max="30" value={windows} onChange={event => setWindows(+event.target.value)}/></label><label>{c.cleanType}<select value={cleanType} onChange={event => setCleanType(event.target.value)}><option value="regular">{c.regular}</option><option value="moveout">{c.moveout}</option><option value="deep">{c.deep}</option></select></label></>}
-            {mode === "transport" && <><label>{c.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="600" value={distance} onChange={event => setDistance(+event.target.value)}/></label><label>{c.weight}<div className="range-value">{weight} kg</div><input type="range" min="5" max="1200" step="5" value={weight} onChange={event => setWeight(+event.target.value)}/></label><label>{c.urgency}<select value={express ? "express" : "normal"} onChange={event => setExpress(event.target.value === "express")}><option value="normal">{c.normal}</option><option value="express">{c.express}</option></select></label><div className="route-preview"><MapPin/><span>Helsinki</span><div/><Navigation/><span>Espoo</span></div></>}
+            {mode === "cleaning" && <><label>{c.size}<div className="range-value">{size} m²</div><input type="range" min="20" max="300" value={size} aria-label={c.size} onChange={event => setSize(+event.target.value)}/></label><label>{c.windows}<div className="range-value">{windows}</div><input type="range" min="0" max="30" value={windows} aria-label={c.windows} onChange={event => setWindows(+event.target.value)}/></label><label>{c.cleanType}<select value={cleanType} onChange={event => setCleanType(event.target.value)}><option value="regular">{c.regular}</option><option value="moveout">{c.moveout}</option><option value="deep">{c.deep}</option></select></label></>}
+            {mode === "transport" && <><label>{c.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="600" value={distance} aria-label={c.distance} onChange={event => setDistance(+event.target.value)}/></label><label>{c.weight}<div className="range-value">{weight} kg</div><input type="range" min="5" max="1200" step="5" value={weight} aria-label={c.weight} onChange={event => setWeight(+event.target.value)}/></label><label>{c.urgency}<select value={express ? "express" : "normal"} onChange={event => setExpress(event.target.value === "express")}><option value="normal">{c.normal}</option><option value="express">{c.express}</option></select></label><div className="route-preview"><MapPin/><span>Helsinki</span><div/><Navigation/><span>Espoo</span></div></>}
           </div>
-          <div className="estimate-box"><div><span>{c.estimate}</span><strong>{estimate.price} €</strong><small>{estimateNote}</small></div><div><span>{c.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button onClick={() => scrollTo("move-plan")}>{c.makePlan}<ArrowRight/></button></div>
+          <div className="estimate-box" aria-live="polite"><div><span>{c.estimate}</span><strong>{estimate.price} €</strong><small>{estimateNote}</small></div><div><span>{c.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button type="button" onClick={() => scrollTo("move-plan")}>{c.makePlan}<ArrowRight/></button></div>
         </div>
       </section>
 
@@ -248,18 +253,18 @@ export default function NativeFunctionalShell() {
           <label>{c.service}<select key={mode} name="service" defaultValue={mode} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
           <div className="form-row"><label>{c.name}<input name="name" required autoComplete="name" placeholder="Anna Korhonen"/></label><label>{c.phone}<input name="phone" required autoComplete="tel" placeholder="+358 40 123 4567"/></label></div>
           <label>{c.email}<input name="email" type="email" required autoComplete="email" placeholder="anna@example.fi"/></label>
-          <div className="form-row"><label>{c.pickup}<input name="pickup" required placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div>
+          <div className="form-row"><label>{c.pickup}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div>
           <div className="form-row"><label>{c.date}<input name="date" type="date" required/></label><label>{c.time}<input name="time" type="time" required/></label></div>
           <label>{c.notes}<textarea name="notes" rows={3} placeholder="Sofa, washing machine, 20 boxes…"/></label>
-          <label className="upload-field"><UploadCloud/><span>{c.photos}<small>JPG, PNG, WebP · max 8 MB</small></span><input name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple/></label>
+          <label className="upload-field"><UploadCloud/><span>{c.photos}<small>JPG, PNG, WebP · max 5 files · 8 MB / file</small></span><input name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple/></label>
           <button className="submit-button" disabled={bookingState === "sending"}>{bookingState === "sending" ? "…" : c.send}<Send/></button>
-          {bookingState === "error" && <p className="form-error">{c.error}</p>}
+          {bookingState === "error" && <p className="form-error" role="alert">{c.error}</p>}
         </form>
       </section>
 
-      <section className="faq-section" id="process">
+      <section className="faq-section" id="faq">
         <div className="faq-title"><span className="kicker">{c.faqK}</span><h2>{c.faqTitle}</h2></div>
-        <div className="faq-list">{c.faqs.map(([question, answer], index) => <article key={question}><button onClick={() => setFaqOpen(faqOpen === index ? null : index)} aria-expanded={faqOpen === index}><span>{question}</span><ChevronDown className={faqOpen === index ? "rotate" : ""}/></button><AnimatePresence>{faqOpen === index && <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>{answer}</motion.p>}</AnimatePresence></article>)}</div>
+        <div className="faq-list">{c.faqs.map(([question, answer], index) => <article key={question}><button type="button" onClick={() => setFaqOpen(faqOpen === index ? null : index)} aria-expanded={faqOpen === index}><span>{question}</span><ChevronDown className={faqOpen === index ? "rotate" : ""}/></button><AnimatePresence>{faqOpen === index && <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>{answer}</motion.p>}</AnimatePresence></article>)}</div>
       </section>
 
       <section className="contact-section" id="contact">
@@ -271,7 +276,7 @@ export default function NativeFunctionalShell() {
 
       <a className="whatsapp-float native-whatsapp" href="https://wa.me/3584578767567" target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle/><span>WhatsApp</span></a>
 
-      <AnimatePresence>{bookingState === "done" && bookingResult && <motion.div className="success-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><motion.div className="success-card" initial={{ scale: .94, y: 18 }} animate={{ scale: 1, y: 0 }}><CheckCircle2/><h3>{c.success}</h3><p>{c.successBody}</p><div className="booking-reference"><span>{c.bookingNumber}</span><strong>{bookingResult.bookingId}</strong></div><div className="success-actions"><a href={bookingResult.trackingPath}>{c.openTracking}<ArrowRight/></a></div><button className="success-close" onClick={() => setBookingState("idle")}>{c.close}</button></motion.div></motion.div>}</AnimatePresence>
+      <AnimatePresence>{bookingState === "done" && bookingResult && <motion.div className="success-overlay" role="dialog" aria-modal="true" aria-labelledby="booking-success-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><motion.div className="success-card" initial={{ scale: .94, y: 18 }} animate={{ scale: 1, y: 0 }}><CheckCircle2/><h3 id="booking-success-title">{c.success}</h3><p>{c.successBody}</p><div className="booking-reference"><span>{c.bookingNumber}</span><strong>{bookingResult.bookingId}</strong></div><div className="success-actions"><a href={bookingResult.trackingPath}>{c.openTracking}<ArrowRight/></a></div><button className="success-close" onClick={() => setBookingState("idle")}>{c.close}</button></motion.div></motion.div>}</AnimatePresence>
     </main>
   );
 }
