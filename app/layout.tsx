@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./overrides.css";
+import "./premium-experiment.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
