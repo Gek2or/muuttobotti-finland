@@ -1,3 +1,9 @@
+import {
+  sendBookingCreatedNotification,
+  type BookingNotificationPayload,
+  type NotificationEnv,
+} from "./notifications";
+
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const allowedServices = new Set(["moving", "transport", "cleaning", "windows", "assembly", "junk"]);
 const maxFileSize = 8 * 1024 * 1024;
@@ -13,74 +19,6 @@ function safeFileName(name: string) {
 async function hashAccessKey(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
-}
-
-type BookingPayload = {
-  service: string;
-  name: string;
-  phone: string;
-  email: string;
-  pickup: string;
-  destination: string;
-  date: string;
-  time: string;
-  notes: string;
-};
-
-type NotificationEnv = {
-  RESEND_API_KEY?: string;
-  BOOKING_NOTIFY_TO?: string;
-  BOOKING_NOTIFY_FROM?: string;
-};
-
-async function sendBookingNotification(
-  env: NotificationEnv,
-  id: string,
-  payload: BookingPayload,
-  photoCount: number,
-) {
-  const apiKey = env.RESEND_API_KEY?.trim();
-  if (!apiKey) return "skipped" as const;
-
-  const to = env.BOOKING_NOTIFY_TO?.trim() || "autochemixfin@gmail.com";
-  const from = env.BOOKING_NOTIFY_FROM?.trim() || "Muuttobotti <onboarding@resend.dev>";
-  const text = [
-    `New Muuttobotti booking: ${id}`,
-    "",
-    `Service: ${payload.service}`,
-    `Customer: ${payload.name}`,
-    `Phone: ${payload.phone}`,
-    `Email: ${payload.email}`,
-    `Pickup: ${payload.pickup}`,
-    `Destination: ${payload.destination}`,
-    `Date: ${payload.date}`,
-    `Time: ${payload.time}`,
-    `Photos: ${photoCount}`,
-    "",
-    "Estimate / notes:",
-    payload.notes || "—",
-  ].join("\n");
-
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": "muuttobotti-finland/1.0",
-        "Idempotency-Key": `booking-${id}`,
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject: `New Muuttobotti booking ${id} · ${payload.name}`,
-        text,
-      }),
-    });
-    return response.ok ? "sent" as const : "failed" as const;
-  } catch {
-    return "failed" as const;
-  }
 }
 
 export async function POST(request: Request) {
@@ -101,11 +39,15 @@ export async function POST(request: Request) {
     calculatorPlan ? `Calculated plan: ${calculatorPlan}` : "",
   ].filter(Boolean).join("\n");
 
-  const payload: BookingPayload = {
-    service: field(data, "service", 50), name: field(data, "name", 100),
-    phone: field(data, "phone", 50), email: field(data, "email", 160),
-    pickup: field(data, "pickup", 300), destination: field(data, "destination", 300),
-    date: field(data, "date", 20), time: field(data, "time", 20),
+  const payload: BookingNotificationPayload = {
+    service: field(data, "service", 50),
+    name: field(data, "name", 100),
+    phone: field(data, "phone", 50),
+    email: field(data, "email", 160),
+    pickup: field(data, "pickup", 300),
+    destination: field(data, "destination", 300),
+    date: field(data, "date", 20),
+    time: field(data, "time", 20),
     notes: [calculatorNotes, customerNotes].filter(Boolean).join("\n\n").slice(0, 2000),
   };
 
@@ -153,7 +95,12 @@ export async function POST(request: Request) {
     { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
   )));
 
-  const notificationStatus = await sendBookingNotification(env as typeof env & NotificationEnv, id, payload, files.length);
+  const notificationStatus = await sendBookingCreatedNotification(
+    env as typeof env & NotificationEnv,
+    id,
+    payload,
+    files.length,
+  );
   await db.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?").bind(notificationStatus, id).run();
 
   return Response.json(
