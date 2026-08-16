@@ -1,0 +1,63 @@
+/* V6: reel-like motion and conversion bridge. Experiment branch only. */
+.hero,.services-section,.calculator-section,.process-section,.reviews-section,.booking-section{
+  --mb-motion-y:0px;--mb-motion-x:0px;--mb-motion-scale:1;--mb-motion-rotate:0deg;--mb-motion-opacity:1;--mb-motion-clip:0%;
+}
+.hero::before,.services-section::before,.process-section::before,.reviews-section::before,.calculator-section::after,.booking-section::after{
+  will-change:transform,opacity,clip-path,filter;
+  transform:translate3d(var(--mb-motion-x),var(--mb-motion-y),0) scale(var(--mb-motion-scale)) rotate(var(--mb-motion-rotate))!important;
+  opacity:var(--mb-motion-opacity)!important;
+  clip-path:inset(var(--mb-motion-clip) round 34px);
+  transition:filter .25s ease;
+}
+.hero::before{animation:none!important;filter:drop-shadow(0 42px 70px rgba(0,0,0,.38)) saturate(1.04)!important}
+.services-section::before,.process-section::before,.reviews-section::before{transform-origin:center center}
+.services-section::before{filter:saturate(1.02) contrast(1.02)}
+.process-section::before{filter:saturate(1.05) contrast(1.03)}
+.reviews-section::before{filter:saturate(1.04) contrast(1.04)}
+.calculator-section::after{transform-origin:60% 50%;filter:saturate(.95) contrast(1.08)!important}
+.booking-section::after{transform-origin:40% 60%;filter:saturate(.9)!important}
+
+/* Add cinematic depth around the generated frames. */
+.services-section,.process-section,.reviews-section{perspective:1400px;overflow:clip}
+.services-section::before,.process-section::before,.reviews-section::before{backface-visibility:hidden}
+.services-section .section-heading,.process-section .center-heading,.reviews-section .section-heading{position:relative;z-index:4}
+.services-section .section-heading{transform:translateY(calc(var(--mb-motion-y) * -.16))}
+.process-section .center-heading{transform:translateY(calc(var(--mb-motion-y) * -.12))}
+.reviews-section .section-heading{transform:translateY(calc(var(--mb-motion-y) * -.14))}
+
+/* The calculated plan becomes a deliberate pre-booking scene. */
+#mb-plan-host{grid-column:1/-1;order:-1;position:relative;z-index:5;width:min(1180px,100%);margin:0 auto clamp(28px,4vw,50px)}
+.mb-move-plan{position:relative;overflow:hidden;border-radius:clamp(24px,3vw,38px);padding:clamp(22px,3.2vw,38px);background:linear-gradient(135deg,#071b22 0%,#0d3033 54%,#153d38 100%);color:white;border:1px solid rgba(200,255,101,.18);box-shadow:0 34px 90px rgba(0,0,0,.24)}
+.mb-move-plan::before{content:"";position:absolute;right:-9%;top:-62%;width:52%;aspect-ratio:1;border-radius:50%;border:44px solid rgba(200,255,101,.08);box-shadow:0 0 0 42px rgba(200,255,101,.035),0 0 0 84px rgba(200,255,101,.018)}
+.mb-move-plan::after{content:"AI";position:absolute;right:2%;bottom:-24%;font-size:clamp(120px,18vw,260px);font-weight:950;letter-spacing:-.1em;line-height:1;color:rgba(200,255,101,.045);pointer-events:none}
+.mb-plan-eyebrow{position:relative;z-index:2;display:flex;align-items:center;gap:9px;width:max-content;max-width:100%;font-size:9px;font-weight:900;letter-spacing:.15em;color:#c8ff65;text-transform:uppercase}
+.mb-plan-eyebrow span{width:9px;height:9px;border-radius:50%;background:#c8ff65;box-shadow:0 0 0 7px rgba(200,255,101,.09)}
+.mb-plan-grid{position:relative;z-index:2;display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(24px,5vw,72px);align-items:end;margin-top:20px}
+.mb-move-plan h3{margin:0;max-width:760px;font-size:clamp(38px,5.5vw,82px);line-height:.86;letter-spacing:-.065em;text-transform:uppercase}
+.mb-move-plan p{max-width:540px;margin:16px 0 0;color:rgba(235,244,241,.72);line-height:1.6}
+.mb-plan-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.mb-plan-chips span{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);font-size:10px;font-weight:800;color:#dce8e4;backdrop-filter:blur(10px)}
+.mb-plan-price{position:relative;z-index:2;justify-self:end;min-width:min(100%,300px);padding:20px;border-radius:24px;background:#c8ff65;color:#071b22;box-shadow:0 18px 50px rgba(200,255,101,.14)}
+.mb-plan-price small{display:block;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;opacity:.66}
+.mb-plan-price strong{display:block;margin:8px 0 4px;font-size:clamp(44px,6vw,76px);line-height:.9;letter-spacing:-.07em}
+.mb-plan-price span{font-size:12px;font-weight:850}
+.mb-plan-note{position:relative;z-index:2;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:#9fb0ac}
+
+/* Booking now starts as the continuation of the plan, not a new page section. */
+.booking-section{padding-top:clamp(88px,8vw,120px)!important}
+.booking-section::before{display:none!important}
+.booking-copy h2{font-size:clamp(42px,5.4vw,78px)!important;line-height:.9!important}
+.booking-form{border-radius:28px!important;box-shadow:0 30px 90px rgba(0,0,0,.24)!important}
+
+@media(max-width:760px){
+  .hero::before,.services-section::before,.process-section::before,.reviews-section::before,.calculator-section::after,.booking-section::after{clip-path:inset(0 round 20px)}
+  #mb-plan-host{margin-bottom:24px}
+  .mb-move-plan{border-radius:24px;padding:20px}
+  .mb-plan-grid{grid-template-columns:1fr;gap:18px}
+  .mb-move-plan h3{font-size:12vw}
+  .mb-plan-price{justify-self:stretch;min-width:0}
+  .mb-plan-price strong{font-size:15vw}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero::before,.services-section::before,.process-section::before,.reviews-section::before,.calculator-section::after,.booking-section::after{transform:none!important;clip-path:none!important;opacity:1!important}
+}
