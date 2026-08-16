@@ -30,6 +30,9 @@ const copy = {
     route: "Helsinki → Espoo",
     estimate: "~ 287 €",
     meta: ["55 m²", "18 km", "2 muuttajaa"],
+    proofK: "Oikeita muuttoja. Selkeä palvelu.",
+    proofA: "Yksi kumppani.",
+    proofB: "Jokainen vaihe hallinnassa.",
     handoff: "Nyt tehdään siitä sinun muuttosi.",
   },
   en: {
@@ -56,6 +59,9 @@ const copy = {
     route: "Helsinki → Espoo",
     estimate: "~ 287 €",
     meta: ["55 m²", "18 km", "2 movers"],
+    proofK: "Real moves. Clear service.",
+    proofA: "One partner.",
+    proofB: "Every step under control.",
     handoff: "Now make it your move.",
   },
   uk: {
@@ -82,6 +88,9 @@ const copy = {
     route: "Helsinki → Espoo",
     estimate: "~ 287 €",
     meta: ["55 м²", "18 км", "2 вантажники"],
+    proofK: "Реальні переїзди. Зрозумілий сервіс.",
+    proofA: "Один партнер.",
+    proofB: "Кожен етап під контролем.",
     handoff: "Тепер зробимо це вашим переїздом.",
   },
   ru: {
@@ -108,6 +117,9 @@ const copy = {
     route: "Helsinki → Espoo",
     estimate: "~ 287 €",
     meta: ["55 м²", "18 км", "2 грузчика"],
+    proofK: "Реальные переезды. Понятный сервис.",
+    proofA: "Один партнёр.",
+    proofB: "Каждый этап под контролем.",
     handoff: "Теперь сделаем это вашим переездом.",
   },
 } as const;
@@ -123,10 +135,7 @@ function detectLocale(): Locale {
   return "fi";
 }
 
-const reveal = {
-  hidden: { opacity: 0, y: 36 },
-  visible: { opacity: 1, y: 0 },
-};
+const reveal = { hidden: { opacity: 0, y: 36 }, visible: { opacity: 1, y: 0 } };
 
 function Visual({ slice, className = "" }: { slice: "hero" | "layers" | "kit" | "services"; className?: string }) {
   return <span className={`v10-visual v10-visual-${slice} ${className}`} aria-hidden="true"><i /></span>;
@@ -134,7 +143,7 @@ function Visual({ slice, className = "" }: { slice: "hero" | "layers" | "kit" | 
 
 export default function V10NativeExperience() {
   const [locale, setLocale] = useState<Locale>("fi");
-  const heroRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const photoY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 42]);
@@ -148,10 +157,7 @@ export default function V10NativeExperience() {
     const observer = new MutationObserver(read);
     if (wrap) observer.observe(wrap, { subtree: true, childList: true, characterData: true, attributes: true });
     window.addEventListener("popstate", read);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("popstate", read);
-    };
+    return () => { observer.disconnect(); window.removeEventListener("popstate", read); };
   }, []);
 
   const c = copy[locale];
@@ -159,44 +165,27 @@ export default function V10NativeExperience() {
 
   return (
     <div className="mb-v10-native">
-      <section ref={heroRef} className="v10-hero">
+      <section id="home" ref={heroRef} className="v10-hero">
         <div className="v10-shell">
           <motion.span className="v10-kicker" initial="hidden" animate="visible" variants={reveal} transition={{ duration: .55 }}>{c.overline}</motion.span>
           <motion.div className="v10-hero-copy" style={{ y: copyY }}>
-            <h1>
-              <span>{c.heroA}</span>
-              <motion.span className="v10-inline-photo" style={{ y: photoY, scale: photoScale }}><Visual slice="hero" /></motion.span>
-              <em>{c.heroB}</em>
-            </h1>
+            <h1><span>{c.heroA}</span><motion.span className="v10-inline-photo" style={{ y: photoY, scale: photoScale }}><Visual slice="hero" /></motion.span><em>{c.heroB}</em></h1>
             <h2>{c.heroC}</h2>
-            <div className="v10-hero-bottom">
-              <p>{c.body}</p>
-              <button onClick={goToCalculator}>{c.cta}<span>↗</span></button>
-            </div>
+            <div className="v10-hero-bottom"><p>{c.body}</p><button onClick={goToCalculator}>{c.cta}<span>↗</span></button></div>
           </motion.div>
           <div className="v10-facts">{c.facts.map((fact, index) => <span key={fact}><i>0{index + 1}</i>{fact}</span>)}</div>
         </div>
       </section>
 
-      <motion.section className="v10-services" initial="hidden" whileInView="visible" viewport={{ once: true, amount: .18 }} variants={reveal} transition={{ duration: .7 }}>
+      <motion.section id="services" className="v10-services" initial="hidden" whileInView="visible" viewport={{ once: true, amount: .18 }} variants={reveal} transition={{ duration: .7 }}>
         <div className="v10-shell">
           <span className="v10-kicker dark">{c.one}</span>
-          <div className="v10-sentence">
-            <span>{c.sentence[0]}</span>
-            <Visual slice="layers" className="short" />
-            <span>{c.sentence[1]}</span>
-            <span>{c.sentence[2]}</span>
-            <Visual slice="kit" className="tiny" />
-            <span>{c.sentence[3]}</span>
-          </div>
-          <div className="v10-services-foot">
-            <p>{c.serviceBody}</p>
-            <div className="v10-service-list">{c.services.map((service, index) => <div key={service}><i>0{index + 1}</i><strong>{service}</strong><span>↗</span></div>)}</div>
-          </div>
+          <div className="v10-sentence"><span>{c.sentence[0]}</span><Visual slice="layers" className="short" /><span>{c.sentence[1]}</span><span>{c.sentence[2]}</span><Visual slice="kit" className="tiny" /><span>{c.sentence[3]}</span></div>
+          <div className="v10-services-foot"><p>{c.serviceBody}</p><div className="v10-service-list">{c.services.map((service, index) => <div key={service}><i>0{index + 1}</i><strong>{service}</strong><span>↗</span></div>)}</div></div>
         </div>
       </motion.section>
 
-      <section className="v10-prepared">
+      <section id="process" className="v10-prepared">
         <div className="v10-shell">
           <motion.div initial={{ opacity: 0, x: -28 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .65 }}>
             <span className="v10-kicker dark">{c.prepared}</span>
@@ -214,22 +203,22 @@ export default function V10NativeExperience() {
             <p>{c.estimateBody}</p>
             <button onClick={goToCalculator}>{c.cta}<span>↗</span></button>
           </motion.div>
-
           <motion.div className="v10-route-board" initial={{ opacity: 0, scale: .965 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: .35 }} transition={{ duration: .7 }}>
             <div className="v10-route-head"><span>{c.example}</span><strong>{c.route}</strong></div>
-            <svg viewBox="0 0 760 270" aria-hidden="true">
-              <path className="v10-route-base" d="M44 190 C155 64 264 236 370 145 S580 72 716 124" />
-              <motion.path className="v10-route-live" d="M44 190 C155 64 264 236 370 145 S580 72 716 124" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: .5 }} transition={{ duration: 1.35, ease: "easeInOut" }} />
-              <circle cx="44" cy="190" r="6" /><circle cx="716" cy="124" r="6" />
-            </svg>
+            <svg viewBox="0 0 760 270" aria-hidden="true"><path className="v10-route-base" d="M44 190 C155 64 264 236 370 145 S580 72 716 124"/><motion.path className="v10-route-live" d="M44 190 C155 64 264 236 370 145 S580 72 716 124" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: .5 }} transition={{ duration: 1.35, ease: "easeInOut" }}/><circle cx="44" cy="190" r="6"/><circle cx="716" cy="124" r="6"/></svg>
             <div className="v10-price"><div>{c.meta.map(item => <span key={item}>{item}</span>)}</div><strong>{c.estimate}</strong></div>
           </motion.div>
         </div>
       </section>
 
-      <section className="v10-handoff">
-        <div className="v10-shell"><span>{c.estimateK}</span><h2>{c.handoff}</h2></div>
+      <section id="reviews" className="v10-proof">
+        <div className="v10-shell">
+          <span className="v10-kicker dark">{c.proofK}</span>
+          <div className="v10-proof-grid"><h2>{c.proofA}<br/><em>{c.proofB}</em></h2><motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .35 }} transition={{ duration: .7 }}><Visual slice="services" className="proof" /></motion.div></div>
+        </div>
       </section>
+
+      <section className="v10-handoff"><div className="v10-shell"><span>{c.estimateK}</span><h2>{c.handoff}</h2></div></section>
     </div>
   );
 }
