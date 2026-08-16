@@ -16,6 +16,11 @@ export type BookingNotificationPayload = {
   notes: string;
 };
 
+async function fingerprint(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 24);
+}
+
 async function sendNotification(
   env: NotificationEnv,
   subject: string,
@@ -98,11 +103,12 @@ export async function sendBookingStatusNotification(
     "Notes:",
     payload.notes || "—",
   ].join("\n");
+  const contentFingerprint = await fingerprint(JSON.stringify({ action, payload }));
 
   return sendNotification(
     env,
     `${actionLabel}: ${id} · ${payload.name}`,
     text,
-    `booking-${action}-${id}-${payload.date}-${payload.time}`,
+    `booking-${action}-${id}-${contentFingerprint}`,
   );
 }
