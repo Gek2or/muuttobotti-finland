@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import CinematicConversionLayer from "./CinematicConversionLayer";
-import V9EditorialLayer from "./V9EditorialLayer";
+import V10NativeExperience from "./V10NativeExperience";
 import "./globals.css";
 import "./overrides.css";
-import "./v9-editorial.css";
+import "./v10-native.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
@@ -21,9 +21,19 @@ export const metadata: Metadata = {
   other: { "codex-preview": "development" },
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#071512", colorScheme: "light dark" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#061411", colorScheme: "light dark" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const schema = { "@context": "https://schema.org", "@type": "MovingCompany", name: "Muuttobotti", legalName: "Autochemix Oy", taxID: "3543357-8", url: "https://muuttobotti.fi", areaServed: ["Helsinki", "Espoo", "Vantaa", "Tuusula", "Finland"], priceRange: "€€", telephone: "+3584578767567", email: "autochemixfin@gmail.com", employee: { "@type": "Person", name: "Stanislav Kosytskyy", jobTitle: "Toimitusjohtaja" }, address: { "@type": "PostalAddress", addressCountry: "FI" }, sameAs: [] };
-  return <html lang="fi"><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><script src="/generated/generated-visuals.js" defer /><script src="/v9-motion.js" defer /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />{children}<V9EditorialLayer /><CinematicConversionLayer /></body></html>;
+  return (
+    <html lang="fi">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <script src="/generated/generated-visuals.js" defer />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+        <V10NativeExperience />
+        {children}
+        <CinematicConversionLayer />
+      </body>
+    </html>
+  );
 }
