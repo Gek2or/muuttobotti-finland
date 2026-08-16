@@ -1,0 +1,332 @@
+/* Muuttobotti V11 UX polish — mobile conversion, focus, safe areas */
+
+:where(a,button,input,select,textarea):focus-visible{
+  outline:3px solid var(--v11-acid,#c8ff65);
+  outline-offset:3px;
+}
+
+:where(button,a){-webkit-tap-highlight-color:transparent}
+
+#calculator,#move-plan,#booking,#contact,#process,#services{scroll-margin-top:88px}
+
+.native-functional-shell .native-topbar{
+  position:sticky!important;
+  top:0!important;
+  z-index:80!important;
+}
+
+.native-functional-shell .calculator-card,
+.native-functional-shell .booking-form,
+.native-functional-shell .mb-move-plan{
+  transition:box-shadow .25s ease,transform .25s ease,border-color .25s ease;
+}
+
+.native-functional-shell .calculator-card:focus-within,
+.native-functional-shell .booking-form:focus-within{
+  box-shadow:0 36px 100px rgba(0,0,0,.18),0 0 0 1px rgba(200,255,101,.22)!important;
+}
+
+.native-functional-shell input,
+.native-functional-shell select,
+.native-functional-shell textarea{
+  font-size:16px;
+}
+
+.native-functional-shell input[type="range"]{
+  min-height:34px;
+  cursor:pointer;
+}
+
+.native-functional-shell .calc-tabs button,
+.native-functional-shell .mover-selector button,
+.native-functional-shell .switch-grid button,
+.native-functional-shell .submit-button,
+.native-functional-shell .mb-plan-cta{
+  min-height:46px;
+}
+
+.native-functional-shell .estimate-box strong,
+.native-functional-shell .mb-plan-price strong{
+  font-variant-numeric:tabular-nums;
+}
+
+.native-functional-shell .booking-form label,
+.native-functional-shell .calc-fields>label{
+  min-width:0;
+}
+
+.native-functional-shell .booking-form input,
+.native-functional-shell .booking-form select,
+.native-functional-shell .booking-form textarea,
+.native-functional-shell .calc-fields select{
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+
+.native-functional-shell .booking-form input:focus,
+.native-functional-shell .booking-form select:focus,
+.native-functional-shell .booking-form textarea:focus,
+.native-functional-shell .calc-fields select:focus{
+  border-color:#789b49!important;
+  box-shadow:0 0 0 4px rgba(104,141,56,.11)!important;
+}
+
+.native-functional-shell .upload-field{
+  transition:border-color .2s ease,background .2s ease,transform .2s ease;
+}
+.native-functional-shell .upload-field:hover{
+  border-color:#8fa66b!important;
+  transform:translateY(-1px);
+}
+
+.native-functional-shell .contact-actions a{
+  transition:transform .2s ease,background .2s ease,border-color .2s ease;
+}
+.native-functional-shell .contact-actions a:hover{
+  transform:translateY(-2px);
+}
+
+.native-functional-shell .success-overlay{
+  padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));
+}
+.native-functional-shell .success-card{
+  max-height:calc(100svh - 36px);
+  overflow:auto;
+}
+
+@media (max-width:900px){
+  .v11-scroll-cue{display:none!important}
+
+  .native-functional-shell .native-topbar{
+    height:64px!important;
+    padding-left:max(14px,env(safe-area-inset-left))!important;
+    padding-right:max(14px,env(safe-area-inset-right))!important;
+  }
+
+  .native-functional-shell .native-topbar .brand-mark{
+    width:29px!important;
+    height:29px!important;
+  }
+
+  .native-functional-shell .desktop-nav{display:none!important}
+  .native-functional-shell .menu-button{display:inline-flex!important;min-width:42px;min-height:42px;align-items:center;justify-content:center}
+  .native-functional-shell .quote-button{padding:10px 13px!important;min-height:40px}
+  .native-functional-shell .lang-button{min-height:40px;padding-inline:10px!important}
+
+  .native-functional-shell .mobile-nav{
+    position:fixed!important;
+    top:64px!important;
+    left:0!important;
+    right:0!important;
+    z-index:75!important;
+    padding:14px max(16px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
+    box-shadow:0 26px 70px rgba(0,0,0,.28)!important;
+  }
+  .native-functional-shell .mobile-nav button{
+    min-height:52px!important;
+    padding:0 4px!important;
+    text-align:left!important;
+    font-size:16px!important;
+    border-bottom:1px solid rgba(255,255,255,.1)!important;
+  }
+
+  .native-functional-shell .native-calculator{
+    padding-left:16px!important;
+    padding-right:16px!important;
+    gap:34px!important;
+  }
+
+  .native-functional-shell .calculator-intro{
+    position:static!important;
+    top:auto!important;
+  }
+
+  .native-functional-shell .calculator-card{
+    overflow:visible!important;
+    border-radius:16px!important;
+  }
+
+  .native-functional-shell .calc-tabs{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+    overflow:visible!important;
+  }
+  .native-functional-shell .calc-tabs button{
+    min-width:0!important;
+    padding:11px 7px!important;
+    gap:6px!important;
+    font-size:11px!important;
+    justify-content:center!important;
+  }
+  .native-functional-shell .calc-tabs button svg{width:16px;height:16px}
+
+  .native-functional-shell .calc-fields{
+    padding-bottom:4px!important;
+  }
+
+  .native-functional-shell .mover-selector{
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  .native-functional-shell .mover-selector button{
+    padding:12px 10px!important;
+  }
+
+  .native-functional-shell .switch-grid{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  .native-functional-shell .switch-grid button{
+    justify-content:flex-start!important;
+    padding-inline:14px!important;
+  }
+
+  .native-functional-shell .estimate-box{
+    position:sticky!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    z-index:20!important;
+    margin:8px 8px 8px!important;
+    border-radius:14px!important;
+    box-shadow:0 18px 56px rgba(0,0,0,.34)!important;
+  }
+  .native-functional-shell .estimate-box>div:first-child strong{
+    font-size:clamp(36px,11vw,52px)!important;
+  }
+  .native-functional-shell .estimate-box button{
+    width:100%!important;
+    min-height:50px!important;
+    justify-content:space-between!important;
+  }
+
+  .native-functional-shell .native-plan-host{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+  .native-functional-shell .mb-move-plan{
+    border-radius:16px!important;
+  }
+  .native-functional-shell .mb-plan-grid{
+    gap:26px!important;
+  }
+  .native-functional-shell .mb-plan-price{
+    border-radius:12px!important;
+  }
+
+  .native-functional-shell .booking-section{
+    padding-left:16px!important;
+    padding-right:16px!important;
+    gap:34px!important;
+  }
+  .native-functional-shell .booking-form{
+    border-radius:16px!important;
+    padding:18px!important;
+  }
+  .native-functional-shell .form-row{
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+  }
+  .native-functional-shell .booking-form input,
+  .native-functional-shell .booking-form select{
+    min-height:50px!important;
+  }
+  .native-functional-shell .booking-form textarea{
+    min-height:108px!important;
+  }
+  .native-functional-shell .upload-field{
+    min-height:92px!important;
+    padding:16px!important;
+  }
+  .native-functional-shell .submit-button{
+    min-height:54px!important;
+    width:100%!important;
+    justify-content:space-between!important;
+  }
+
+  .native-functional-shell .faq-section,
+  .native-functional-shell .contact-section{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+
+  .native-functional-shell .contact-actions{
+    grid-template-columns:1fr!important;
+  }
+  .native-functional-shell .contact-actions a{
+    min-height:50px!important;
+  }
+
+  .native-functional-shell .native-whatsapp{
+    right:max(12px,env(safe-area-inset-right))!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+  }
+}
+
+@media (max-width:560px){
+  .v11-shell{width:min(100% - 28px,1540px)!important}
+
+  .native-functional-shell .quote-button{
+    width:42px!important;
+    overflow:hidden!important;
+    padding:0!important;
+    justify-content:center!important;
+    gap:0!important;
+    color:transparent!important;
+  }
+  .native-functional-shell .quote-button svg{
+    color:var(--v11-ink)!important;
+    flex:none!important;
+  }
+
+  .native-functional-shell .language-wrap{margin-left:auto}
+
+  .native-functional-shell .calc-tabs button{
+    flex-direction:column!important;
+    min-height:58px!important;
+  }
+
+  .native-functional-shell .estimate-box{
+    grid-template-columns:1fr!important;
+    gap:13px!important;
+  }
+  .native-functional-shell .estimate-box>div:nth-child(2){
+    display:flex!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    align-items:center!important;
+  }
+  .native-functional-shell .estimate-box>div:nth-child(2) strong{
+    font-size:16px!important;
+  }
+
+  .native-functional-shell .mb-plan-chips{
+    gap:7px!important;
+  }
+  .native-functional-shell .mb-plan-chips span{
+    font-size:11px!important;
+  }
+
+  .native-functional-shell footer{
+    padding-left:18px!important;
+    padding-right:18px!important;
+  }
+
+  .native-functional-shell .native-whatsapp span{display:none!important}
+  .native-functional-shell .native-whatsapp{
+    width:52px!important;
+    height:52px!important;
+    padding:0!important;
+    justify-content:center!important;
+    border-radius:50%!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .native-functional-shell *,
+  .native-functional-shell *::before,
+  .native-functional-shell *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+  }
+}
