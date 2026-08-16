@@ -1,4 +1,5 @@
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const allowedServices = new Set(["moving", "transport", "cleaning", "windows", "assembly", "junk"]);
 const maxFileSize = 8 * 1024 * 1024;
 
 function field(data: FormData, name: string, max = 300) {
@@ -111,6 +112,7 @@ export async function POST(request: Request) {
   if (!payload.service || !payload.name || !payload.phone || !payload.email || !payload.pickup || !payload.destination || !payload.date || !payload.time) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
+  if (!allowedServices.has(payload.service)) return Response.json({ error: "Invalid service" }, { status: 400 });
   if (!/^\S+@\S+\.\S+$/.test(payload.email)) return Response.json({ error: "Invalid email" }, { status: 400 });
 
   const files = data.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
@@ -118,9 +120,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid upload" }, { status: 400 });
   }
 
-  const id = `MB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-  const accessKey = crypto.randomUUID().replaceAll("-", "");
-  const accessTokenHash = await hashAccessKey(accessKey);
   const db = env.DB;
   await db.prepare(`CREATE TABLE IF NOT EXISTS bookings (
     id TEXT PRIMARY KEY, service TEXT NOT NULL, customer_name TEXT NOT NULL,
@@ -131,6 +130,20 @@ export async function POST(request: Request) {
     notification_status TEXT NOT NULL DEFAULT 'queued',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`).run();
+
+  const recent = await db.prepare(
+    "SELECT COUNT(*) AS count FROM bookings WHERE created_at >= datetime('now', '-10 minutes') AND (lower(email) = lower(?) OR phone = ?)"
+  ).bind(payload.email, payload.phone).first<{ count: number }>();
+  if ((recent?.count ?? 0) >= 3) {
+    return Response.json(
+      { error: "Too many booking attempts" },
+      { status: 429, headers: { "Retry-After": "600", "Cache-Control": "no-store" } },
+    );
+  }
+
+  const id = `MB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  const accessKey = crypto.randomUUID().replaceAll("-", "");
+  const accessTokenHash = await hashAccessKey(accessKey);
   await db.prepare("INSERT INTO bookings (id, service, customer_name, phone, email, pickup, destination, preferred_date, preferred_time, notes, photo_count, access_token_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
     .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, files.length, accessTokenHash).run();
 
