@@ -1,5 +1,7 @@
 import {
   sendBookingCreatedNotification,
+  sendCustomerBookingConfirmation,
+  type BookingLocale,
   type BookingNotificationPayload,
   type NotificationEnv,
 } from "./notifications";
@@ -14,6 +16,16 @@ function field(data: FormData, name: string, max = 300) {
 
 function safeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-100) || "photo.jpg";
+}
+
+function requestLocale(request: Request): BookingLocale {
+  try {
+    const referer = request.headers.get("referer");
+    const lang = referer ? new URL(referer).searchParams.get("lang") : null;
+    return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
+  } catch {
+    return "fi";
+  }
 }
 
 async function hashAccessKey(value: string) {
@@ -56,6 +68,9 @@ export async function POST(request: Request) {
   }
   if (!allowedServices.has(payload.service)) return Response.json({ error: "Invalid service" }, { status: 400 });
   if (!/^\S+@\S+\.\S+$/.test(payload.email)) return Response.json({ error: "Invalid email" }, { status: 400 });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date) || !/^\d{2}:\d{2}$/.test(payload.time)) {
+    return Response.json({ error: "Invalid schedule" }, { status: 400 });
+  }
 
   const files = data.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
   if (files.length > 5 || files.some(file => file.size > maxFileSize || !allowedTypes.has(file.type))) {
@@ -95,16 +110,18 @@ export async function POST(request: Request) {
     { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
   )));
 
-  const notificationStatus = await sendBookingCreatedNotification(
-    env as typeof env & NotificationEnv,
-    id,
-    payload,
-    files.length,
-  );
-  await db.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?").bind(notificationStatus, id).run();
+  const trackingPath = `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}`;
+  const trackingUrl = new URL(trackingPath, request.url).toString();
+  const notificationEnv = env as typeof env & NotificationEnv;
+  const [adminStatus, customerStatus] = await Promise.all([
+    sendBookingCreatedNotification(notificationEnv, id, payload, files.length),
+    sendCustomerBookingConfirmation(notificationEnv, id, payload, requestLocale(request), trackingUrl),
+  ]);
+  await db.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
+    .bind(`admin_${adminStatus}_customer_${customerStatus}`, id).run();
 
   return Response.json(
-    { ok: true, bookingId: id, accessKey, trackingPath: `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}` },
+    { ok: true, bookingId: id, accessKey, trackingPath },
     { status: 201, headers: { "Cache-Control": "no-store" } },
   );
 }
