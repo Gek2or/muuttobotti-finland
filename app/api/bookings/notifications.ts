@@ -16,6 +16,84 @@ export type BookingNotificationPayload = {
   notes: string;
 };
 
+export type BookingLocale = "fi" | "en" | "uk" | "ru";
+
+const customerCopy = {
+  fi: {
+    subject: "Muuttobotti vastaanotti varauspyyntösi",
+    hello: "Hei",
+    received: "Olemme vastaanottaneet varauspyyntösi.",
+    pending: "Vahvistamme lopullisen hinnan ja ajankohdan ennen työn suorittamista.",
+    booking: "Varausnumero",
+    service: "Palvelu",
+    address: "Osoite",
+    pickup: "Nouto",
+    destination: "Kohde",
+    schedule: "Ajankohta",
+    plan: "Arvio / suunnitelma",
+    track: "Yksityinen seurantalinkki",
+    private: "Säilytä linkki yksityisenä. Sen kautta voit seurata, muuttaa tai perua varaustasi.",
+    help: "Tarvitsetko apua? Soita 045 787 67567 tai vastaa tähän viestiin.",
+  },
+  en: {
+    subject: "Muuttobotti received your booking request",
+    hello: "Hello",
+    received: "We have received your booking request.",
+    pending: "We will confirm the final price and time before the job.",
+    booking: "Booking number",
+    service: "Service",
+    address: "Address",
+    pickup: "Pickup",
+    destination: "Destination",
+    schedule: "Schedule",
+    plan: "Estimate / plan",
+    track: "Private tracking link",
+    private: "Keep this link private. You can use it to track, change or cancel your booking.",
+    help: "Need help? Call 045 787 67567 or reply to this email.",
+  },
+  uk: {
+    subject: "Muuttobotti отримав вашу заявку",
+    hello: "Вітаємо",
+    received: "Ми отримали вашу заявку на бронювання.",
+    pending: "Остаточну ціну та час ми підтвердимо до виконання роботи.",
+    booking: "Номер бронювання",
+    service: "Послуга",
+    address: "Адреса",
+    pickup: "Завантаження",
+    destination: "Доставка",
+    schedule: "Дата й час",
+    plan: "Оцінка / план",
+    track: "Приватне посилання для відстеження",
+    private: "Зберігайте це посилання приватним. Через нього можна відстежити, змінити або скасувати бронювання.",
+    help: "Потрібна допомога? Телефонуйте 045 787 67567 або відповідайте на цей лист.",
+  },
+  ru: {
+    subject: "Muuttobotti получил вашу заявку",
+    hello: "Здравствуйте",
+    received: "Мы получили вашу заявку на бронирование.",
+    pending: "Финальную цену и время мы подтвердим до выполнения работы.",
+    booking: "Номер бронирования",
+    service: "Услуга",
+    address: "Адрес",
+    pickup: "Загрузка",
+    destination: "Доставка",
+    schedule: "Дата и время",
+    plan: "Расчёт / план",
+    track: "Приватная ссылка для отслеживания",
+    private: "Храните эту ссылку в приватном доступе. Через неё можно отслеживать, изменять или отменять бронирование.",
+    help: "Нужна помощь? Позвоните 045 787 67567 или ответьте на это письмо.",
+  },
+} as const;
+
+const serviceNames: Record<string, Record<BookingLocale, string>> = {
+  moving: { fi: "Muutto", en: "Moving", uk: "Переїзд", ru: "Переезд" },
+  transport: { fi: "Kuljetus", en: "Transport", uk: "Перевезення", ru: "Перевозка" },
+  cleaning: { fi: "Siivous", en: "Cleaning", uk: "Прибирання", ru: "Уборка" },
+  windows: { fi: "Ikkunanpesu", en: "Window cleaning", uk: "Миття вікон", ru: "Мойка окон" },
+  assembly: { fi: "Kalusteasennus", en: "Furniture assembly", uk: "Складання меблів", ru: "Сборка мебели" },
+  junk: { fi: "Poisvienti", en: "Junk removal", uk: "Вивіз речей", ru: "Вывоз вещей" },
+};
+
 async function fingerprint(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 24);
@@ -32,11 +110,12 @@ async function sendNotification(
   subject: string,
   text: string,
   idempotencyKey: string,
+  recipient?: string,
 ) {
   const apiKey = env.RESEND_API_KEY?.trim();
   if (!apiKey) return "skipped" as const;
 
-  const to = env.BOOKING_NOTIFY_TO?.trim() || "autochemixfin@gmail.com";
+  const to = recipient?.trim() || env.BOOKING_NOTIFY_TO?.trim() || "autochemixfin@gmail.com";
   const from = env.BOOKING_NOTIFY_FROM?.trim() || "Muuttobotti <onboarding@resend.dev>";
 
   try {
@@ -48,7 +127,7 @@ async function sendNotification(
         "User-Agent": "muuttobotti-finland/1.0",
         "Idempotency-Key": idempotencyKey,
       },
-      body: JSON.stringify({ from, to: [to], subject, text }),
+      body: JSON.stringify({ from, to: [to], subject, text, reply_to: "autochemixfin@gmail.com" }),
     });
     return response.ok ? "sent" as const : "failed" as const;
   } catch {
@@ -83,6 +162,49 @@ export async function sendBookingCreatedNotification(
     `New Muuttobotti booking ${id} · ${payload.name}`,
     text,
     `booking-created-${id}`,
+  );
+}
+
+export async function sendCustomerBookingConfirmation(
+  env: NotificationEnv,
+  id: string,
+  payload: BookingNotificationPayload,
+  locale: BookingLocale,
+  trackingUrl: string,
+) {
+  const c = customerCopy[locale];
+  const locations = payload.pickup === payload.destination
+    ? [`${c.address}: ${payload.pickup}`]
+    : [`${c.pickup}: ${payload.pickup}`, `${c.destination}: ${payload.destination}`];
+  const text = [
+    `${c.hello}, ${payload.name}!`,
+    "",
+    c.received,
+    c.pending,
+    "",
+    `${c.booking}: ${id}`,
+    `${c.service}: ${serviceNames[payload.service]?.[locale] ?? payload.service}`,
+    ...locations,
+    `${c.schedule}: ${payload.date} ${payload.time}`,
+    "",
+    `${c.plan}:`,
+    payload.notes || "—",
+    "",
+    `${c.track}:`,
+    trackingUrl,
+    c.private,
+    "",
+    c.help,
+    "",
+    "Muuttobotti / Autochemix Oy",
+  ].join("\n");
+
+  return sendNotification(
+    env,
+    `${c.subject} · ${id}`,
+    text,
+    `booking-customer-${id}`,
+    payload.email,
   );
 }
 
