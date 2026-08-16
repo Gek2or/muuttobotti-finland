@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import CinematicConversionLayer from "./CinematicConversionLayer";
-import V7StoryLayer from "./V7StoryLayer";
+import V8StoryLayer from "./V8StoryLayer";
 import "./globals.css";
 import "./overrides.css";
 import "./premium-experiment.css";
 import "./generated-visuals.css";
 import "./cinematic-motion.css";
-import "./v7-story.css";
+import "./v8-professional.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
@@ -28,5 +28,5 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const schema = { "@context": "https://schema.org", "@type": "MovingCompany", name: "Muuttobotti", legalName: "Autochemix Oy", taxID: "3543357-8", url: "https://muuttobotti.fi", areaServed: ["Helsinki", "Espoo", "Vantaa", "Tuusula", "Finland"], priceRange: "€€", telephone: "+3584578767567", email: "autochemixfin@gmail.com", employee: { "@type": "Person", name: "Stanislav Kosytskyy", jobTitle: "Toimitusjohtaja" }, address: { "@type": "PostalAddress", addressCountry: "FI" }, sameAs: [] };
-  return <html lang="fi"><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><script src="/generated/generated-visuals.js" defer /><script src="/v7-motion.js" defer /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />{children}<V7StoryLayer /><CinematicConversionLayer /></body></html>;
+  return <html lang="fi"><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><script src="/generated/generated-visuals.js" defer /><script src="/v8-motion.js" defer /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />{children}<V8StoryLayer /><CinematicConversionLayer /></body></html>;
 }
