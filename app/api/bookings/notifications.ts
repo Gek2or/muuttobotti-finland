@@ -21,6 +21,12 @@ async function fingerprint(value: string) {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("").slice(0, 24);
 }
 
+function locationLines(payload: BookingNotificationPayload) {
+  return payload.pickup === payload.destination
+    ? [`Address: ${payload.pickup}`]
+    : [`Pickup: ${payload.pickup}`, `Destination: ${payload.destination}`];
+}
+
 async function sendNotification(
   env: NotificationEnv,
   subject: string,
@@ -63,8 +69,7 @@ export async function sendBookingCreatedNotification(
     `Customer: ${payload.name}`,
     `Phone: ${payload.phone}`,
     `Email: ${payload.email}`,
-    `Pickup: ${payload.pickup}`,
-    `Destination: ${payload.destination}`,
+    ...locationLines(payload),
     `Date: ${payload.date}`,
     `Time: ${payload.time}`,
     `Photos: ${photoCount}`,
@@ -95,8 +100,7 @@ export async function sendBookingStatusNotification(
     `Phone: ${payload.phone}`,
     `Email: ${payload.email}`,
     `Service: ${payload.service}`,
-    `Pickup: ${payload.pickup}`,
-    `Destination: ${payload.destination}`,
+    ...locationLines(payload),
     `Date: ${payload.date}`,
     `Time: ${payload.time}`,
     "",
