@@ -15,7 +15,7 @@ type Plan = {
 
 const initialPlan: Plan = {
   title: "Your move plan is ready",
-  subtitle: "Muuttobotti AI has prepared your estimate.",
+  subtitle: "Muuttobotti Smart Estimate prepared your estimate.",
   mode: "Moving",
   price: "— €",
   hours: "— h",
@@ -24,16 +24,10 @@ const initialPlan: Plan = {
 };
 
 function copyFor(firstTab: string) {
-  if (firstTab.includes("Переїзд")) return { title: "Ваш план переїзду готовий", subtitle: "Muuttobotti AI підготував вашу оцінку.", note: "Остаточну ціну підтвердимо до бронювання.", movers: "вантажники" };
-  if (firstTab.includes("Переезд")) return { title: "Ваш план переезда готов", subtitle: "Muuttobotti AI подготовил ваш расчёт.", note: "Финальная цена подтверждается до бронирования.", movers: "грузчика" };
-  if (firstTab.includes("Muutto")) return { title: "Muuttosuunnitelmasi on valmis", subtitle: "Muuttobotti AI kokosi arviosi.", note: "Lopullinen hinta vahvistetaan ennen varausta.", movers: "muuttajaa" };
-  return { title: "Your move plan is ready", subtitle: "Muuttobotti AI has prepared your estimate.", note: "Final price is confirmed before the booking.", movers: "movers" };
-}
-
-function progressFor(el: Element) {
-  const rect = el.getBoundingClientRect();
-  const viewport = window.innerHeight || 1;
-  return Math.max(0, Math.min(1, (viewport - rect.top) / (viewport + rect.height)));
+  if (firstTab.includes("Переїзд")) return { title: "Ваш план переїзду готовий", subtitle: "Muuttobotti Smart Estimate підготував вашу оцінку.", note: "Остаточну ціну підтвердимо до бронювання.", movers: "вантажники" };
+  if (firstTab.includes("Переезд")) return { title: "Ваш план переезда готов", subtitle: "Muuttobotti Smart Estimate подготовил ваш расчёт.", note: "Финальная цена подтверждается до бронирования.", movers: "грузчика" };
+  if (firstTab.includes("Muutto")) return { title: "Muuttosuunnitelmasi on valmis", subtitle: "Muuttobotti Smart Estimate kokosi arviosi.", note: "Lopullinen hinta vahvistetaan ennen varausta.", movers: "muuttajaa" };
+  return { title: "Your move plan is ready", subtitle: "Muuttobotti Smart Estimate prepared your estimate.", note: "Final price is confirmed before the booking.", movers: "movers" };
 }
 
 export default function CinematicConversionLayer() {
@@ -101,47 +95,12 @@ export default function CinematicConversionLayer() {
     };
     form.addEventListener("formdata", onFormData);
 
-    const motionSections = [
-      document.querySelector<HTMLElement>(".hero"),
-      document.querySelector<HTMLElement>(".services-section"),
-      document.querySelector<HTMLElement>(".calculator-section"),
-      document.querySelector<HTMLElement>(".process-section"),
-      document.querySelector<HTMLElement>(".reviews-section"),
-      booking,
-    ].filter((value): value is HTMLElement => Boolean(value));
-
-    let ticking = false;
-    const draw = () => {
-      ticking = false;
-      motionSections.forEach((section, index) => {
-        const p = progressFor(section);
-        const centered = p - 0.5;
-        section.style.setProperty("--mb-motion-y", `${(-centered * (34 + index * 4)).toFixed(1)}px`);
-        section.style.setProperty("--mb-motion-x", `${(centered * (index % 2 ? 42 : -34)).toFixed(1)}px`);
-        section.style.setProperty("--mb-motion-scale", `${(1.055 - Math.abs(centered) * 0.055).toFixed(3)}`);
-        section.style.setProperty("--mb-motion-rotate", `${(centered * (index % 2 ? 2.1 : -1.6)).toFixed(2)}deg`);
-        section.style.setProperty("--mb-motion-opacity", `${Math.max(0.45, 1 - Math.abs(centered) * 0.55).toFixed(3)}`);
-        section.style.setProperty("--mb-motion-clip", `${Math.max(0, 10 - p * 18).toFixed(2)}%`);
-      });
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        window.requestAnimationFrame(draw);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", draw);
-    draw();
-
     return () => {
       calculator.removeEventListener("input", scheduleRead);
       calculator.removeEventListener("change", scheduleRead);
       calculator.removeEventListener("click", scheduleRead);
       observer.disconnect();
       form.removeEventListener("formdata", onFormData);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", draw);
       host?.remove();
     };
   }, []);
@@ -151,7 +110,7 @@ export default function CinematicConversionLayer() {
 
   return createPortal(
     <section className="mb-move-plan" aria-live="polite">
-      <div className="mb-plan-eyebrow"><span /> MUUTTOBOTTI AI · PLAN READY</div>
+      <div className="mb-plan-eyebrow"><span /> MUUTTOBOTTI / SMART ESTIMATE / PLAN READY</div>
       <div className="mb-plan-grid">
         <div>
           <h3>{plan.title}</h3>
