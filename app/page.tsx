@@ -1,7 +1,7 @@
 import MuuttobottiApp from "./MuuttobottiApp";
 import V11NativeExperience from "./V11NativeExperience";
 import PricingGuard from "./PricingGuard";
-import CinematicConversionLayer from "./CinematicConversionLayer";
+import MovePlanBridge from "./MovePlanBridge";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <V11NativeExperience />
       <MuuttobottiApp />
       <PricingGuard />
-      <CinematicConversionLayer />
+      <MovePlanBridge />
     </>
   );
 }
