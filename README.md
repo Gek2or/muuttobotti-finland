@@ -4,6 +4,24 @@ A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.
 
+## Muuttobotti production notes
+
+The public homepage is implemented natively in React/Next.js with Framer Motion.
+Bookings are stored in D1, optional customer photos are stored in the configured
+R2 bucket, and a private tracking link is returned after a successful request.
+
+Booking email notifications are optional and fail-safe: the booking is persisted
+before notification delivery is attempted. Configure these runtime secrets/vars
+in the hosting environment:
+
+- `RESEND_API_KEY` — required to enable email notifications.
+- `BOOKING_NOTIFY_TO` — optional recipient; defaults to `autochemixfin@gmail.com`.
+- `BOOKING_NOTIFY_FROM` — optional sender; defaults to `Muuttobotti <onboarding@resend.dev>` for initial testing. For production, set this to an address on a verified sending domain, for example `Muuttobotti <bookings@muuttobotti.fi>`.
+
+Do not commit API keys to the repository. When `RESEND_API_KEY` is absent, the
+booking still succeeds and `notification_status` is stored as `skipped`. Delivery
+attempts are recorded as `sent` or `failed`.
+
 ## Prerequisites
 
 - Node.js `>=22.13.0`
@@ -38,7 +56,7 @@ OpenAI workspace sites can read the current user's email from
 SIWC-authenticated workspace sites may also receive
 `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
 `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+`oai-authenticated-user-full-name-encoding: percent-encoded-utf8`.
 
 Treat the full name as optional and fall back to email when it is absent:
 
