@@ -1,0 +1,18 @@
+/* Credibility pass: hide legacy claims/features until backed by real data or implementation. */
+.theme-button,
+.footer-rating,
+.booking-benefits,
+.contact-copy .hours,
+.ai-float,
+.ai-chat{
+  display:none!important;
+}
+
+/* Keep the remaining finish deliberately quiet. */
+.whatsapp-float{right:22px!important;bottom:22px!important}
+.footer-brand p{color:#82928c!important}
+.form-error{color:#a8382a!important}
+
+@media(max-width:640px){
+  .whatsapp-float{right:14px!important;bottom:14px!important}
+}
