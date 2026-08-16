@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import CinematicConversionLayer from "./CinematicConversionLayer";
-import V10NativeExperience from "./V10NativeExperience";
 import "./globals.css";
 import "./overrides.css";
 import "./v10-native.css";
@@ -30,9 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <script src="/generated/generated-visuals.js" defer />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-        <V10NativeExperience />
         {children}
-        <CinematicConversionLayer />
       </body>
     </html>
   );
