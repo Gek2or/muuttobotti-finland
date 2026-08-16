@@ -28,6 +28,17 @@ function requestLocale(request: Request): BookingLocale {
   }
 }
 
+function helsinkiToday() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Helsinki",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+
 async function hashAccessKey(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
@@ -70,6 +81,9 @@ export async function POST(request: Request) {
   if (!/^\S+@\S+\.\S+$/.test(payload.email)) return Response.json({ error: "Invalid email" }, { status: 400 });
   if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date) || !/^\d{2}:\d{2}$/.test(payload.time)) {
     return Response.json({ error: "Invalid schedule" }, { status: 400 });
+  }
+  if (payload.date < helsinkiToday()) {
+    return Response.json({ error: "Booking date is in the past" }, { status: 400 });
   }
 
   const files = data.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
