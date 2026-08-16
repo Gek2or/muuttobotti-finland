@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: { default: "Muuttobotti | Muutot, kuljetukset ja siivous", template: "%s | Muuttobotti" },
   description: "Luotettava muutto-, kuljetus- ja siivouspalvelu Uudellamaalla ja sopimuksesta koko Suomessa. Selkeä hinta-arvio ja helppo verkkovaraus.",
   keywords: ["muuttopalvelu", "muutto Helsinki", "kuljetuspalvelu", "siivouspalvelu", "ikkunanpesu", "Muuttobotti"],
-  alternates: { canonical: "/", languages: { "fi-FI": "/", "en-FI": "/?lang=en", "uk-FI": "/?lang=uk", "ru-FI": "/?lang=ru" } },
+  alternates: { canonical: "/" },
   openGraph: { title: "Muuttobotti — muutto ilman turhaa säätöä", description: "Muutot, kuljetukset ja siivous yhdellä varauspyynnöllä.", locale: "fi_FI", type: "website" },
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
