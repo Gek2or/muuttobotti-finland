@@ -26,6 +26,17 @@ function text(value: unknown, max = 300) {
   return String(value ?? "").trim().slice(0, max);
 }
 
+function helsinkiToday() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Helsinki",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+
 async function hashAccessKey(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
@@ -115,6 +126,9 @@ export async function PATCH(request: Request) {
     const notes = text(body.notes, 2000);
     if (!pickup || !destination || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
       return Response.json({ error: "Invalid booking details" }, { status: 400 });
+    }
+    if (date < helsinkiToday()) {
+      return Response.json({ error: "Booking date is in the past" }, { status: 400 });
     }
     await env.DB.prepare(`UPDATE bookings SET pickup = ?, destination = ?, preferred_date = ?,
       preferred_time = ?, notes = ?, status = 'change_requested' WHERE id = ?`)
