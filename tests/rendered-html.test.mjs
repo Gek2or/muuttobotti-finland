@@ -29,14 +29,18 @@ async function requestPath(path) {
   );
 }
 
-test("renders development preview metadata with baseline security headers", async () => {
+test("renders production metadata and baseline security headers", async () => {
   const response = await requestPath("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.match(response.headers.get("permissions-policy") ?? "", /camera=\(\)/i);
   assert.equal(response.headers.get("x-powered-by"), null);
-  assert.match(await response.text(), developmentPreviewMeta);
+
+  const html = await response.text();
+  assert.match(html, developmentPreviewMeta);
+  assert.match(html, /<meta(?=[^>]*\bproperty=["']og:image["'])(?=[^>]*muuttobotti-hero\.png)[^>]*>/i);
+  assert.match(html, /<meta(?=[^>]*\bname=["']twitter:card["'])(?=[^>]*summary_large_image)[^>]*>/i);
 });
 
 test("keeps private tracking out of search indexes and referrers", async () => {
