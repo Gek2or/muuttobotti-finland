@@ -4,6 +4,7 @@ import {
   type BookingNotificationPayload,
   type NotificationEnv,
 } from "../notifications";
+import { bookingScheduleIsPast, validBookingDate, validBookingTime } from "../schedule";
 
 type BookingRow = {
   id: string;
@@ -30,17 +31,6 @@ function text(value: unknown, max = 300) {
 
 function singleLine(value: unknown, max = 300) {
   return text(value, max).replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function helsinkiToday() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Helsinki",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
 }
 
 async function hashAccessKey(value: string) {
@@ -140,11 +130,11 @@ export async function PATCH(request: Request) {
     const date = singleLine(body.date, 20);
     const time = singleLine(body.time, 20);
     const customerNotes = text(body.notes, 1600);
-    if (!pickup || !destination || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+    if (!pickup || !destination || !validBookingDate(date) || !validBookingTime(time)) {
       return Response.json({ error: "Invalid booking details" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     }
-    if (date < helsinkiToday()) {
-      return Response.json({ error: "Booking date is in the past" }, { status: 400, headers: { "Cache-Control": "no-store" } });
+    if (bookingScheduleIsPast(date, time)) {
+      return Response.json({ error: "Booking schedule is in the past" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     }
 
     const originalNotes = unpackBookingNotes(booking.notes);
