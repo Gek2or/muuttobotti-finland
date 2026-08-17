@@ -72,7 +72,7 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 - `.openai/hosting.json` declares optional Sites D1 and R2 bindings
 - `vite.config.ts` simulates declared bindings for local development
 - `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` describes the application D1 schema
+- `db/schema.ts` and `drizzle/` describe the tracked application D1 schema/migrations
 - `drizzle.config.ts` supports local migration generation when needed
 
 ## Workspace Auth Headers
