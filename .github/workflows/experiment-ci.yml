@@ -27,3 +27,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Rendered production checks
+        run: node --test tests/rendered-html.test.mjs
