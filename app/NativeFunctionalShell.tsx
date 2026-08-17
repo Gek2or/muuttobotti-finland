@@ -12,6 +12,7 @@ type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
 type PropertyType = "apartment" | "house" | "office";
 type ServiceValue = "moving" | "transport" | "cleaning" | "windows" | "assembly" | "junk";
+type BookingErrorCode = "" | "error" | "tooMany" | "uploadError" | "pastDate" | "tooLarge" | "unavailable";
 
 const flags: Record<Locale, string> = { fi: "FI", en: "EN", uk: "UA", ru: "RU" };
 const serviceValues: ServiceValue[] = ["moving", "transport", "cleaning", "windows", "assembly", "junk"];
@@ -38,7 +39,7 @@ const copy = {
     ],
     contactK: "UUSIMAA · FINLAND", contactTitle: "Yksi yhteyshenkilö koko muutolle.", contactBody: "Kysyttävää ennen varausta? Soita, lähetä sähköposti tai WhatsApp-viesti.",
     success: "Varaus vastaanotettu.", successBody: "Tallennathan varausnumeron ja seurantalinkin.", bookingNumber: "Varausnumero", openTracking: "Avaa seuranta", close: "Sulje",
-    error: "Varausta ei voitu lähettää. Ota yhteyttä puhelimitse tai WhatsAppilla.",
+    error: "Varausta ei voitu lähettää. Tarkista tiedot tai ota yhteyttä meihin.", tooMany: "Olet lähettänyt useita pyyntöjä lyhyessä ajassa. Odota noin 10 minuuttia ja yritä uudelleen.", uploadError: "Kuvien lähetys epäonnistui. Tarkista, että kuvia on enintään 5 ja jokainen on alle 8 MB.", pastDate: "Valitse tämä päivä tai tuleva päivä.", tooLarge: "Lähetys on liian suuri. Poista osa kuvista ja yritä uudelleen.", unavailable: "Palvelu on hetkellisesti poissa käytöstä. Yritä uudelleen tai soita meille.",
   },
   en: {
     nav: ["Services", "Estimate", "Process", "Contact"], quote: "Calculate price",
@@ -61,7 +62,7 @@ const copy = {
     ],
     contactK: "UUSIMAA · FINLAND", contactTitle: "One point of contact for the whole move.", contactBody: "Questions before booking? Call, email or send a WhatsApp message.",
     success: "Booking received.", successBody: "Save your booking number and private tracking link.", bookingNumber: "Booking number", openTracking: "Open tracking", close: "Close",
-    error: "We could not send the booking. Please call or WhatsApp us.",
+    error: "We could not send the booking. Check the details or contact us.", tooMany: "Several requests were sent in a short time. Wait about 10 minutes and try again.", uploadError: "Photo upload failed. Check that there are no more than 5 images and each is under 8 MB.", pastDate: "Choose today or a future date.", tooLarge: "The request is too large. Remove some photos and try again.", unavailable: "The service is temporarily unavailable. Try again or call us.",
   },
   uk: {
     nav: ["Послуги", "Розрахунок", "Процес", "Контакти"], quote: "Розрахувати ціну",
@@ -84,7 +85,7 @@ const copy = {
     ],
     contactK: "UUSIMAA · FINLAND", contactTitle: "Один контакт на весь переїзд.", contactBody: "Є питання до бронювання? Телефонуйте, пишіть на email або у WhatsApp.",
     success: "Бронювання отримано.", successBody: "Збережіть номер бронювання та приватне посилання для відстеження.", bookingNumber: "Номер бронювання", openTracking: "Відкрити відстеження", close: "Закрити",
-    error: "Не вдалося надіслати заявку. Зателефонуйте або напишіть у WhatsApp.",
+    error: "Не вдалося надіслати заявку. Перевірте дані або зв’яжіться з нами.", tooMany: "За короткий час надіслано кілька заявок. Зачекайте приблизно 10 хвилин і спробуйте знову.", uploadError: "Не вдалося завантажити фото. Перевірте, що їх не більше 5 і кожне менше 8 MB.", pastDate: "Оберіть сьогоднішню або майбутню дату.", tooLarge: "Заявка завелика. Видаліть частину фото і спробуйте знову.", unavailable: "Сервіс тимчасово недоступний. Спробуйте ще раз або зателефонуйте нам.",
   },
   ru: {
     nav: ["Услуги", "Расчёт", "Процесс", "Контакты"], quote: "Рассчитать цену",
@@ -107,9 +108,18 @@ const copy = {
     ],
     contactK: "UUSIMAA · FINLAND", contactTitle: "Один контакт на весь переезд.", contactBody: "Есть вопросы до бронирования? Позвоните, напишите на email или в WhatsApp.",
     success: "Бронирование получено.", successBody: "Сохраните номер бронирования и приватную ссылку для отслеживания.", bookingNumber: "Номер бронирования", openTracking: "Открыть отслеживание", close: "Закрыть",
-    error: "Не удалось отправить заявку. Позвоните или напишите в WhatsApp.",
+    error: "Не удалось отправить заявку. Проверьте данные или свяжитесь с нами.", tooMany: "За короткое время отправлено несколько заявок. Подождите около 10 минут и попробуйте снова.", uploadError: "Не удалось загрузить фото. Проверьте, что их не больше 5 и каждое меньше 8 MB.", pastDate: "Выберите сегодняшнюю или будущую дату.", tooLarge: "Заявка слишком большая. Удалите часть фото и попробуйте снова.", unavailable: "Сервис временно недоступен. Попробуйте ещё раз или позвоните нам.",
   },
 } as const;
+
+function bookingErrorForResponse(status: number, serverError: string): BookingErrorCode {
+  if (status === 429) return "tooMany";
+  if (status === 413) return "tooLarge";
+  if (serverError === "Booking date is in the past") return "pastDate";
+  if (serverError === "Invalid upload" || serverError === "Photo upload failed") return "uploadError";
+  if (status >= 500) return "unavailable";
+  return "error";
+}
 
 export default function NativeFunctionalShell() {
   const [locale, setLocale] = useState<Locale>("fi");
@@ -131,8 +141,10 @@ export default function NativeFunctionalShell() {
   const [express, setExpress] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [bookingErrorCode, setBookingErrorCode] = useState<BookingErrorCode>("");
   const [bookingResult, setBookingResult] = useState<{ bookingId: string; trackingPath: string } | null>(null);
   const c = copy[locale];
+  const bookingErrorText = bookingErrorCode ? c[bookingErrorCode] : "";
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search).get("lang");
@@ -201,6 +213,7 @@ export default function NativeFunctionalShell() {
   async function submitBooking(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBookingState("sending");
+    setBookingErrorCode("");
     try {
       const formData = new FormData(event.currentTarget);
       if (!requiresDestination) formData.set("destination", String(formData.get("pickup") ?? ""));
@@ -209,12 +222,18 @@ export default function NativeFunctionalShell() {
         formData.set("calculator_plan", "");
       }
       const response = await fetch("/api/bookings", { method: "POST", body: formData });
-      if (!response.ok) throw new Error("booking failed");
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({})) as { error?: string };
+        setBookingErrorCode(bookingErrorForResponse(response.status, body.error ?? ""));
+        setBookingState("error");
+        return;
+      }
       const result = await response.json() as { bookingId: string; trackingPath: string };
       setBookingResult(result);
       setBookingState("done");
       event.currentTarget.reset();
     } catch {
+      setBookingErrorCode("unavailable");
       setBookingState("error");
     }
   }
@@ -264,7 +283,7 @@ export default function NativeFunctionalShell() {
         <div className="booking-copy"><span className="kicker light">{c.bookingK}</span><h2>{c.bookingTitle}</h2><p>{c.bookingBody}</p></div>
         <form className="booking-form" onSubmit={submitBooking}>
           <input type="hidden" name="calculator_estimate" value={estimateMatchesBooking ? `${estimate.price} €` : ""}/><input type="hidden" name="calculator_plan" value={estimateMatchesBooking ? planText : ""}/><input type="text" name="website" className="honeypot" tabIndex={-1} autoComplete="off"/>
-          <label>{c.service}<select name="service" value={bookingService} onChange={event => setBookingService(event.target.value as ServiceValue)} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
+          <label>{c.service}<select name="service" value={bookingService} onChange={event => { setBookingService(event.target.value as ServiceValue); setBookingErrorCode(""); }} required>{c.services.map((service, index) => <option key={service} value={serviceValues[index]}>{service}</option>)}</select></label>
           <div className="form-row"><label>{c.name}<input name="name" required autoComplete="name" placeholder="Anna Korhonen"/></label><label>{c.phone}<input name="phone" required autoComplete="tel" placeholder="+358 40 123 4567"/></label></div>
           <label>{c.email}<input name="email" type="email" required autoComplete="email" placeholder="anna@example.fi"/></label>
           {requiresDestination ? <div className="form-row"><label>{c.pickup}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label><label>{c.destination}<input name="destination" required placeholder="Tapiolantie 4, Espoo"/></label></div> : <label>{c.serviceAddress}<input name="pickup" required autoComplete="street-address" placeholder="Mannerheimintie 1, Helsinki"/></label>}
@@ -272,7 +291,7 @@ export default function NativeFunctionalShell() {
           <label>{c.notes}<textarea name="notes" rows={3} placeholder="Sofa, washing machine, 20 boxes…"/></label>
           <label className="upload-field"><UploadCloud/><span>{c.photos}<small>JPG, PNG, WebP · max 5 files · 8 MB / file</small></span><input name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple/></label>
           <button className="submit-button" disabled={bookingState === "sending"}>{bookingState === "sending" ? "…" : c.send}<Send/></button>
-          {bookingState === "error" && <p className="form-error" role="alert">{c.error}</p>}
+          {bookingState === "error" && bookingErrorText && <p className="form-error" role="alert">{bookingErrorText}</p>}
         </form>
       </section>
 
