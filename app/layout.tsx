@@ -14,13 +14,31 @@ import "./v11-seo.css";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
 
+const socialTitle = "Muuttobotti — muutto ilman turhaa säätöä";
+const socialDescription = "Muutot, kuljetukset ja siivous yhdellä varauspyynnöllä.";
+const socialImage = "/muuttobotti-hero.png";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://muuttobotti.fi"),
   title: { default: "Muuttobotti | Muutot, kuljetukset ja siivous", template: "%s | Muuttobotti" },
   description: "Luotettava muutto-, kuljetus- ja siivouspalvelu Uudellamaalla ja sopimuksesta koko Suomessa. Selkeä hinta-arvio ja helppo verkkovaraus.",
   keywords: ["muuttopalvelu", "muutto Helsinki", "kuljetuspalvelu", "siivouspalvelu", "ikkunanpesu", "Muuttobotti"],
   alternates: { canonical: "/" },
-  openGraph: { title: "Muuttobotti — muutto ilman turhaa säätöä", description: "Muutot, kuljetukset ja siivous yhdellä varauspyynnöllä.", locale: "fi_FI", type: "website" },
+  openGraph: {
+    title: socialTitle,
+    description: socialDescription,
+    url: "/",
+    siteName: "Muuttobotti",
+    locale: "fi_FI",
+    type: "website",
+    images: [socialImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: socialTitle,
+    description: socialDescription,
+    images: [socialImage],
+  },
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   other: { "codex-preview": "development" },
