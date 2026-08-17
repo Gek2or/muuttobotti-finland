@@ -1,3 +1,4 @@
+import { packBookingNotes, unpackBookingNotes } from "../booking-notes";
 import {
   sendBookingStatusNotification,
   type BookingNotificationPayload,
@@ -21,9 +22,14 @@ type BookingRow = {
 };
 
 const editableStatuses = new Set(["new", "confirmed", "assigned", "change_requested"]);
+const maxRequestSize = 8 * 1024;
 
 function text(value: unknown, max = 300) {
   return String(value ?? "").trim().slice(0, max);
+}
+
+function singleLine(value: unknown, max = 300) {
+  return text(value, max).replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function helsinkiToday() {
@@ -51,6 +57,12 @@ function sameOrigin(request: Request) {
   return !origin || new URL(origin).host === new URL(request.url).host;
 }
 
+function requestAllowed(request: Request) {
+  if (!sameOrigin(request)) return false;
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  return !Number.isFinite(contentLength) || contentLength <= maxRequestSize;
+}
+
 async function findBooking(db: D1Database, id: string, key: string) {
   if (!validCredentials(id, key)) return null;
   const accessTokenHash = await hashAccessKey(key);
@@ -61,6 +73,7 @@ async function findBooking(db: D1Database, id: string, key: string) {
 }
 
 function response(booking: BookingRow) {
+  const noteParts = unpackBookingNotes(booking.notes);
   return Response.json({
     booking: {
       id: booking.id,
@@ -70,7 +83,7 @@ function response(booking: BookingRow) {
       destination: booking.destination,
       preferred_date: booking.preferred_date,
       preferred_time: booking.preferred_time,
-      notes: booking.notes,
+      notes: noteParts.customerNotes,
       photo_count: booking.photo_count,
       status: booking.status,
       created_at: booking.created_at,
@@ -79,6 +92,7 @@ function response(booking: BookingRow) {
 }
 
 function notificationPayload(booking: BookingRow): BookingNotificationPayload {
+  const noteParts = unpackBookingNotes(booking.notes);
   return {
     service: booking.service,
     name: booking.customer_name,
@@ -88,30 +102,32 @@ function notificationPayload(booking: BookingRow): BookingNotificationPayload {
     destination: booking.destination,
     date: booking.preferred_date,
     time: booking.preferred_time,
-    notes: booking.notes,
+    notes: noteParts.customerNotes,
+    estimate: noteParts.estimate,
+    plan: noteParts.plan,
   };
 }
 
 export async function POST(request: Request) {
-  if (!sameOrigin(request)) return Response.json({ error: "Invalid origin" }, { status: 403 });
+  if (!requestAllowed(request)) return Response.json({ error: "Invalid request" }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const { env } = await import("cloudflare:workers");
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
-  const id = text(body.id, 20).toUpperCase();
-  const key = text(body.key, 64).toLowerCase();
+  const id = singleLine(body.id, 20).toUpperCase();
+  const key = singleLine(body.key, 64).toLowerCase();
   const booking = await findBooking(env.DB, id, key);
   if (!booking) return Response.json({ error: "Booking not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
   return response(booking);
 }
 
 export async function PATCH(request: Request) {
-  if (!sameOrigin(request)) return Response.json({ error: "Invalid origin" }, { status: 403 });
+  if (!requestAllowed(request)) return Response.json({ error: "Invalid request" }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const { env } = await import("cloudflare:workers");
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
-  const id = text(body.id, 20).toUpperCase();
-  const key = text(body.key, 64).toLowerCase();
+  const id = singleLine(body.id, 20).toUpperCase();
+  const key = singleLine(body.key, 64).toLowerCase();
   const booking = await findBooking(env.DB, id, key);
-  if (!booking) return Response.json({ error: "Booking not found" }, { status: 404 });
-  if (!editableStatuses.has(booking.status)) return Response.json({ error: "Booking can no longer be changed online" }, { status: 409 });
+  if (!booking) return Response.json({ error: "Booking not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
+  if (!editableStatuses.has(booking.status)) return Response.json({ error: "Booking can no longer be changed online" }, { status: 409, headers: { "Cache-Control": "no-store" } });
 
   let action: "modify" | "cancel";
   if (body.action === "cancel") {
@@ -119,26 +135,29 @@ export async function PATCH(request: Request) {
     await env.DB.prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?").bind(id).run();
   } else if (body.action === "modify") {
     action = "modify";
-    const pickup = text(body.pickup);
-    const destination = text(body.destination);
-    const date = text(body.date, 20);
-    const time = text(body.time, 20);
-    const notes = text(body.notes, 2000);
+    const pickup = singleLine(body.pickup);
+    const destination = singleLine(body.destination);
+    const date = singleLine(body.date, 20);
+    const time = singleLine(body.time, 20);
+    const customerNotes = text(body.notes, 1600);
     if (!pickup || !destination || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
-      return Response.json({ error: "Invalid booking details" }, { status: 400 });
+      return Response.json({ error: "Invalid booking details" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     }
     if (date < helsinkiToday()) {
-      return Response.json({ error: "Booking date is in the past" }, { status: 400 });
+      return Response.json({ error: "Booking date is in the past" }, { status: 400, headers: { "Cache-Control": "no-store" } });
     }
+
+    const originalNotes = unpackBookingNotes(booking.notes);
+    const storedNotes = packBookingNotes(originalNotes.estimate, originalNotes.plan, customerNotes);
     await env.DB.prepare(`UPDATE bookings SET pickup = ?, destination = ?, preferred_date = ?,
       preferred_time = ?, notes = ?, status = 'change_requested' WHERE id = ?`)
-      .bind(pickup, destination, date, time, notes, id).run();
+      .bind(pickup, destination, date, time, storedNotes, id).run();
   } else {
-    return Response.json({ error: "Unknown action" }, { status: 400 });
+    return Response.json({ error: "Unknown action" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
   const updated = await findBooking(env.DB, id, key);
-  if (!updated) return Response.json({ error: "Booking not found" }, { status: 404 });
+  if (!updated) return Response.json({ error: "Booking not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
 
   const notificationStatus = await sendBookingStatusNotification(
     env as typeof env & NotificationEnv,
@@ -146,8 +165,13 @@ export async function PATCH(request: Request) {
     action,
     notificationPayload(updated),
   );
-  await env.DB.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
-    .bind(`${action}_${notificationStatus}`, id).run();
+  try {
+    await env.DB.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
+      .bind(`${action}_${notificationStatus}`, id).run();
+  } catch {
+    // The requested booking change is already persisted. Notification bookkeeping
+    // must not turn a successful customer action into a retryable error.
+  }
 
   return response(updated);
 }
