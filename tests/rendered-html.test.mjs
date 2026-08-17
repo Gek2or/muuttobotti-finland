@@ -29,10 +29,13 @@ async function requestPath(path) {
   );
 }
 
-test("renders development preview metadata", async () => {
+test("renders development preview metadata with baseline security headers", async () => {
   const response = await requestPath("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.match(response.headers.get("permissions-policy") ?? "", /camera=\(\)/i);
+  assert.equal(response.headers.get("x-powered-by"), null);
   assert.match(await response.text(), developmentPreviewMeta);
 });
 
