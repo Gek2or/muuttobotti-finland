@@ -1,3 +1,4 @@
+import { packBookingNotes } from "./booking-notes";
 import {
   sendBookingCreatedNotification,
   sendCustomerBookingConfirmation,
@@ -9,9 +10,14 @@ import {
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const allowedServices = new Set(["moving", "transport", "cleaning", "windows", "assembly", "junk"]);
 const maxFileSize = 8 * 1024 * 1024;
+const maxRequestSize = 45 * 1024 * 1024;
 
 function field(data: FormData, name: string, max = 300) {
   return String(data.get(name) ?? "").trim().slice(0, max);
+}
+
+function singleLineField(data: FormData, name: string, max = 300) {
+  return field(data, name, max).replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function safeFileName(name: string) {
@@ -51,27 +57,31 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid origin" }, { status: 403 });
   }
 
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (Number.isFinite(contentLength) && contentLength > maxRequestSize) {
+    return Response.json({ error: "Request is too large" }, { status: 413 });
+  }
+
   const data = await request.formData();
   if (field(data, "website", 100)) return Response.json({ ok: true }, { status: 201 });
 
   const calculatorEstimate = field(data, "calculator_estimate", 80);
   const calculatorPlan = field(data, "calculator_plan", 600);
   const customerNotes = field(data, "notes", 1600);
-  const calculatorNotes = [
-    calculatorEstimate ? `Smart Estimate: ${calculatorEstimate}` : "",
-    calculatorPlan ? `Calculated plan: ${calculatorPlan}` : "",
-  ].filter(Boolean).join("\n");
+  const storedNotes = packBookingNotes(calculatorEstimate, calculatorPlan, customerNotes);
 
   const payload: BookingNotificationPayload = {
-    service: field(data, "service", 50),
-    name: field(data, "name", 100),
-    phone: field(data, "phone", 50),
-    email: field(data, "email", 160),
-    pickup: field(data, "pickup", 300),
-    destination: field(data, "destination", 300),
-    date: field(data, "date", 20),
-    time: field(data, "time", 20),
-    notes: [calculatorNotes, customerNotes].filter(Boolean).join("\n\n").slice(0, 2000),
+    service: singleLineField(data, "service", 50),
+    name: singleLineField(data, "name", 100),
+    phone: singleLineField(data, "phone", 50),
+    email: singleLineField(data, "email", 160),
+    pickup: singleLineField(data, "pickup", 300),
+    destination: singleLineField(data, "destination", 300),
+    date: singleLineField(data, "date", 20),
+    time: singleLineField(data, "time", 20),
+    notes: customerNotes,
+    estimate: calculatorEstimate,
+    plan: calculatorPlan,
   };
 
   if (!payload.service || !payload.name || !payload.phone || !payload.email || !payload.pickup || !payload.destination || !payload.date || !payload.time) {
@@ -116,13 +126,22 @@ export async function POST(request: Request) {
   const accessKey = crypto.randomUUID().replaceAll("-", "");
   const accessTokenHash = await hashAccessKey(accessKey);
   await db.prepare("INSERT INTO bookings (id, service, customer_name, phone, email, pickup, destination, preferred_date, preferred_time, notes, photo_count, access_token_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, files.length, accessTokenHash).run();
+    .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, storedNotes, files.length, accessTokenHash).run();
 
-  await Promise.all(files.map((file, index) => env.BUCKET.put(
-    `bookings/${id}/${index + 1}-${safeFileName(file.name)}`,
-    file.stream(),
-    { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
-  )));
+  const objectKeys = files.map((file, index) => `bookings/${id}/${index + 1}-${safeFileName(file.name)}`);
+  try {
+    await Promise.all(files.map((file, index) => env.BUCKET.put(
+      objectKeys[index],
+      file.stream(),
+      { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
+    )));
+  } catch {
+    await Promise.allSettled([
+      objectKeys.length ? env.BUCKET.delete(objectKeys) : Promise.resolve(),
+      db.prepare("DELETE FROM bookings WHERE id = ?").bind(id).run(),
+    ]);
+    return Response.json({ error: "Photo upload failed" }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
 
   const trackingPath = `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}`;
   const trackingUrl = new URL(trackingPath, request.url).toString();
@@ -131,8 +150,13 @@ export async function POST(request: Request) {
     sendBookingCreatedNotification(notificationEnv, id, payload, files.length),
     sendCustomerBookingConfirmation(notificationEnv, id, payload, requestLocale(request), trackingUrl),
   ]);
-  await db.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
-    .bind(`admin_${adminStatus}_customer_${customerStatus}`, id).run();
+  try {
+    await db.prepare("UPDATE bookings SET notification_status = ? WHERE id = ?")
+      .bind(`admin_${adminStatus}_customer_${customerStatus}`, id).run();
+  } catch {
+    // The booking is already safely persisted. Notification bookkeeping must never
+    // turn a successful booking into a client-visible failure and duplicate retry.
+  }
 
   return Response.json(
     { ok: true, bookingId: id, accessKey, trackingPath },
