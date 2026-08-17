@@ -6,6 +6,7 @@ import {
   type BookingNotificationPayload,
   type NotificationEnv,
 } from "./notifications";
+import { bookingScheduleIsPast, validBookingDate, validBookingTime } from "./schedule";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const allowedServices = new Set(["moving", "transport", "cleaning", "windows", "assembly", "junk"]);
@@ -32,17 +33,6 @@ function requestLocale(request: Request): BookingLocale {
   } catch {
     return "fi";
   }
-}
-
-function helsinkiToday() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Helsinki",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
 }
 
 async function hashAccessKey(value: string) {
@@ -89,11 +79,11 @@ export async function POST(request: Request) {
   }
   if (!allowedServices.has(payload.service)) return Response.json({ error: "Invalid service" }, { status: 400 });
   if (!/^\S+@\S+\.\S+$/.test(payload.email)) return Response.json({ error: "Invalid email" }, { status: 400 });
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date) || !/^\d{2}:\d{2}$/.test(payload.time)) {
+  if (!validBookingDate(payload.date) || !validBookingTime(payload.time)) {
     return Response.json({ error: "Invalid schedule" }, { status: 400 });
   }
-  if (payload.date < helsinkiToday()) {
-    return Response.json({ error: "Booking date is in the past" }, { status: 400 });
+  if (bookingScheduleIsPast(payload.date, payload.time)) {
+    return Response.json({ error: "Booking schedule is in the past" }, { status: 400 });
   }
 
   const files = data.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
