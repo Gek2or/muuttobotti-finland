@@ -14,6 +14,8 @@ export type BookingNotificationPayload = {
   date: string;
   time: string;
   notes: string;
+  estimate?: string;
+  plan?: string;
 };
 
 export type BookingLocale = "fi" | "en" | "uk" | "ru";
@@ -30,7 +32,9 @@ const customerCopy = {
     pickup: "Nouto",
     destination: "Kohde",
     schedule: "Ajankohta",
-    plan: "Arvio / suunnitelma",
+    estimate: "Hinta-arvio",
+    plan: "Suunnitelma",
+    notes: "Lisätiedot",
     track: "Yksityinen seurantalinkki",
     private: "Säilytä linkki yksityisenä. Sen kautta voit seurata, muuttaa tai perua varaustasi.",
     help: "Tarvitsetko apua? Soita 045 787 67567 tai vastaa tähän viestiin.",
@@ -46,7 +50,9 @@ const customerCopy = {
     pickup: "Pickup",
     destination: "Destination",
     schedule: "Schedule",
-    plan: "Estimate / plan",
+    estimate: "Price estimate",
+    plan: "Plan",
+    notes: "Notes",
     track: "Private tracking link",
     private: "Keep this link private. You can use it to track, change or cancel your booking.",
     help: "Need help? Call 045 787 67567 or reply to this email.",
@@ -62,7 +68,9 @@ const customerCopy = {
     pickup: "Завантаження",
     destination: "Доставка",
     schedule: "Дата й час",
-    plan: "Оцінка / план",
+    estimate: "Орієнтовна ціна",
+    plan: "План",
+    notes: "Примітки",
     track: "Приватне посилання для відстеження",
     private: "Зберігайте це посилання приватним. Через нього можна відстежити, змінити або скасувати бронювання.",
     help: "Потрібна допомога? Телефонуйте 045 787 67567 або відповідайте на цей лист.",
@@ -78,7 +86,9 @@ const customerCopy = {
     pickup: "Загрузка",
     destination: "Доставка",
     schedule: "Дата и время",
-    plan: "Расчёт / план",
+    estimate: "Расчёт цены",
+    plan: "План",
+    notes: "Примечания",
     track: "Приватная ссылка для отслеживания",
     private: "Храните эту ссылку в приватном доступе. Через неё можно отслеживать, изменять или отменять бронирование.",
     help: "Нужна помощь? Позвоните 045 787 67567 или ответьте на это письмо.",
@@ -103,6 +113,13 @@ function locationLines(payload: BookingNotificationPayload) {
   return payload.pickup === payload.destination
     ? [`Address: ${payload.pickup}`]
     : [`Pickup: ${payload.pickup}`, `Destination: ${payload.destination}`];
+}
+
+function estimateLines(payload: BookingNotificationPayload) {
+  const lines: string[] = [];
+  if (payload.estimate) lines.push(`Estimate: ${payload.estimate}`);
+  if (payload.plan) lines.push(`Plan: ${payload.plan}`);
+  return lines;
 }
 
 async function sendNotification(
@@ -152,8 +169,9 @@ export async function sendBookingCreatedNotification(
     `Date: ${payload.date}`,
     `Time: ${payload.time}`,
     `Photos: ${photoCount}`,
+    ...(payload.estimate || payload.plan ? ["", "Smart Estimate:", ...estimateLines(payload)] : []),
     "",
-    "Estimate / notes:",
+    "Customer notes:",
     payload.notes || "—",
   ].join("\n");
 
@@ -176,6 +194,12 @@ export async function sendCustomerBookingConfirmation(
   const locations = payload.pickup === payload.destination
     ? [`${c.address}: ${payload.pickup}`]
     : [`${c.pickup}: ${payload.pickup}`, `${c.destination}: ${payload.destination}`];
+  const estimateSection = [
+    payload.estimate ? `${c.estimate}: ${payload.estimate}` : "",
+    payload.plan ? `${c.plan}: ${payload.plan}` : "",
+  ].filter(Boolean);
+  const notesSection = payload.notes ? ["", `${c.notes}:`, payload.notes] : [];
+
   const text = [
     `${c.hello}, ${payload.name}!`,
     "",
@@ -186,9 +210,8 @@ export async function sendCustomerBookingConfirmation(
     `${c.service}: ${serviceNames[payload.service]?.[locale] ?? payload.service}`,
     ...locations,
     `${c.schedule}: ${payload.date} ${payload.time}`,
-    "",
-    `${c.plan}:`,
-    payload.notes || "—",
+    ...(estimateSection.length ? ["", ...estimateSection] : []),
+    ...notesSection,
     "",
     `${c.track}:`,
     trackingUrl,
@@ -225,8 +248,9 @@ export async function sendBookingStatusNotification(
     ...locationLines(payload),
     `Date: ${payload.date}`,
     `Time: ${payload.time}`,
+    ...(payload.estimate || payload.plan ? ["", "Original Smart Estimate:", ...estimateLines(payload)] : []),
     "",
-    "Notes:",
+    "Customer notes:",
     payload.notes || "—",
   ].join("\n");
   const contentFingerprint = await fingerprint(JSON.stringify({ action, payload }));
