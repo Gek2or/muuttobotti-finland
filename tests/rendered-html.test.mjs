@@ -36,11 +36,12 @@ test("renders development preview metadata", async () => {
   assert.match(await response.text(), developmentPreviewMeta);
 });
 
-test("keeps private tracking out of search indexes", async () => {
+test("keeps private tracking out of search indexes and referrers", async () => {
   const response = await requestPath("/track");
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /<meta(?=[^>]*\bname=["']robots["'])(?=[^>]*\bcontent=["'][^"']*noindex[^"']*["'])[^>]*>/i);
+  assert.match(html, /<meta(?=[^>]*\bname=["']referrer["'])(?=[^>]*\bcontent=["']no-referrer["'])[^>]*>/i);
 });
 
 test("robots excludes APIs and private tracking", async () => {
@@ -50,6 +51,15 @@ test("robots excludes APIs and private tracking", async () => {
   assert.match(text, /Disallow:\s*\/api\//i);
   assert.match(text, /Disallow:\s*\/track/i);
   assert.match(text, /Sitemap:\s*https:\/\/muuttobotti\.fi\/sitemap\.xml/i);
+});
+
+test("sitemap lists service pages without artificial lastmod dates", async () => {
+  const response = await requestPath("/sitemap.xml");
+  assert.equal(response.status, 200);
+  const xml = await response.text();
+  assert.match(xml, /https:\/\/muuttobotti\.fi\/moving-helsinki/i);
+  assert.match(xml, /https:\/\/muuttobotti\.fi\/privacy/i);
+  assert.doesNotMatch(xml, /<lastmod>/i);
 });
 
 test("manifest exposes V11 install metadata", async () => {
