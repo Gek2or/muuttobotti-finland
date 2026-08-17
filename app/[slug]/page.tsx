@@ -12,11 +12,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const page = servicePages[slug];
   if (!page) return {};
+  const socialTitle = `${page.title} | Muuttobotti`;
+  const socialImage = "/muuttobotti-hero.png";
   return {
     title: page.title,
     description: page.description,
     alternates: { canonical: `/${slug}` },
-    openGraph: { title: `${page.title} | Muuttobotti`, description: page.description, images: ["/muuttobotti-hero.png"] },
+    openGraph: {
+      title: socialTitle,
+      description: page.description,
+      url: `/${slug}`,
+      siteName: "Muuttobotti",
+      locale: "fi_FI",
+      type: "website",
+      images: [socialImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description: page.description,
+      images: [socialImage],
+    },
   };
 }
 
