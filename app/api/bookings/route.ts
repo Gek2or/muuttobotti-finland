@@ -129,13 +129,12 @@ export async function POST(request: Request) {
     .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, storedNotes, files.length, accessTokenHash).run();
 
   const objectKeys = files.map((file, index) => `bookings/${id}/${index + 1}-${safeFileName(file.name)}`);
-  try {
-    await Promise.all(files.map((file, index) => env.BUCKET.put(
-      objectKeys[index],
-      file.stream(),
-      { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
-    )));
-  } catch {
+  const uploadResults = await Promise.allSettled(files.map((file, index) => env.BUCKET.put(
+    objectKeys[index],
+    file.stream(),
+    { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
+  )));
+  if (uploadResults.some(result => result.status === "rejected")) {
     await Promise.allSettled([
       objectKeys.length ? env.BUCKET.delete(objectKeys) : Promise.resolve(),
       db.prepare("DELETE FROM bookings WHERE id = ?").bind(id).run(),
