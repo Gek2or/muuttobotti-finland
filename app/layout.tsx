@@ -13,6 +13,7 @@ import "./v11-track.css";
 import "./v11-seo.css";
 import "./v11-final.css";
 import "./reference-refresh.css";
+import "./interactive-diversity.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
