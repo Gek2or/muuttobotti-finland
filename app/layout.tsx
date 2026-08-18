@@ -10,6 +10,7 @@ import "./v11-plan.css";
 import "./v11-ux.css";
 import "./v11-track.css";
 import "./v11-seo.css";
+import "./v11-final.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
