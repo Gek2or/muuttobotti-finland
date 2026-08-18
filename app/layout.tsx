@@ -12,12 +12,13 @@ import "./v11-ux.css";
 import "./v11-track.css";
 import "./v11-seo.css";
 import "./v11-final.css";
+import "./reference-refresh.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
 
-const socialTitle = "Muuttobotti — muutto ilman turhaa säätöä";
-const socialDescription = "Muutot, kuljetukset ja siivous yhdellä varauspyynnöllä.";
+const socialTitle = "Muuttobotti — muutot, kuljetukset ja siivous";
+const socialDescription = "Muutot, kuljetukset ja siivous yhdellä selkeällä varauspolulla.";
 const socialImage = "/muuttobotti-hero.png";
 
 export const metadata: Metadata = {
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
   other: { "codex-preview": "development" },
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#061411", colorScheme: "light dark" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#06111c", colorScheme: "dark" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const schema = { "@context": "https://schema.org", "@type": "MovingCompany", name: "Muuttobotti", legalName: "Autochemix Oy", taxID: "3543357-8", url: "https://muuttobotti.fi", areaServed: ["Helsinki", "Espoo", "Vantaa", "Tuusula", "Finland"], priceRange: "€€", telephone: "+3584578767567", email: "autochemixfin@gmail.com", employee: { "@type": "Person", name: "Stanislav Kosytskyy", jobTitle: "Toimitusjohtaja" }, address: { "@type": "PostalAddress", addressCountry: "FI" } };
