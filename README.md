@@ -4,6 +4,52 @@ A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.
 
+## Muuttobotti V11 production notes
+
+The public customer journey is implemented natively in React/Next.js with
+Framer Motion. FI is the default UI, with EN / UK / RU client localization.
+Smart Estimate flows directly into Move Plan and booking.
+
+Moving pricing currently used by the estimator:
+
+- one mover: `60 €/h`
+- two movers: `75 €/h`
+- moving minimum: `2 h`
+
+Bookings are stored in D1. Optional customer photos are stored in the configured
+R2 bucket. A private tracking link is returned after a successful request and
+the access key is stored only as a hash in D1.
+
+Smart Estimate metadata is kept separate from customer-visible notes inside a
+backwards-compatible structured notes envelope. Tracking edits can therefore
+change customer notes without erasing the original estimate. Legacy note records
+using the previous `Smart Estimate:` / `Calculated plan:` format are parsed too.
+
+Booking schedules are validated against `Europe/Helsinki`, including calendar
+validity, 24-hour time validity, past dates and same-day times that have already
+passed. The booking UI applies the same date/time floor before submission.
+
+R2 writes are awaited with `Promise.allSettled()`. If any customer-photo upload
+fails, all attempted objects and the D1 booking row are cleaned up best-effort
+before an error is returned. Notification bookkeeping is fail-safe and cannot
+turn an already persisted booking or tracking change into a client-visible retry
+that could create duplicates.
+
+Booking email notifications are optional and fail-safe. Configure these runtime
+secrets/vars in the hosting environment:
+
+- `RESEND_API_KEY` — required to enable email notifications.
+- `BOOKING_NOTIFY_TO` — optional recipient; defaults to `autochemixfin@gmail.com`.
+- `BOOKING_NOTIFY_FROM` — optional sender; defaults to `Muuttobotti <onboarding@resend.dev>` for initial testing. For production, set this to an address on a verified sending domain, for example `Muuttobotti <bookings@muuttobotti.fi>`.
+
+Do not commit API keys to the repository. When `RESEND_API_KEY` is absent, the
+booking still succeeds and notification delivery is recorded as skipped.
+
+The experimental CI performs the production build and then renders key routes.
+It verifies baseline response security headers, homepage OpenGraph/Twitter
+metadata, private tracking `noindex` and referrer policy, robots rules, sitemap
+contents and PWA manifest metadata.
+
 ## Prerequisites
 
 - Node.js `>=22.13.0`
@@ -26,8 +72,7 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 - `.openai/hosting.json` declares optional Sites D1 and R2 bindings
 - `vite.config.ts` simulates declared bindings for local development
 - `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
+- `db/schema.ts` is the Drizzle source model and `drizzle/` contains tracked migrations
 - `drizzle.config.ts` supports local migration generation when needed
 
 ## Workspace Auth Headers
@@ -38,7 +83,7 @@ OpenAI workspace sites can read the current user's email from
 SIWC-authenticated workspace sites may also receive
 `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
 `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+`oai-authenticated-user-full-name-encoding: percent-encoded-utf8`.
 
 Treat the full name as optional and fall back to email when it is absent:
 
@@ -94,7 +139,7 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 - `npm run dev`: start the Vite/Vinext development server
 - `npm run build`: build and validate the deployable Sites artifact
 - `npm run start`: start the built Vinext application
-- `npm test`: build, validate, and verify the rendered development-preview metadata
+- `npm test`: build, validate, and verify rendered metadata
 - `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 

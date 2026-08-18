@@ -1,5 +1,15 @@
-import MuuttobottiApp from "./MuuttobottiApp";
+import ReferenceHomepage from "./ReferenceHomepage";
+import InteractiveDiversity from "./InteractiveDiversity";
+import NativeFunctionalShell from "./NativeFunctionalShell";
+import ProductionLegalStrip from "./ProductionLegalStrip";
 
 export default function Home() {
-  return <MuuttobottiApp />;
+  return (
+    <>
+      <ReferenceHomepage />
+      <InteractiveDiversity />
+      <NativeFunctionalShell />
+      <ProductionLegalStrip />
+    </>
+  );
 }
