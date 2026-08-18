@@ -2,6 +2,17 @@
 
 /* Final opening-story polish: one calm, legible header across dark photography and light editorial scenes. */
 .p12-header{background:rgba(6,20,17,.76)!important;border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(118%);-webkit-backdrop-filter:blur(18px) saturate(118%)}
-.p12-brand-mark{font-size:0!important;background:#c8ff65 url('/favicon.svg') center/18px 18px no-repeat!important}
+.p12-brand-mark,footer .brand-mark{font-size:0!important;background:#c8ff65 url('/muuttobotti-mark.svg') center/20px 20px no-repeat!important}
+footer .brand-mark svg{display:none!important}
 
-@media(max-width:700px){.production-legal-strip{padding:16px}.production-legal-strip>div{width:100%;align-items:flex-start;flex-direction:column;gap:10px}.production-legal-strip nav{gap:16px}.p12-header{background:rgba(6,20,17,.84)!important}}
+/* Extra depth without adding visual clutter. */
+.p12-hero-copy h1{filter:drop-shadow(0 12px 30px rgba(0,0,0,.16))}
+.p12-spec-stack{background:linear-gradient(180deg,rgba(7,25,20,.18),rgba(7,25,20,.04))}
+.p12-system-intro h2,.p12-bridge-copy h2{text-wrap:balance}
+.p12-lane{transition:opacity .2s ease}
+.p12-lanes:hover .p12-lane{opacity:.48}
+.p12-lanes:hover .p12-lane:hover{opacity:1}
+.p12-route-card{position:relative}
+.p12-route-card:after{content:"";position:absolute;inset:auto 0 -1px;height:1px;background:linear-gradient(90deg,transparent,#c8ff65 40%,transparent);opacity:.22}
+
+@media(max-width:700px){.production-legal-strip{padding:16px}.production-legal-strip>div{width:100%;align-items:flex-start;flex-direction:column;gap:10px}.production-legal-strip nav{gap:16px}.p12-header{background:rgba(6,20,17,.84)!important}.p12-lanes:hover .p12-lane{opacity:1}.p12-hero-copy h1{filter:none}}
