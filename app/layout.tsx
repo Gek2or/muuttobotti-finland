@@ -5,6 +5,7 @@ import ServiceWorkerRegistration from "./ServiceWorkerRegistration";
 import "./globals.css";
 import "./overrides.css";
 import "./v11-native.css";
+import "./v11-hero-reset.css";
 import "./v11-credibility.css";
 import "./v11-plan.css";
 import "./v11-ux.css";
