@@ -89,6 +89,14 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       }
     : null;
 
+  const privacyDetails = slug === "privacy" ? [
+    ["Mitä tietoja varauksesta tallennetaan?", "Tallennamme asiakkaan antamat yhteystiedot, palvelu- ja osoitetiedot, toivotun ajan, lisätiedot sekä mahdollisen laskurin arvion ja liitettyjen kuvien määrän."],
+    ["Tallennetaanko IP-osoite ja teknisiä tietoja?", "Verkkovarauksen yhteydessä voidaan tallentaa IP-osoite, selaimen User-Agent, likimääräinen maa/alue Cloudflaren välittämänä, sivun lähde, kieli, aikavyöhyke ja näytön koko. Tietoja käytetään varauksen käsittelyyn, tietoturvaan, väärinkäytösten ehkäisyyn ja teknisten ongelmien selvittämiseen."],
+    ["Miten tietoja käytetään?", "Tietoja käytetään palvelun tuottamiseen, yhteydenpitoon, tarjouksen ja työmäärän arviointiin, asiakaspalveluun, laskutukseen sekä lakisääteisten velvoitteiden hoitamiseen. Teknisiä tietoja ei käytetä tarpeettomaan profilointiin."],
+    ["Kenellä on pääsy tietoihin?", "Varaustiedot ja tekniset tiedot ovat vain Muuttobotin / Autochemix Oy:n valtuutetun henkilöstön käytettävissä suojatussa hallintanäkymässä ja palvelun toteuttamiseen tarvittavissa järjestelmissä."],
+    ["Mitä oikeuksia asiakkaalla on?", "Asiakas voi pyytää itseään koskevien tietojen tarkastamista, korjaamista tai lain sallimissa rajoissa poistamista ottamalla yhteyttä osoitteeseen autochemixfin@gmail.com."],
+  ] as const : null;
+
   return (
     <main className={`seo-page seo-theme-${visualTheme}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
@@ -126,6 +134,21 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               <h2>Usein kysyttyä tästä palvelusta</h2>
               <div className="seo-faq-grid">
                 {page.faq.map(([question, answer]) => (
+                  <article key={question}>
+                    <h3>{question}</h3>
+                    <p>{answer}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {privacyDetails ? (
+            <div className="seo-faq-block">
+              <span className="kicker">Varausten tietosuoja</span>
+              <h2>Miten varaus- ja teknisiä tietoja käsitellään</h2>
+              <div className="seo-faq-grid">
+                {privacyDetails.map(([question, answer]) => (
                   <article key={question}>
                     <h3>{question}</h3>
                     <p>{answer}</p>
