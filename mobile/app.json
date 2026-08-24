@@ -2,13 +2,14 @@
   "expo": {
     "name": "Muuttobotti",
     "slug": "muuttobotti",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "scheme": "muuttobotti",
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-notifications",
       [
         "expo-image-picker",
         {
@@ -24,12 +25,16 @@
     },
     "android": {
       "package": "fi.muuttobotti.app",
-      "adaptiveIcon": {
-        "backgroundColor": "#071B22"
-      }
+      "adaptiveIcon": { "backgroundColor": "#071B22" },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [{ "scheme": "muuttobotti", "host": "track" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
-    "extra": {
-      "apiBaseUrl": "https://muuttobotti.fi"
-    }
+    "extra": { "apiBaseUrl": "https://muuttobotti.fi" }
   }
 }
