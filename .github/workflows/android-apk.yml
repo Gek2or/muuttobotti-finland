@@ -39,6 +39,15 @@ jobs:
         working-directory: mobile
         run: npm install --no-audit --no-fund
 
+      - name: Align Expo SDK 57 dependencies
+        working-directory: mobile
+        env:
+          CI: '1'
+        run: |
+          npx expo install --fix
+          npx expo install react-native-reanimated react-native-worklets
+          npm ls react react-native expo expo-modules-core react-native-reanimated react-native-worklets || true
+
       - name: Typecheck diagnostics
         working-directory: mobile
         continue-on-error: true
