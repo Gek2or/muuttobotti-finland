@@ -1,8 +1,10 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
 import type { Metadata } from "next";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Mail, MessageCircle, PackageCheck, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Mail, MessageCircle, PackageCheck, Phone, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
+import VisualMotionEnhancer from "../VisualMotionEnhancer";
 import { servicePages } from "./service-pages";
+import "../experience-v5.css";
 
 export function generateStaticParams() {
   return Object.keys(servicePages).map((slug) => ({ slug }));
@@ -41,6 +43,18 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const page = servicePages[slug];
   if (!page) notFound();
 
+  const visualTheme = page.legal
+    ? "legal"
+    : slug.includes("cleaning")
+      ? "cleaning"
+      : slug.includes("window")
+        ? "window"
+        : slug.includes("assembly")
+          ? "assembly"
+          : slug.includes("delivery") || slug.includes("transport")
+            ? "transport"
+            : "moving";
+
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -76,7 +90,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     : null;
 
   return (
-    <main className="seo-page">
+    <main className={`seo-page seo-theme-${visualTheme}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       {serviceSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />}
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
@@ -124,8 +138,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
 
         <aside className="seo-contact">
           <strong>Tarvitsetko apua heti?</strong>
-          <p>Voit myös lähettää osoitteet ja lyhyen kuvauksen WhatsAppissa, niin arvioimme työn nopeasti.</p>
-          <span><UserRound/> Stanislav Kosytskyy</span>
+          <p>Voit lähettää osoitteet ja lyhyen kuvauksen WhatsAppissa, niin arvioimme työn nopeasti.</p>
+          <span><PackageCheck/> Muuttobotti asiakaspalvelu</span>
           <a href="tel:+3584578767567"><Phone/> 045 787 67567</a>
           <a href="mailto:autochemixfin@gmail.com"><Mail/> autochemixfin@gmail.com</a>
           <a href="https://wa.me/3584578767567"><MessageCircle/> WhatsApp</a>
@@ -138,6 +152,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         <a href="/privacy">Tietosuoja</a>
         <a href="/terms">Ehdot</a>
       </footer>
+      <VisualMotionEnhancer />
     </main>
   );
 }

@@ -1,8 +1,10 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
-import CalculatorMinimumDefaults from "./CalculatorMinimumDefaults";
+import CalculatorPricingGuard from "./CalculatorPricingGuard";
+import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import { faqContent } from "./faq-content";
+import "./experience-v5.css";
 
 export default function Home() {
   const faqSchema = {
@@ -24,7 +26,8 @@ export default function Home() {
       <MuuttobottiArtV3 />
       <FaqPortal />
       <LocalizedSurfaceFixes />
-      <CalculatorMinimumDefaults />
+      <CalculatorPricingGuard />
+      <VisualMotionEnhancer />
     </>
   );
 }
