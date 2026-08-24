@@ -1,5 +1,6 @@
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxFileSize = 8 * 1024 * 1024;
+const WHATSAPP_NUMBER = "3584578767567";
 
 function field(data: FormData, name: string, max = 300) {
   return String(data.get(name) ?? "").trim().slice(0, max);
@@ -43,6 +44,66 @@ function isAllowedOrigin(request: Request) {
   return allowedHosts.has(originHost);
 }
 
+type BookingPayload = {
+  service: string;
+  name: string;
+  phone: string;
+  email: string;
+  pickup: string;
+  destination: string;
+  date: string;
+  time: string;
+  notes: string;
+};
+
+function makeWhatsAppUrl(payload: BookingPayload, photoCount: number, draftId: string) {
+  const lines = [
+    "Muuttobotti – verkkovaraus",
+    `Tunnus: ${draftId}`,
+    `Palvelu: ${payload.service}`,
+    `Nimi: ${payload.name}`,
+    `Puhelin: ${payload.phone}`,
+    `Sähköposti: ${payload.email}`,
+    `Nouto / palveluosoite: ${payload.pickup}`,
+    `Kohdeosoite: ${payload.destination}`,
+    `Päivä: ${payload.date}`,
+    `Aika: ${payload.time}`,
+    payload.notes ? `Lisätiedot: ${payload.notes}` : "",
+    photoCount > 0 ? `Kuvia valittu: ${photoCount} – liitä kuvat tähän WhatsApp-keskusteluun.` : "",
+    "",
+    "Verkkotallennus ei ollut juuri nyt käytettävissä, joten lähetän varauksen WhatsAppissa.",
+  ].filter(Boolean);
+
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
+
+function fallbackResponse(payload: BookingPayload, photoCount: number, code: string) {
+  const draftId = `MB-WA-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+  return Response.json(
+    {
+      ok: false,
+      fallback: "whatsapp",
+      code,
+      draftId,
+      whatsappUrl: makeWhatsAppUrl(payload, photoCount, draftId),
+    },
+    { status: 202, headers: { "Cache-Control": "no-store" } },
+  );
+}
+
+export async function GET() {
+  const { env } = await import("cloudflare:workers");
+  return Response.json(
+    {
+      ok: true,
+      service: "bookings",
+      db: Boolean(env.DB),
+      bucket: Boolean(env.BUCKET),
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
+
 export async function POST(request: Request) {
   const { env } = await import("cloudflare:workers");
 
@@ -53,7 +114,7 @@ export async function POST(request: Request) {
   const data = await request.formData();
   if (field(data, "website", 100)) return Response.json({ ok: true }, { status: 201 });
 
-  const payload = {
+  const payload: BookingPayload = {
     service: field(data, "service", 50), name: field(data, "name", 100),
     phone: field(data, "phone", 50), email: field(data, "email", 160),
     pickup: field(data, "pickup", 300), destination: field(data, "destination", 300),
@@ -71,18 +132,16 @@ export async function POST(request: Request) {
   }
 
   if (!env.DB) {
-    console.error("Booking API: Cloudflare D1 binding DB is unavailable");
-    return Response.json({ error: "Booking storage unavailable", code: "DB_UNAVAILABLE" }, { status: 503 });
-  }
-  if (files.length > 0 && !env.BUCKET) {
-    console.error("Booking API: Cloudflare R2 binding BUCKET is unavailable");
-    return Response.json({ error: "Photo storage unavailable", code: "R2_UNAVAILABLE" }, { status: 503 });
+    console.error("Booking API: Cloudflare D1 binding DB is unavailable; using WhatsApp fallback");
+    return fallbackResponse(payload, files.length, "DB_UNAVAILABLE");
   }
 
   const id = `MB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const accessKey = crypto.randomUUID().replaceAll("-", "");
   const accessTokenHash = await hashAccessKey(accessKey);
   const db = env.DB;
+  const canStorePhotos = Boolean(env.BUCKET);
+  const storedPhotoCount = canStorePhotos ? files.length : 0;
 
   try {
     await db.prepare(`CREATE TABLE IF NOT EXISTS bookings (
@@ -111,7 +170,7 @@ export async function POST(request: Request) {
     }
 
     await db.prepare("INSERT INTO bookings (id, service, customer_name, phone, email, pickup, destination, preferred_date, preferred_time, notes, photo_count, access_token_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, files.length, accessTokenHash).run();
+      .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, storedPhotoCount, accessTokenHash).run();
 
     if (files.length > 0 && env.BUCKET) {
       await Promise.all(files.map((file, index) => env.BUCKET.put(
@@ -121,12 +180,18 @@ export async function POST(request: Request) {
       )));
     }
   } catch (error) {
-    console.error("Booking API storage failure", error);
-    return Response.json({ error: "Booking could not be saved", code: "DB_WRITE_FAILED" }, { status: 500 });
+    console.error("Booking API storage failure; using WhatsApp fallback", error);
+    return fallbackResponse(payload, files.length, "DB_WRITE_FAILED");
   }
 
   return Response.json(
-    { ok: true, bookingId: id, accessKey, trackingPath: `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}` },
+    {
+      ok: true,
+      bookingId: id,
+      accessKey,
+      trackingPath: `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}`,
+      warning: files.length > 0 && !canStorePhotos ? "PHOTOS_NOT_STORED" : undefined,
+    },
     { status: 201, headers: { "Cache-Control": "no-store" } },
   );
 }
