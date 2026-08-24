@@ -1,8 +1,0 @@
-Muuttobotti v6 pricing guardrails
-- Moving minimum: 2h
-- 1 mover: 59 €/h
-- 2 movers + Crafter: 75 €/h
-- First 10 km included, then 0.85 €/km
-- Cleaning: 32.90 €/h, 2h minimum
-- Transport: 79 € minimum, first 10 km included
-- Smart recommendation compares 1 vs 2 movers and warns on large/heavy/stair jobs
