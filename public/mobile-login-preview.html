@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<meta name="theme-color" content="#071B22" />
+<title>Muuttobotti Login Preview</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#071B22}body{display:flex;justify-content:center}.app{width:100%;max-width:480px;min-height:100vh;background:#071B22;color:#fff;padding:18px 18px calc(28px + env(safe-area-inset-bottom));position:relative;overflow:hidden}.orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none}.orb.a{width:220px;height:220px;background:rgba(201,255,61,.12);right:-100px;top:90px}.orb.b{width:260px;height:260px;background:rgba(51,134,153,.13);left:-130px;bottom:50px}.brand{display:flex;align-items:center;gap:10px;position:relative;z-index:2}.mark{width:42px;height:42px;border-radius:13px;background:#c9ff3d;color:#071B22;font-weight:950;display:grid;place-items:center;font-size:20px}.brand b{font-size:23px;letter-spacing:-.8px}.langs{display:flex;gap:6px;margin-top:15px;position:relative;z-index:2}.langs button{min-width:43px;height:34px;border-radius:10px;border:1px solid #29464e;background:transparent;color:#88a09d;font-weight:900}.langs button.on{background:#18353d;border-color:#45636a;color:#c9ff3d}.hero{padding:34px 0 25px;position:relative;z-index:2}.kicker{font-size:11px;font-weight:900;letter-spacing:1.2px;color:#c9ff3d}.hero h1{font-size:40px;line-height:42px;letter-spacing:-1.7px;margin:8px 0 0}.hero p{font-size:16px;line-height:24px;color:#a9bcb8;margin:10px 0 0;max-width:390px}.card{background:#f4f6f2;color:#0b272e;border-radius:28px;padding:18px;box-shadow:0 24px 60px rgba(0,0,0,.18);position:relative;z-index:2}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#e4eae2;padding:4px;border-radius:15px}.tabs button{border:0;background:transparent;color:#6a7b77;min-height:44px;border-radius:12px;font-weight:900}.tabs button.on{background:#071B22;color:#fff}.panel{display:none}.panel.on{display:block}.panel h2{font-size:25px;letter-spacing:-.8px;margin:18px 0 4px}.copy{font-size:13px;line-height:20px;color:#667975;margin:0 0 12px}.field{background:#fff;border:1px solid #dde5dc;border-radius:15px;padding:10px 14px 8px;margin-top:10px}.field label{display:block;color:#667a75;font-size:10px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}.field input{border:0;outline:0;width:100%;font:750 16px/1.2 inherit;color:#0b272e;padding:11px 0 5px;background:transparent}.hint{color:#788985;font-size:11px;line-height:16px;margin:7px 2px 0}.primary,.secondary{width:100%;border-radius:15px;min-height:54px;font-weight:950;border:0;font-size:15px}.primary{background:#c9ff3d;color:#071B22;margin-top:14px}.secondary{background:#fff;border:1px solid #cad6cc;color:#071B22;margin-top:8px}.divider{height:1px;background:#dde4dc;margin:14px 0 12px}.new{font-size:12px;color:#71827e;text-align:center;font-weight:800}.secure{display:flex;align-items:center;justify-content:center;gap:7px;color:#718c89;font-size:10px;font-weight:750;margin:18px 0 0}.dot{width:7px;height:7px;border-radius:50%;background:#c9ff3d}.foot{text-align:center;color:#5f7976;font-size:10px;margin-top:9px}.toast{display:none;position:fixed;left:50%;bottom:25px;transform:translateX(-50%);background:#c9ff3d;color:#071B22;padding:12px 16px;border-radius:999px;font-size:12px;font-weight:900;z-index:20;box-shadow:0 12px 30px rgba(0,0,0,.25)}.toast.show{display:block}@media(min-width:600px){body{padding:24px}.app{min-height:calc(100vh - 48px);border-radius:30px;box-shadow:0 24px 80px rgba(0,0,0,.3)}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="orb a"></div><div class="orb b"></div>
+<div class="brand"><div class="mark">M</div><b>Muuttobotti</b></div>
+<div class="langs"><button class="on">FI</button><button>EN</button><button>UA</button><button>RU</button></div>
+<div class="hero"><div class="kicker">MUUTTOBOTTI MOBILE</div><h1>С возвращением.</h1><p>Откройте свой заказ или управляйте заказами Muuttobotti.</p></div>
+<div class="card">
+  <div class="tabs"><button id="clientTab" class="on" onclick="role('client')">Клиент</button><button id="adminTab" onclick="role('admin')">Администратор</button></div>
+  <div id="client" class="panel on">
+    <h2>Открыть свой заказ</h2><p class="copy">Используйте номер заказа и приватный код доступа, полученные после бронирования.</p>
+    <div class="field"><label>Номер заказа</label><input value="MB-12AB34CD" /></div>
+    <div class="field"><label>Код доступа</label><input type="password" value="demo-access-key" /></div>
+    <div class="hint">Код доступа находится в приватной ссылке после бронирования.</div>
+    <button class="primary" onclick="window.location.href='/mobile-preview.html'">Войти</button>
+    <div class="divider"></div><div class="new">Новый клиент?</div>
+    <button class="secondary" onclick="window.location.href='/mobile-preview.html'">Продолжить без входа</button>
+  </div>
+  <div id="admin" class="panel">
+    <h2>Вход администратора</h2><p class="copy">Только для команды Muuttobotti. Token сохраняется в SecureStore устройства.</p>
+    <div class="field"><label>Admin token</label><input type="password" value="demo-admin-token" /></div>
+    <button class="primary" onclick="demoAdmin()">Войти</button>
+  </div>
+</div>
+<div class="secure"><span class="dot"></span>SecureStore · HTTPS · private booking access</div>
+<div class="foot">Autochemix Oy · Y-tunnus 3543357-8</div>
+</div>
+<div id="toast" class="toast">Admin login preview — real app checks API</div>
+<script>
+function role(name){document.getElementById('client').classList.toggle('on',name==='client');document.getElementById('admin').classList.toggle('on',name==='admin');document.getElementById('clientTab').classList.toggle('on',name==='client');document.getElementById('adminTab').classList.toggle('on',name==='admin')}
+function demoAdmin(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+document.querySelectorAll('.langs button').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.langs button').forEach(x=>x.classList.remove('on'));btn.classList.add('on')})
+</script>
+</body>
+</html>
