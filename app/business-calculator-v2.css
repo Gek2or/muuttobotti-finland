@@ -43,5 +43,11 @@
 .dark-theme .bc-movers button.active,.dark-theme .bc-switches button.active{background:#1b4138;border-color:rgba(200,255,101,.42);color:#f0f8f5}
 .dark-theme .bc-rule{background:#102d34;border-color:rgba(255,255,255,.08)}
 .dark-theme .bc-rule strong{color:#d7e6e3}
+
+/* Hide the bright lower-edge artifact visible in the supplied hero screenshot. */
+.site-shell .hero{overflow:hidden!important}
+.site-shell .hero:after{background:linear-gradient(90deg,rgba(3,18,23,.96) 0%,rgba(3,18,23,.88) 34%,rgba(3,18,23,.58) 52%,rgba(3,18,23,.24) 77%,rgba(3,18,23,.14) 100%),linear-gradient(0deg,rgba(3,18,23,.88) 0%,rgba(3,18,23,.58) 18%,transparent 58%)!important}
+.site-shell .stats-band{position:relative;z-index:6;margin-top:-2px!important;box-shadow:0 -2px 0 #c8ff65}
+
 @media(max-width:900px){.bc-estimate{grid-template-columns:1fr 1fr}.bc-estimate button{grid-column:1/-1;justify-content:center}.bc-breakdown{align-items:flex-end;text-align:right}}
 @media(max-width:760px){.business-calculator-card{border-radius:22px;padding:8px}.bc-tabs button{font-size:12px;gap:5px}.bc-tabs button svg{width:15px}.bc-fields{grid-template-columns:1fr;padding:18px;gap:18px}.bc-full{grid-column:1}.bc-movers{grid-template-columns:1fr}.bc-switches{grid-template-columns:1fr}.bc-fields label{font-size:11px}.bc-fields select{font-size:16px}.bc-estimate{grid-template-columns:1fr;padding:16px}.bc-estimate strong{font-size:32px}.bc-estimate b{font-size:19px}.bc-breakdown{align-items:flex-start;text-align:left}.bc-estimate button{grid-column:auto;width:100%;justify-content:center;min-height:52px}}
