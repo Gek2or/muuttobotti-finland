@@ -28,7 +28,7 @@ export default function ClientScreen() {
       </View>
 
       <View style={styles.contact}>
-        <Text style={styles.sectionTitle}>Tarvitsetko apua?</Text>
+        <Text style={styles.contactTitle}>Tarvitsetko apua?</Text>
         <TouchableOpacity style={styles.contactButton} onPress={() => Linking.openURL('tel:+3584578767567')}><Text style={styles.contactText}>Soita · 045 787 67567</Text></TouchableOpacity>
         <TouchableOpacity style={styles.contactButton} onPress={() => Linking.openURL('https://wa.me/3584578767567')}><Text style={styles.contactText}>WhatsApp</Text></TouchableOpacity>
         <TouchableOpacity style={styles.contactButton} onPress={() => Linking.openURL('mailto:autochemixfin@gmail.com')}><Text style={styles.contactText}>autochemixfin@gmail.com</Text></TouchableOpacity>
@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   cardTextAccent: { color: '#36503C' },
   arrow: { position: 'absolute', right: 20, bottom: 18, fontSize: 25, fontWeight: '700', color: colors.ink },
   contact: { backgroundColor: colors.inkSoft, borderRadius: radius.lg, padding: 20, gap: 9 },
+  contactTitle: { color: '#fff', fontSize: 20, fontWeight: '900', marginBottom: 4 },
   sectionTitle: { color: colors.ink, fontSize: 20, fontWeight: '900', marginBottom: 4 },
   contactButton: { minHeight: 48, borderRadius: radius.md, backgroundColor: '#1A3D46', justifyContent: 'center', paddingHorizontal: 15 },
   contactText: { color: '#fff', fontWeight: '800', fontSize: 15 },
