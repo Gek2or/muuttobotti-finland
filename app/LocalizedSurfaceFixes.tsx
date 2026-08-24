@@ -174,17 +174,29 @@ function currentLocale(): Locale {
   return "fi";
 }
 
+function replaceDirectText(node: HTMLElement, value: string) {
+  const textNode = Array.from(node.childNodes).find(
+    (child) => child.nodeType === Node.TEXT_NODE && child.textContent?.trim(),
+  );
+
+  if (textNode) {
+    if (textNode.textContent?.trim() !== value) textNode.textContent = value;
+    return;
+  }
+
+  node.appendChild(document.createTextNode(value));
+}
+
 function setText(selector: string, value: string, index = 0) {
-  const nodes = document.querySelectorAll<HTMLElement>(selector);
-  const node = nodes[index];
-  if (node && node.textContent !== value) node.textContent = value;
+  const node = document.querySelectorAll<HTMLElement>(selector)[index];
+  if (node) replaceDirectText(node, value);
 }
 
 function setTexts(selector: string, values: readonly string[]) {
   const nodes = document.querySelectorAll<HTMLElement>(selector);
   values.forEach((value, index) => {
     const node = nodes[index];
-    if (node && node.textContent !== value) node.textContent = value;
+    if (node) replaceDirectText(node, value);
   });
 }
 
