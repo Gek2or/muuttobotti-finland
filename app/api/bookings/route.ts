@@ -14,10 +14,39 @@ async function hashAccessKey(value: string) {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function isAllowedOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+
+  let originHost = "";
+  try {
+    originHost = new URL(origin).host.toLowerCase();
+  } catch {
+    return false;
+  }
+
+  const requestHost = new URL(request.url).host.toLowerCase();
+  const forwardedHost = (request.headers.get("x-forwarded-host") || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const hostHeader = (request.headers.get("host") || "").toLowerCase();
+
+  const allowedHosts = new Set([
+    requestHost,
+    forwardedHost,
+    hostHeader,
+    "muuttobotti.fi",
+    "www.muuttobotti.fi",
+  ].filter(Boolean));
+
+  return allowedHosts.has(originHost);
+}
+
 export async function POST(request: Request) {
   const { env } = await import("cloudflare:workers");
-  const origin = request.headers.get("origin");
-  if (origin && new URL(origin).host !== new URL(request.url).host) {
+
+  if (!isAllowedOrigin(request)) {
     return Response.json({ error: "Invalid origin" }, { status: 403 });
   }
 
@@ -43,11 +72,11 @@ export async function POST(request: Request) {
 
   if (!env.DB) {
     console.error("Booking API: Cloudflare D1 binding DB is unavailable");
-    return Response.json({ error: "Booking storage unavailable" }, { status: 503 });
+    return Response.json({ error: "Booking storage unavailable", code: "DB_UNAVAILABLE" }, { status: 503 });
   }
   if (files.length > 0 && !env.BUCKET) {
     console.error("Booking API: Cloudflare R2 binding BUCKET is unavailable");
-    return Response.json({ error: "Photo storage unavailable" }, { status: 503 });
+    return Response.json({ error: "Photo storage unavailable", code: "R2_UNAVAILABLE" }, { status: 503 });
   }
 
   const id = `MB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
@@ -66,8 +95,6 @@ export async function POST(request: Request) {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`).run();
 
-    // CREATE TABLE IF NOT EXISTS does not upgrade an already-existing D1 table.
-    // Older Muuttobotti deployments may therefore miss columns added later.
     const schemaInfo = await db.prepare("PRAGMA table_info(bookings)").all();
     const schemaRows = (schemaInfo.results ?? []) as Array<{ name?: string }>;
     const columns = new Set(schemaRows.map(row => String(row.name ?? "")));
@@ -95,7 +122,7 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("Booking API storage failure", error);
-    return Response.json({ error: "Booking could not be saved" }, { status: 500 });
+    return Response.json({ error: "Booking could not be saved", code: "DB_WRITE_FAILED" }, { status: 500 });
   }
 
   return Response.json(
