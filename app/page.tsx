@@ -12,6 +12,7 @@ import "./business-calculator-v2.css";
 import "./booking-runtime.css";
 import "./v6-ui.css";
 import "./mobile-header-polish.css";
+import "./mobile-readability-v61.css";
 
 export default function Home() {
   const faqSchema = {
