@@ -9,7 +9,9 @@ type Snapshot = {
   moving: boolean;
   minimum: boolean;
   movers: 1 | 2;
+  minimumPrice: number;
   price: number;
+  hoursText: string;
 };
 
 const labels: Record<Locale, { title: string; one: string; two: string }> = {
@@ -41,7 +43,7 @@ function localeFromDocument(): Locale {
   return "fi";
 }
 
-function snapshot(): Snapshot | null {
+function calculatorSnapshot(): Snapshot | null {
   const calculator = document.querySelector<HTMLElement>(".calculator-section");
   if (!calculator) return null;
 
@@ -51,25 +53,50 @@ function snapshot(): Snapshot | null {
 
   const moverButtons = Array.from(calculator.querySelectorAll<HTMLButtonElement>(".mover-selector button"));
   const movers: 1 | 2 = moverButtons[1]?.classList.contains("active") ? 2 : 1;
-  const price = movers === 1 ? 118 : 150;
+  const hourlyRate = movers === 1 ? 59 : 75;
+  const minimumPrice = hourlyRate * 2;
 
-  if (!moving) return { moving, minimum: false, movers, price };
+  if (!moving) {
+    return { moving: false, minimum: false, movers, minimumPrice, price: minimumPrice, hoursText: "2.0 h" };
+  }
 
   const ranges = Array.from(calculator.querySelectorAll<HTMLInputElement>('.calc-fields input[type="range"]'));
-  const allRangesAtMinimum = ranges.length >= 3 && ranges.every((input) => {
-    const min = Number(input.min || 0);
-    return Number(input.value) <= min;
-  });
+  if (ranges.length < 3) return null;
+
+  const [sizeRange, floorRange, distanceRange] = ranges;
+  const size = Number(sizeRange.value);
+  const floor = Number(floorRange.value);
+  const distance = Number(distanceRange.value);
+  const sizeMin = Number(sizeRange.min || 0);
+  const floorMin = Number(floorRange.min || 0);
+  const distanceMin = Number(distanceRange.min || 0);
 
   const switches = Array.from(calculator.querySelectorAll<HTMLButtonElement>(".switch-grid button"));
-  const paidExtrasOff = !switches[1]?.classList.contains("on") && !switches[2]?.classList.contains("on");
+  const elevator = switches[0]?.classList.contains("on") ?? false;
+  const packing = switches[1]?.classList.contains("on") ?? false;
+  const afterClean = switches[2]?.classList.contains("on") ?? false;
 
-  return {
-    moving,
-    minimum: allRangesAtMinimum && paidExtrasOff,
-    movers,
-    price,
-  };
+  const sizeExtra = Math.max(0, size - sizeMin);
+  const floorExtra = Math.max(0, floor - floorMin - (elevator ? 2 : 0));
+  const distanceExtra = Math.max(0, distance - distanceMin);
+
+  // The minimum slider positions represent the minimum two-hour booking.
+  // Only work above those baseline values adds time/cost.
+  const handlingExtra = sizeExtra / 35 + floorExtra * 0.22 + (packing ? 1.5 : 0);
+  const moverFactor = movers === 1 ? 1.35 : 1;
+  const travelExtra = distanceExtra / 70;
+  const hours = Math.max(2, 2 + handlingExtra * moverFactor + travelExtra);
+
+  const transportSupplement = distanceExtra * 0.65;
+  const cleaningSupplement = afterClean ? Math.max(0, size) * 1.1 : 0;
+  const price = Math.max(minimumPrice, Math.round(hours * hourlyRate + transportSupplement + cleaningSupplement));
+
+  const allRangesAtMinimum =
+    size <= sizeMin && floor <= floorMin && distance <= distanceMin;
+  const minimum = allRangesAtMinimum && !packing && !afterClean;
+  const hoursText = minimum ? "2.0 h" : `${hours.toFixed(1)}–${(hours + 0.8).toFixed(1)} h`;
+
+  return { moving, minimum, movers, minimumPrice, price, hoursText };
 }
 
 function setNativeTextareaValue(textarea: HTMLTextAreaElement, value: string) {
@@ -80,7 +107,14 @@ function setNativeTextareaValue(textarea: HTMLTextAreaElement, value: string) {
 
 export default function CalculatorPricingGuard() {
   const [target, setTarget] = useState<Element | null>(null);
-  const [state, setState] = useState<Snapshot>({ moving: true, minimum: false, movers: 2, price: 150 });
+  const [state, setState] = useState<Snapshot>({
+    moving: true,
+    minimum: false,
+    movers: 2,
+    minimumPrice: 150,
+    price: 150,
+    hoursText: "2.0 h",
+  });
   const [locale, setLocale] = useState<Locale>("fi");
 
   useEffect(() => {
@@ -94,7 +128,7 @@ export default function CalculatorPricingGuard() {
     const sync = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        const next = snapshot();
+        const next = calculatorSnapshot();
         if (!next) return;
 
         setLocale(localeFromDocument());
@@ -103,23 +137,28 @@ export default function CalculatorPricingGuard() {
             current.moving === next.moving &&
             current.minimum === next.minimum &&
             current.movers === next.movers &&
-            current.price === next.price
+            current.minimumPrice === next.minimumPrice &&
+            current.price === next.price &&
+            current.hoursText === next.hoursText
           ) return current;
           return next;
         });
 
+        if (!next.moving) return;
         const estimate = calculator.querySelector<HTMLElement>(".estimate-box");
         if (!estimate) return;
 
-        if (next.minimum) {
-          const priceNode = estimate.querySelectorAll<HTMLElement>("strong")[0];
-          const durationNode = estimate.querySelector<HTMLElement>(".time-estimate");
-          if (priceNode && priceNode.textContent?.trim() !== `${next.price} €`) priceNode.textContent = `${next.price} €`;
-          if (durationNode && durationNode.textContent?.trim() !== "2.0 h") durationNode.textContent = "2.0 h";
-          estimate.dataset.minimumCharge = "true";
-        } else {
-          delete estimate.dataset.minimumCharge;
+        const priceNode = estimate.querySelectorAll<HTMLElement>("strong")[0];
+        const durationNode = estimate.querySelector<HTMLElement>(".time-estimate");
+        if (priceNode && priceNode.textContent?.trim() !== `${next.price} €`) {
+          priceNode.textContent = `${next.price} €`;
         }
+        if (durationNode && durationNode.textContent?.trim() !== next.hoursText) {
+          durationNode.textContent = next.hoursText;
+        }
+
+        if (next.minimum) estimate.dataset.minimumCharge = "true";
+        else delete estimate.dataset.minimumCharge;
       });
     };
 
@@ -131,15 +170,15 @@ export default function CalculatorPricingGuard() {
     const handleContinue = (event: Event) => {
       const button = (event.target as Element | null)?.closest(".estimate-box button");
       if (!button) return;
-      const current = snapshot();
-      if (!current?.minimum) return;
+      const current = calculatorSnapshot();
+      if (!current?.moving) return;
 
       window.setTimeout(() => {
         const textarea = document.querySelector<HTMLTextAreaElement>('textarea[name="notes"]');
         if (!textarea) return;
         const corrected = textarea.value
           .replace(/\d+\s*€/, `${current.price} €`)
-          .replace(/\d+(?:[.,]\d+)?–\d+(?:[.,]\d+)?\s*h/, "2.0 h");
+          .replace(/\d+(?:[.,]\d+)?(?:–\d+(?:[.,]\d+)?)?\s*h/, current.hoursText);
         if (corrected !== textarea.value) setNativeTextareaValue(textarea, corrected);
       }, 0);
     };
@@ -150,7 +189,6 @@ export default function CalculatorPricingGuard() {
     observer.observe(calculator, {
       subtree: true,
       childList: true,
-      characterData: true,
       attributes: true,
       attributeFilter: ["class"],
     });
@@ -178,7 +216,7 @@ export default function CalculatorPricingGuard() {
     <div className={`minimum-charge-note ${state.minimum ? "is-active" : ""}`}>
       <div>
         <span>{text.title}</span>
-        <strong>{state.price} €</strong>
+        <strong>{state.minimumPrice} €</strong>
       </div>
       <small>{state.movers === 1 ? text.one : text.two}</small>
     </div>,
