@@ -34,6 +34,10 @@ export type Booking = {
   utm_campaign?: string;
 };
 
+export type BookingCreateResult =
+  | { bookingId: string; trackingPath: string; accessKey: string; warning?: string }
+  | { fallback: 'whatsapp'; code?: string; draftId: string; whatsappUrl: string };
+
 async function json<T>(response: Response): Promise<T> {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error((payload as any).error || `HTTP ${response.status}`);
@@ -46,7 +50,7 @@ export async function createBooking(data: FormData) {
     headers: { Accept: 'application/json' },
     body: data,
   });
-  return json<{ bookingId: string; trackingPath: string; accessKey: string; warning?: string }>(response);
+  return json<BookingCreateResult>(response);
 }
 
 export async function getBooking(id: string, key: string) {
