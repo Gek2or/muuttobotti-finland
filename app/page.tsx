@@ -1,13 +1,15 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
-import BusinessCalculatorV2 from "./BusinessCalculatorV2";
+import BusinessCalculatorV3 from "./BusinessCalculatorV3";
 import BookingRuntimeController from "./BookingRuntimeController";
 import VisualMotionEnhancer from "./VisualMotionEnhancer";
+import HeroUXV6 from "./HeroUXV6";
 import { faqContent } from "./faq-content";
 import "./experience-v5.css";
 import "./business-calculator-v2.css";
 import "./booking-runtime.css";
+import "./v6-ui.css";
 
 export default function Home() {
   const faqSchema = {
@@ -29,9 +31,10 @@ export default function Home() {
       <MuuttobottiArtV3 />
       <FaqPortal />
       <LocalizedSurfaceFixes />
-      <BusinessCalculatorV2 />
+      <BusinessCalculatorV3 />
       <BookingRuntimeController />
       <VisualMotionEnhancer />
+      <HeroUXV6 />
     </>
   );
 }
