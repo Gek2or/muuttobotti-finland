@@ -1,7 +1,7 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
-import CalculatorMinimumDefaults from "./CalculatorMinimumDefaults";
+import CalculatorPricingGuard from "./CalculatorPricingGuard";
 import { faqContent } from "./faq-content";
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
       <MuuttobottiArtV3 />
       <FaqPortal />
       <LocalizedSurfaceFixes />
-      <CalculatorMinimumDefaults />
+      <CalculatorPricingGuard />
     </>
   );
 }
