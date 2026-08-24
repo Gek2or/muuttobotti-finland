@@ -1,7 +1,7 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
-import BusinessCalculatorV3 from "./BusinessCalculatorV3";
+import BusinessCalculatorV4 from "./BusinessCalculatorV4";
 import BookingRuntimeController from "./BookingRuntimeController";
 import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import HeroUXV6 from "./HeroUXV6";
@@ -13,6 +13,7 @@ import "./booking-runtime.css";
 import "./v6-ui.css";
 import "./mobile-header-polish.css";
 import "./mobile-readability-v61.css";
+import "./calculator-v4.css";
 
 export default function Home() {
   const faqSchema = {
@@ -34,7 +35,7 @@ export default function Home() {
       <MuuttobottiArtV3 />
       <FaqPortal />
       <LocalizedSurfaceFixes />
-      <BusinessCalculatorV3 />
+      <BusinessCalculatorV4 />
       <BookingRuntimeController />
       <VisualMotionEnhancer />
       <HeroUXV6 />
