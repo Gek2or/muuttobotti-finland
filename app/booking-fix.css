@@ -1,0 +1,19 @@
+/* Booking/contact spacing hotfix */
+.site-shell .booking-section{
+  padding-bottom:clamp(38px,4.5vw,64px);
+}
+.site-shell .contact-section{
+  margin-top:0;
+}
+.site-shell .booking-form{
+  margin-bottom:0;
+}
+
+@media(max-width:760px){
+  .site-shell .booking-section{
+    padding-bottom:34px;
+  }
+  .site-shell .contact-section{
+    padding-top:12px;
+  }
+}
