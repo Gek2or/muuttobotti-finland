@@ -1,0 +1,18 @@
+/* Calculator v4 — softer area pricing, explicit belongings volume */
+.bc4-volume{display:grid;gap:9px;padding:2px 0}
+.bc4-volume>span{font-size:11px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:#5e706d}
+.bc4-volume>div{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:5px;border-radius:14px;background:#eef1ec}
+.bc4-volume button{min-height:46px;border:1px solid transparent;border-radius:10px;background:transparent;color:#65736f;font-size:12px;font-weight:850;cursor:pointer;transition:.2s ease}
+.bc4-volume button.active{background:#fff;color:#071b22;border-color:rgba(7,27,34,.07);box-shadow:0 8px 20px rgba(7,27,34,.09)}
+.bc4-volume small{font-size:11px;line-height:1.5;color:#788783}
+.dark-theme .bc4-volume>span{color:#9eafac}
+.dark-theme .bc4-volume>div{background:#0d2a31}
+.dark-theme .bc4-volume button{color:#aab9b6}
+.dark-theme .bc4-volume button.active{background:#17363d;color:#f0f7f5;border-color:rgba(255,255,255,.08)}
+.dark-theme .bc4-volume small{color:#a7b7b3}
+@media(max-width:760px){
+  .bc4-volume>span{font-size:12.5px;letter-spacing:.055em}
+  .bc4-volume>div{grid-template-columns:1fr;gap:5px;padding:5px}
+  .bc4-volume button{min-height:48px;font-size:13.5px;text-align:left;padding:0 14px}
+  .bc4-volume small{font-size:12.5px;line-height:1.55}
+}
