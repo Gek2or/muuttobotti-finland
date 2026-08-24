@@ -2,7 +2,9 @@ import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
 import CalculatorPricingGuard from "./CalculatorPricingGuard";
+import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import { faqContent } from "./faq-content";
+import "./experience-v5.css";
 
 export default function Home() {
   const faqSchema = {
@@ -25,6 +27,7 @@ export default function Home() {
       <FaqPortal />
       <LocalizedSurfaceFixes />
       <CalculatorPricingGuard />
+      <VisualMotionEnhancer />
     </>
   );
 }
