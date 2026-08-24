@@ -7,6 +7,7 @@ import "./commercial-v2.css";
 import "./art-v3.css";
 import "./ui-polish-v4.css";
 import "./ui-polish-v4-compat.css";
+import "./booking-fix.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
