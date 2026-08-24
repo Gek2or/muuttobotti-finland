@@ -17,6 +17,8 @@ type Mode = "moving" | "cleaning" | "transport";
 type Locale = "fi" | "en" | "uk" | "ru";
 type CleanType = "regular" | "moveout" | "deep";
 
+const CALCULATOR_SNAPSHOT_KEY = "muuttobotti-calculator-snapshot";
+
 const text = {
   fi: {
     tabs: ["Muutto", "Siivous", "Kuljetus"],
@@ -203,6 +205,53 @@ export default function BusinessCalculatorV2() {
   }, [transportDistance, weight, express]);
 
   const result = mode === "moving" ? moving : mode === "cleaning" ? cleaning : transport;
+
+  useEffect(() => {
+    const snapshot = {
+      version: 2,
+      source: "business-calculator-v2",
+      mode,
+      locale,
+      quotedPrice: result.price,
+      quotedDuration: result.hours,
+      moving: mode === "moving" ? {
+        movers,
+        hourlyRate: movers === 1 ? 59 : 75,
+        sizeM2: moveSize,
+        floor: moveFloor,
+        distanceKm: moveDistance,
+        elevator,
+        packing,
+        afterClean,
+        workPrice: moving.workPrice,
+        kmCharge: moving.kmCharge,
+        cleaningPrice: moving.cleaningPrice,
+      } : undefined,
+      cleaning: mode === "cleaning" ? {
+        hourlyRate: 32.9,
+        minimumHours: 2,
+        sizeM2: cleanSize,
+        windows,
+        cleanType,
+      } : undefined,
+      transport: mode === "transport" ? {
+        hourlyRate: 49,
+        minimumPrice: 79,
+        distanceKm: transportDistance,
+        weightKg: weight,
+        express,
+        kmCharge: transport.kmCharge,
+        heavy: transport.heavy,
+      } : undefined,
+      savedAt: new Date().toISOString(),
+    };
+
+    try {
+      sessionStorage.setItem(CALCULATOR_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Private browsing/storage restrictions must not break the calculator.
+    }
+  }, [mode, locale, result.price, result.hours, movers, moveSize, moveFloor, moveDistance, elevator, packing, afterClean, moving.workPrice, moving.kmCharge, moving.cleaningPrice, cleanSize, windows, cleanType, transportDistance, weight, express, transport.kmCharge, transport.heavy]);
 
   const continueToBooking = () => {
     const service = document.querySelector<HTMLSelectElement>('select[name="service"]');
