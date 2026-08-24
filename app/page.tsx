@@ -1,5 +1,6 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
+import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
 import { faqContent } from "./faq-content";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <MuuttobottiArtV3 />
       <FaqPortal />
+      <LocalizedSurfaceFixes />
     </>
   );
 }
