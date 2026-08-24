@@ -1,0 +1,1 @@
+This route also has a fallback in app/[slug]/page.tsx for vinext/Cloudflare static parameter generation. Keep both paths in sync if the preview route changes.
