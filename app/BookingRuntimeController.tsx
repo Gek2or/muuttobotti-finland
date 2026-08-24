@@ -12,6 +12,8 @@ type BookingResult = {
   warning?: string;
 };
 
+const CALCULATOR_SNAPSHOT_KEY = "muuttobotti-calculator-snapshot";
+
 const labels = {
   fi: {
     success: "Varaus vastaanotettu!",
@@ -56,6 +58,43 @@ function getLocale(): Locale {
   return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
 }
 
+function attachLeadContext(data: FormData) {
+  const url = new URL(window.location.href);
+  data.set("page_url", `${url.origin}${url.pathname}${url.search}`.slice(0, 1000));
+  data.set("referer", document.referrer.slice(0, 1000));
+  data.set("client_locale", getLocale());
+
+  try {
+    data.set("client_timezone", Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+  } catch {
+    data.set("client_timezone", "");
+  }
+
+  data.set(
+    "client_screen",
+    `${window.screen.width}x${window.screen.height}@${window.devicePixelRatio || 1}`.slice(0, 80),
+  );
+
+  for (const [key, field] of [
+    ["utm_source", "utm_source"],
+    ["utm_medium", "utm_medium"],
+    ["utm_campaign", "utm_campaign"],
+  ] as const) {
+    const value = url.searchParams.get(key);
+    if (value) data.set(field, value.slice(0, 160));
+  }
+
+  try {
+    const raw = sessionStorage.getItem(CALCULATOR_SNAPSHOT_KEY);
+    if (!raw) return;
+    const snapshot = JSON.parse(raw) as { mode?: string };
+    const service = String(data.get("service") ?? "");
+    if (snapshot?.mode === service) data.set("calculator_snapshot", raw.slice(0, 6000));
+  } catch {
+    // Calculator metadata is optional and must never block a booking.
+  }
+}
+
 export default function BookingRuntimeController() {
   const [locale, setLocale] = useState<Locale>("fi");
   const [result, setResult] = useState<BookingResult | null>(null);
@@ -97,6 +136,7 @@ export default function BookingRuntimeController() {
         const pickup = String(data.get("pickup") ?? "").trim();
         const destination = String(data.get("destination") ?? "").trim();
         if (!destination) data.set("destination", pickup);
+        attachLeadContext(data);
 
         const response = await fetch("/api/bookings", {
           method: "POST",
