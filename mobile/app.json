@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Muuttobotti",
+    "slug": "muuttobotti",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "muuttobotti",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Muuttobotti tarvitsee pääsyn kuviin, jotta voit liittää kuvia varaukseen.",
+          "cameraPermission": "Muuttobotti tarvitsee kameran käyttöoikeuden, jotta voit kuvata muutettavat tavarat.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "fi.muuttobotti.app"
+    },
+    "android": {
+      "package": "fi.muuttobotti.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#071B22"
+      }
+    },
+    "extra": {
+      "apiBaseUrl": "https://muuttobotti.fi"
+    }
+  }
+}
