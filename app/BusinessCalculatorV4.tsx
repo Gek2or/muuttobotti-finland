@@ -28,7 +28,7 @@ const ui = {
     recTwo:"Suosittelemme 2 muuttajaa", recOne:"1 muuttaja riittää todennäköisesti", recHeavy:"Painava kuorma kannattaa vahvistaa ennen tilausta",
     recCleaning:"Arvio perustuu pinta-alaan, siivoustyyppiin ja ikkunoihin", recTransport:"Crafter sopii tähän kuljetukseen",
     whyTwo:"Kahdella muuttajalla työ valmistuu nopeammin ja kokonaisuus pysyy usein järkevämpänä.",
-    minMove:"Minimi 2 h. Ensimmäiset 10 km sisältyvät, sen jälkeen 0,85 €/km.",
+    minMove:"Minimi 2 h. Ensimmäiset 10 km sisältyvät, sen jälkeen 0,85 €/km. Pinta-ala vaikuttaa arvioon portaittain, ei suoraan euroina per m².",
     minClean:"32,90 €/h · minimiveloitus 2 h · perusvälineet sisältyvät.",
     minTransport:"Crafter-kuljetuksen minimiveloitus 79 €. Ensimmäiset 10 km sisältyvät.",
     compare:"Vertailu", withOne:"1 muuttajalla", withTwo:"2 muuttajalla", saveTime:"Säästät aikaa noin",
@@ -47,7 +47,7 @@ const ui = {
     recTwo:"We recommend 2 movers", recOne:"1 mover is likely enough", recHeavy:"Confirm a heavy load before booking",
     recCleaning:"Estimate is based on size, cleaning type and windows", recTransport:"The Crafter fits this transport",
     whyTwo:"Two movers finish faster and often keep the overall job more efficient.",
-    minMove:"2 h minimum. First 10 km included, then €0.85/km.", minClean:"€32.90/h · 2 h minimum · basic supplies included.",
+    minMove:"2 h minimum. First 10 km included, then €0.85/km. Home size affects the estimate in soft tiers, not as a direct €/m² charge.", minClean:"€32.90/h · 2 h minimum · basic supplies included.",
     minTransport:"Crafter transport minimum €79. First 10 km included.", compare:"Compare", withOne:"With 1 mover", withTwo:"With 2 movers",
     saveTime:"Estimated time saved", finalNote:"This is a preliminary estimate. Final price is confirmed before work starts.",
   },
@@ -64,7 +64,7 @@ const ui = {
     recTwo:"Рекомендуємо 2 вантажників", recOne:"Ймовірно, достатньо 1 вантажника", recHeavy:"Важкий вантаж краще підтвердити до замовлення",
     recCleaning:"Оцінка враховує площу, тип прибирання та вікна", recTransport:"Crafter підходить для цього перевезення",
     whyTwo:"Двоє вантажників працюють швидше й часто роблять весь переїзд ефективнішим.",
-    minMove:"Мінімум 2 год. Перші 10 км включено, далі 0,85 €/км.", minClean:"32,90 €/год · мінімум 2 год · базові засоби включено.",
+    minMove:"Мінімум 2 год. Перші 10 км включено, далі 0,85 €/км. Площа впливає на оцінку м’якими діапазонами, а не прямою оплатою за м².", minClean:"32,90 €/год · мінімум 2 год · базові засоби включено.",
     minTransport:"Мінімум для Crafter — 79 €. Перші 10 км включено.", compare:"Порівняння", withOne:"З 1 вантажником", withTwo:"З 2 вантажниками",
     saveTime:"Орієнтовна економія часу", finalNote:"Це попередня оцінка. Остаточну ціну підтверджуємо до початку роботи.",
   },
@@ -81,7 +81,7 @@ const ui = {
     recTwo:"Рекомендуем 2 грузчиков", recOne:"Скорее всего достаточно 1 грузчика", recHeavy:"Тяжёлый груз лучше подтвердить до заказа",
     recCleaning:"Расчёт учитывает площадь, тип уборки и окна", recTransport:"Crafter подходит для этой перевозки",
     whyTwo:"Два грузчика работают быстрее и часто делают весь заказ эффективнее.",
-    minMove:"Минимум 2 часа. Первые 10 км включены, дальше 0,85 €/км.", minClean:"32,90 €/ч · минимум 2 часа · базовые средства включены.",
+    minMove:"Минимум 2 часа. Первые 10 км включены, дальше 0,85 €/км. Площадь влияет на оценку мягкими диапазонами, а не прямой оплатой за м².", minClean:"32,90 €/ч · минимум 2 часа · базовые средства включены.",
     minTransport:"Минимум Crafter — 79 €. Первые 10 км включены.", compare:"Сравнение", withOne:"С 1 грузчиком", withTwo:"С 2 грузчиками",
     saveTime:"Примерная экономия времени", finalNote:"Это предварительная оценка. Итоговую цену подтверждаем до начала работы.",
   },
@@ -136,12 +136,12 @@ export default function BusinessCalculatorV4(){
     const second=Math.max(0,Math.min(extraM2-30,40));
     const third=Math.max(0,extraM2-70);
     const sizeHours=count===1
-      ? first*.010+second*.015+third*.022
-      : first*.006+second*.009+third*.014;
-    const baseHours=count===1?1.45:1.35;
+      ? first*.012+second*.018+third*.025
+      : first*.008+second*.012+third*.017;
+    const baseHours=count===1?1.55:1.70;
     const loadHours=count===1
-      ? ({light:0,normal:.30,full:.80} as const)[load]
-      : ({light:0,normal:.20,full:.50} as const)[load];
+      ? ({light:0,normal:.45,full:1.10} as const)[load]
+      : ({light:0,normal:.30,full:.70} as const)[load];
     const stairs=floor<=0?0:elevator?floor*(count===1?.04:.025):floor*(count===1?.16:.10);
     const driveHours=Math.max(0,distance-10)/50;
     const packHours=packing?(count===1?1.1:.7):0;
