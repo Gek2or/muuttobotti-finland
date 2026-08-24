@@ -5,6 +5,7 @@ import BusinessCalculatorV3 from "./BusinessCalculatorV3";
 import BookingRuntimeController from "./BookingRuntimeController";
 import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import HeroUXV6 from "./HeroUXV6";
+import CalculatorBridgeV6 from "./CalculatorBridgeV6";
 import { faqContent } from "./faq-content";
 import "./experience-v5.css";
 import "./business-calculator-v2.css";
@@ -35,6 +36,7 @@ export default function Home() {
       <BookingRuntimeController />
       <VisualMotionEnhancer />
       <HeroUXV6 />
+      <CalculatorBridgeV6 />
     </>
   );
 }
