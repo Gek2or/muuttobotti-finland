@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertTriangle, ArrowRight, Boxes, Check, CheckCircle2, Clock3, Gauge,
-  PackageOpen, Sparkles, Truck, UserRound, UsersRound,
+  Minus, PackageOpen, Plus, Sparkles, Truck, UserRound, UsersRound,
 } from "lucide-react";
 
 type Mode = "moving" | "cleaning" | "transport";
@@ -92,11 +92,37 @@ function localeNow(): Locale {
   return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
 }
 function money(value:number){ return Math.round(value); }
+function clamp(value:number,min:number,max:number){ return Math.min(max,Math.max(min,value)); }
 function setNativeValue(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string) {
   const proto = element instanceof HTMLSelectElement ? HTMLSelectElement.prototype : element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
   Object.getOwnPropertyDescriptor(proto,"value")?.set?.call(element,value);
   element.dispatchEvent(new Event("input",{bubbles:true}));
   element.dispatchEvent(new Event("change",{bubbles:true}));
+}
+
+type StepperProps={
+  value:number; min:number; max:number; step:number; unit?:string;
+  onChange:(value:number)=>void; ariaLabel:string;
+};
+
+function NumericStepper({value,min,max,step,unit="",onChange,ariaLabel}:StepperProps){
+  const change=(next:number)=>onChange(clamp(Math.round(next),min,max));
+  return <div className="bc5-stepper">
+    <button type="button" aria-label={`${ariaLabel} -`} disabled={value<=min} onClick={()=>change(value-step)}><Minus/></button>
+    <div className="bc5-stepper-value">
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        value={value}
+        aria-label={ariaLabel}
+        onChange={event=>change(Number(event.target.value)||min)}
+      />
+      {unit&&<span>{unit}</span>}
+    </div>
+    <button type="button" aria-label={`${ariaLabel} +`} disabled={value>=max} onClick={()=>change(value+step)}><Plus/></button>
+  </div>;
 }
 
 export default function BusinessCalculatorV4(){
@@ -184,7 +210,7 @@ export default function BusinessCalculatorV4(){
 
   useEffect(()=>{
     const snapshot={
-      version:4,source:"business-calculator-v4",mode,locale,quotedPrice:result.price,quotedDuration:duration,
+      version:5,source:"business-calculator-v5-steppers",mode,locale,quotedPrice:result.price,quotedDuration:duration,
       moving:mode==="moving"?{movers,hourlyRate:movers===1?59:75,sizeM2:size,loadLevel:load,floor,distanceKm:distance,elevator,packing,afterClean,heavyItems,recommendedMovers:recommendTwo?2:1,workPrice:money(selectedMove.work),kmCharge:money(selectedMove.km),cleaningPrice:money(selectedMove.clean)}:undefined,
       cleaning:mode==="cleaning"?{sizeM2:cleanSize,windows,cleanType,hourlyRate:32.9}:undefined,
       transport:mode==="transport"?{distanceKm:transportDistance,weightKg:weight,express,kmCharge:money(transport.km),heavy:transport.heavy}:undefined,
@@ -210,17 +236,17 @@ export default function BusinessCalculatorV4(){
   const saved=Math.max(0,moveOne.hours-moveTwo.hours);
   const loadLabels:{key:LoadLevel,label:string}[]=[{key:"light",label:t.light},{key:"normal",label:t.normalLoad},{key:"full",label:t.full}];
 
-  return createPortal(<div className="bc3-card bc4-card" data-mode={mode}>
+  return createPortal(<div className="bc3-card bc4-card bc5-card" data-mode={mode}>
     <div className="bc3-tabs">{(["moving","cleaning","transport"] as Mode[]).map((item,i)=><button key={item} className={mode===item?"active":""} onClick={()=>setMode(item)}>{item==="moving"?<Boxes/>:item==="cleaning"?<Sparkles/>:<Truck/>}<span>{t.tabs[i]}</span></button>)}</div>
 
     {mode==="moving"&&<div className="bc3-body">
       <div className="bc3-move-band"><div><Gauge/><span>{bandLabel}</span></div><div className={`bc3-scale ${sizeBand}`}><i/><i/><i/></div></div>
-      <div className="bc3-grid">
-        <label className="bc3-full"><span>{t.movers}</span><div className="bc3-movers"><button className={movers===1?"active":""} onClick={()=>setMovers(1)}><UserRound/><div><b>{t.one}</b><small>59 €/h</small></div></button><button className={movers===2?"active":""} onClick={()=>setMovers(2)}><UsersRound/><div><b>{t.two}</b><small>75 €/h · Crafter</small></div></button></div></label>
-        <label><span>{t.size}</span><strong>{size} m²</strong><input type="range" min="15" max="220" value={size} onChange={e=>setSize(+e.target.value)}/></label>
-        <label><span>{t.floor}</span><strong>{floor}</strong><input type="range" min="0" max="12" value={floor} onChange={e=>setFloor(+e.target.value)}/></label>
+      <div className="bc3-grid bc5-grid">
+        <div className="bc3-full bc5-control"><span className="bc5-label">{t.movers}</span><div className="bc3-movers"><button className={movers===1?"active":""} onClick={()=>setMovers(1)}><UserRound/><div><b>{t.one}</b><small>59 €/h</small></div></button><button className={movers===2?"active":""} onClick={()=>setMovers(2)}><UsersRound/><div><b>{t.two}</b><small>75 €/h · Crafter</small></div></button></div></div>
+        <div className="bc5-control"><span className="bc5-label">{t.size}</span><NumericStepper value={size} min={15} max={220} step={5} unit="m²" onChange={setSize} ariaLabel={t.size}/></div>
+        <div className="bc5-control"><span className="bc5-label">{t.floor}</span><NumericStepper value={floor} min={0} max={12} step={1} onChange={setFloor} ariaLabel={t.floor}/></div>
         <div className="bc3-full bc4-volume"><span>{t.load}</span><div>{loadLabels.map(item=><button key={item.key} className={load===item.key?"active":""} onClick={()=>setLoad(item.key)}>{item.label}</button>)}</div><small>{t.sizeHint}</small></div>
-        <label className="bc3-full"><span>{t.distance}</span><strong>{distance} km</strong><input type="range" min="1" max="500" value={distance} onChange={e=>setDistance(+e.target.value)}/></label>
+        <div className="bc3-full bc5-control"><span className="bc5-label">{t.distance}</span><NumericStepper value={distance} min={1} max={500} step={5} unit="km" onChange={setDistance} ariaLabel={t.distance}/></div>
         <div className="bc3-switches bc3-full"><button className={elevator?"on":""} onClick={()=>setElevator(!elevator)}><CheckCircle2/>{t.elevator}</button><button className={packing?"on":""} onClick={()=>setPacking(!packing)}><Boxes/>{t.packing}</button><button className={afterClean?"on":""} onClick={()=>setAfterClean(!afterClean)}><Sparkles/>{t.afterClean}</button><button className={heavyItems?"on warning":""} onClick={()=>setHeavyItems(!heavyItems)}><PackageOpen/><span>{t.heavy}<small>{t.heavyHint}</small></span></button></div>
       </div>
 
@@ -229,9 +255,17 @@ export default function BusinessCalculatorV4(){
       <div className="bc3-rule">{t.minMove}</div>
     </div>}
 
-    {mode==="cleaning"&&<div className="bc3-body"><div className="bc3-grid"><label><span>{t.size}</span><strong>{cleanSize} m²</strong><input type="range" min="20" max="300" value={cleanSize} onChange={e=>setCleanSize(+e.target.value)}/></label><label><span>{t.windows}</span><strong>{windows}</strong><input type="range" min="0" max="30" value={windows} onChange={e=>setWindows(+e.target.value)}/></label><label className="bc3-full"><span>{t.cleanType}</span><select value={cleanType} onChange={e=>setCleanType(e.target.value as CleanType)}><option value="regular">{t.regular}</option><option value="moveout">{t.moveout}</option><option value="deep">{t.deep}</option></select></label></div><div className="bc3-recommendation"><div className="bc3-rec-icon"><Sparkles/></div><div><span>{t.recommendation}</span><strong>{t.recCleaning}</strong></div></div><div className="bc3-rule">{t.minClean}</div></div>}
+    {mode==="cleaning"&&<div className="bc3-body"><div className="bc3-grid bc5-grid">
+      <div className="bc5-control"><span className="bc5-label">{t.size}</span><NumericStepper value={cleanSize} min={20} max={300} step={5} unit="m²" onChange={setCleanSize} ariaLabel={t.size}/></div>
+      <div className="bc5-control"><span className="bc5-label">{t.windows}</span><NumericStepper value={windows} min={0} max={30} step={1} onChange={setWindows} ariaLabel={t.windows}/></div>
+      <label className="bc3-full"><span>{t.cleanType}</span><select value={cleanType} onChange={e=>setCleanType(e.target.value as CleanType)}><option value="regular">{t.regular}</option><option value="moveout">{t.moveout}</option><option value="deep">{t.deep}</option></select></label>
+    </div><div className="bc3-recommendation"><div className="bc3-rec-icon"><Sparkles/></div><div><span>{t.recommendation}</span><strong>{t.recCleaning}</strong></div></div><div className="bc3-rule">{t.minClean}</div></div>}
 
-    {mode==="transport"&&<div className="bc3-body"><div className="bc3-grid"><label><span>{t.distance}</span><strong>{transportDistance} km</strong><input type="range" min="1" max="600" value={transportDistance} onChange={e=>setTransportDistance(+e.target.value)}/></label><label><span>{t.weight}</span><strong>{weight} kg</strong><input type="range" min="5" max="1200" step="5" value={weight} onChange={e=>setWeight(+e.target.value)}/></label><label className="bc3-full"><span>{t.delivery}</span><select value={express?"express":"normal"} onChange={e=>setExpress(e.target.value==="express")}><option value="normal">{t.normal}</option><option value="express">{t.express}</option></select></label></div><div className={`bc3-recommendation ${transport.heavy?"recommend-two":""}`}><div className="bc3-rec-icon">{transport.heavy?<AlertTriangle/>:<Truck/>}</div><div><span>{t.recommendation}</span><strong>{transport.heavy?t.recHeavy:t.recTransport}</strong></div></div><div className="bc3-rule">{t.minTransport}</div></div>}
+    {mode==="transport"&&<div className="bc3-body"><div className="bc3-grid bc5-grid">
+      <div className="bc5-control"><span className="bc5-label">{t.distance}</span><NumericStepper value={transportDistance} min={1} max={600} step={5} unit="km" onChange={setTransportDistance} ariaLabel={t.distance}/></div>
+      <div className="bc5-control"><span className="bc5-label">{t.weight}</span><NumericStepper value={weight} min={5} max={1200} step={25} unit="kg" onChange={setWeight} ariaLabel={t.weight}/></div>
+      <label className="bc3-full"><span>{t.delivery}</span><select value={express?"express":"normal"} onChange={e=>setExpress(e.target.value==="express")}><option value="normal">{t.normal}</option><option value="express">{t.express}</option></select></label>
+    </div><div className={`bc3-recommendation ${transport.heavy?"recommend-two":""}`}><div className="bc3-rec-icon">{transport.heavy?<AlertTriangle/>:<Truck/>}</div><div><span>{t.recommendation}</span><strong>{transport.heavy?t.recHeavy:t.recTransport}</strong></div></div><div className="bc3-rule">{t.minTransport}</div></div>}
 
     <div className="bc3-summary"><div className="bc3-price"><span>{t.estimate}</span><strong>{result.price} €</strong></div><div><span>{t.duration}</span><b>{duration}</b></div><div className="bc3-breakdown"><span>{t.breakdown}</span>{mode==="moving"&&<><small>{t.work}: {money(selectedMove.work)} €</small>{selectedMove.km>0&&<small>{t.driving}: {money(selectedMove.km)} €</small>}{selectedMove.clean>0&&<small>{t.extra}: {money(selectedMove.clean)} €</small>}</>}{mode==="cleaning"&&<small>{t.minimum}: 2 h · 32,90 €/h</small>}{mode==="transport"&&<><small>{t.work}: {money(transport.work)} €</small>{transport.km>0&&<small>{t.driving}: {money(transport.km)} €</small>}</>}</div><button onClick={continueBooking}>{t.continue}<ArrowRight/></button><p>{t.finalNote}</p></div>
   </div>,target);
