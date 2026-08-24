@@ -1,0 +1,274 @@
+/* Muuttobotti experience v5: larger type, richer motion and blurred art backgrounds */
+
+/* ---------- Typography scale (+15–20% where the UI was too small) ---------- */
+.site-shell{font-size:17px}
+.desktop-nav button{font-size:14px}
+.lang-button{font-size:12px}
+.quote-button{font-size:13px}
+.eyebrow{font-size:12px}
+.hero-copy>p{font-size:clamp(19px,1.65vw,24px);line-height:1.62}
+.rating-row small{font-size:12px}
+.trust-strip div{font-size:13px}
+.stats-band span,.stats-band .cities span{font-size:11px}
+.kicker{font-size:12px}
+.section-heading p,.art-faq-head>p{font-size:15px}
+.service-card h3{font-size:24px}
+.service-card p{font-size:15px}
+.service-price span{font-size:11px}
+.service-price strong{font-size:22px}
+.service-card button{font-size:13px}
+.calculator-intro>p,.booking-copy>p{font-size:17px}
+.smart-note span,.smart-note strong{font-size:14px}
+.calc-tabs button{font-size:13px}
+.calc-fields label,.booking-form label{font-size:11px}
+.range-value{font-size:14px}
+.calc-fields select,.booking-form select,.booking-form input,.booking-form textarea{font-size:15px}
+.mover-selector button{font-size:14px}
+.mover-selector button small{font-size:12px}
+.switch-grid button{font-size:12px}
+.feature-list span{font-size:12px}
+.estimate-box span{font-size:11px}
+.estimate-box strong{font-size:34px}
+.estimate-box .time-estimate{font-size:21px}
+.estimate-box button{font-size:13px}
+.steps-grid h3{font-size:23px}
+.steps-grid p{font-size:14px}
+.dash-top small{font-size:11px}
+.track-head span,.track-head b{font-size:11px}
+.tracking-labels{font-size:10px}
+.dash-cards span{font-size:10px}
+.dash-cards strong{font-size:14px}
+.verified-review-panel span{font-size:14px}
+.verified-review-panel a{font-size:13px}
+.art-faq-filters button{font-size:13px}
+.art-faq-grid summary{font-size:15px}
+.art-faq-grid details>p{font-size:14px}
+.art-faq-cta span{font-size:13px}
+.art-faq-cta a{font-size:13px}
+.booking-benefits span{font-size:14px}
+.upload-field small{font-size:11px}
+.submit-button{font-size:15px}
+.form-error{font-size:13px}
+.contact-copy>p{font-size:16px}
+.contact-actions a{font-size:13px}
+.hours div{font-size:14px}
+footer a{font-size:14px}
+.footer-brand p,.footer-rating{font-size:14px}
+footer strong{font-size:12px}
+.footer-bottom{font-size:12px}
+.cookie-banner p{font-size:13px}
+
+/* ---------- Calculator minimum charge ---------- */
+.minimum-charge-note{
+  margin:10px 0 0;
+  border:1px solid rgba(7,27,34,.10);
+  background:#fffefb;
+  border-radius:16px;
+  padding:13px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  color:#536866;
+  box-shadow:0 8px 22px rgba(7,27,34,.035);
+}
+.minimum-charge-note>div{display:flex;align-items:center;gap:12px}
+.minimum-charge-note span{font-size:12px;font-weight:800;letter-spacing:.02em}
+.minimum-charge-note strong{font-size:19px;color:#071b22;letter-spacing:-.03em}
+.minimum-charge-note small{font-size:12px;text-align:right}
+.minimum-charge-note.is-active{
+  background:linear-gradient(135deg,#efffd2,#e6f5d9);
+  border-color:#9bcb58;
+  box-shadow:0 10px 30px rgba(121,167,59,.11);
+}
+.estimate-box[data-minimum-charge="true"]{
+  box-shadow:0 0 0 2px rgba(124,176,56,.18),0 14px 34px rgba(95,139,45,.13)!important;
+}
+
+/* ---------- Ambient image layers ---------- */
+.services-section,.calculator-section,.process-section,.portal-section,.reviews-section,.booking-section,.contact-section{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.services-section>* ,.calculator-section>* ,.process-section>* ,.portal-section>* ,.reviews-section>* ,.booking-section>* ,.contact-section>*{
+  position:relative;
+  z-index:2;
+}
+.services-section::before,.calculator-section::before,.process-section::before,.portal-section::before,.reviews-section::before,.booking-section::before,.contact-section::before{
+  content:"";
+  position:absolute;
+  inset:-16%;
+  z-index:0;
+  pointer-events:none;
+  background-image:url('/muuttobotti-hero.png');
+  background-size:cover;
+  background-repeat:no-repeat;
+  filter:blur(72px) saturate(.82) contrast(1.02);
+  transform:scale(1.14) translate3d(0,0,0);
+  opacity:.075;
+  animation:uiArtDrift 22s ease-in-out infinite alternate;
+}
+.services-section::after,.calculator-section::after,.process-section::after,.portal-section::after,.reviews-section::after,.booking-section::after,.contact-section::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 22%,rgba(200,255,101,.11),transparent 28%),
+    radial-gradient(circle at 88% 68%,rgba(96,151,132,.10),transparent 32%);
+  background-size:120% 120%;
+  animation:uiGlowDrift 16s ease-in-out infinite alternate;
+}
+.services-section::before{background-position:55% 48%;opacity:.09}
+.process-section::before{background-position:22% 58%;opacity:.065;filter:blur(84px) saturate(.65)}
+.reviews-section::before{background-position:76% 42%;opacity:.07;filter:blur(86px) saturate(.65) brightness(1.08)}
+.calculator-section::before,.portal-section::before,.booking-section::before{
+  opacity:.15;
+  filter:blur(78px) saturate(.88) brightness(.82);
+  mix-blend-mode:screen;
+}
+.calculator-section::before{background-position:22% 46%}
+.portal-section::before{background-position:78% 52%}
+.booking-section::before{background-position:42% 58%;opacity:.13}
+.contact-section::before{background-position:70% 44%;opacity:.09;filter:blur(72px) saturate(.7)}
+
+.hero-media{animation:uiHeroBreath 20s ease-in-out infinite alternate;will-change:transform}
+.hero-glow{animation:uiHeroGlow 11s ease-in-out infinite alternate}
+.availability-pill{animation:uiPillFloat 5s ease-in-out infinite}
+
+/* ---------- Scroll reveal motion ---------- */
+.ui-motion-ready{
+  opacity:0;
+  transform:translate3d(0,28px,0) scale(.992);
+  transition:
+    opacity .78s cubic-bezier(.2,.7,.2,1) var(--ui-motion-delay,0ms),
+    transform .78s cubic-bezier(.2,.7,.2,1) var(--ui-motion-delay,0ms);
+  will-change:transform,opacity;
+}
+.ui-motion-ready.ui-motion-in{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.service-card,.steps-grid article,.art-faq-grid details,.seo-faq-grid article{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease}
+.art-faq-grid details:hover,.seo-faq-grid article:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(7,27,34,.09)}
+.dashboard-mockup{transition:transform .4s ease,box-shadow .4s ease}
+.dashboard-mockup:hover{transform:perspective(1200px) rotateY(0deg) rotateX(0deg) translateY(-5px);box-shadow:0 52px 120px rgba(0,0,0,.37)}
+
+/* ---------- SEO/service-page blurred art backgrounds ---------- */
+.seo-page{position:relative;overflow:hidden;background:#06191f}
+.seo-hero-section{position:relative;isolation:isolate;overflow:hidden}
+.seo-hero-section>*{position:relative;z-index:2}
+.seo-hero-section::before{
+  content:"";
+  position:absolute;
+  inset:-13%;
+  z-index:0;
+  pointer-events:none;
+  background:url('/muuttobotti-hero.png') center 48% / cover no-repeat;
+  filter:blur(42px) saturate(.78) contrast(1.05);
+  opacity:.28;
+  transform:scale(1.16);
+  animation:uiArtDrift 24s ease-in-out infinite alternate;
+}
+.seo-hero-section::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:linear-gradient(100deg,rgba(5,23,29,.94) 0%,rgba(5,23,29,.79) 48%,rgba(5,23,29,.60) 100%),radial-gradient(circle at 80% 22%,rgba(200,255,101,.12),transparent 28%);
+}
+.seo-theme-cleaning .seo-hero-section::before{background-position:72% 38%;filter:blur(54px) saturate(.48) brightness(1.16);opacity:.30}
+.seo-theme-transport .seo-hero-section::before{background-position:30% 52%;filter:blur(46px) saturate(.72) contrast(1.08);opacity:.31}
+.seo-theme-assembly .seo-hero-section::before{background-position:64% 58%;filter:blur(58px) saturate(.55) sepia(.08);opacity:.27}
+.seo-theme-window .seo-hero-section::before{background-position:82% 35%;filter:blur(62px) saturate(.42) brightness(1.24);opacity:.26}
+.seo-theme-legal .seo-hero-section::before{background-position:50% 50%;filter:blur(72px) saturate(.35);opacity:.16}
+.seo-copy>p{font-size:clamp(20px,1.75vw,25px)}
+.seo-bullets span,.seo-trust-row span{font-size:14px}
+.seo-actions a{font-size:15px}
+.seo-contact{font-size:15px}
+.seo-contact p,.seo-contact a{font-size:14px}
+.seo-faq-grid h3{font-size:19px}
+.seo-faq-grid p{font-size:15px;line-height:1.7}
+
+/* ---------- Dark mode ---------- */
+.dark-theme .minimum-charge-note{background:#123139;border-color:rgba(255,255,255,.12);color:#b8cbc7}
+.dark-theme .minimum-charge-note strong{color:#f3faf7}
+.dark-theme .minimum-charge-note.is-active{background:linear-gradient(135deg,#1b4138,#17362f);border-color:rgba(200,255,101,.42)}
+
+/* ---------- Motion keyframes ---------- */
+@keyframes uiArtDrift{
+  0%{transform:scale(1.14) translate3d(-1.2%,-1.2%,0)}
+  100%{transform:scale(1.20) translate3d(1.6%,1.2%,0)}
+}
+@keyframes uiGlowDrift{
+  0%{background-position:0% 20%,100% 70%}
+  100%{background-position:18% 8%,82% 88%}
+}
+@keyframes uiHeroBreath{
+  0%{transform:scale(1.015)}
+  100%{transform:scale(1.065)}
+}
+@keyframes uiHeroGlow{
+  0%{transform:translate3d(-20px,10px,0) scale(.96);opacity:.17}
+  100%{transform:translate3d(20px,-18px,0) scale(1.06);opacity:.27}
+}
+@keyframes uiPillFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-5px)}
+}
+
+/* ---------- Responsive readability ---------- */
+@media(max-width:980px){
+  .desktop-nav button{font-size:13px}
+  .hero-copy>p{font-size:20px}
+  .section-heading p,.art-faq-head>p{font-size:15px}
+  .calculator-intro>p,.booking-copy>p{font-size:17px}
+  .services-section::before,.calculator-section::before,.process-section::before,.portal-section::before,.reviews-section::before,.booking-section::before,.contact-section::before{inset:-24%;filter:blur(64px) saturate(.78)}
+}
+@media(max-width:760px){
+  .site-shell{font-size:16px}
+  .hero h1{font-size:clamp(54px,15vw,72px)}
+  .hero-copy>p{font-size:19px;line-height:1.58}
+  .eyebrow{font-size:11px}
+  .trust-strip div{font-size:12px}
+  .stats-band span{font-size:10px}
+  .kicker{font-size:11px}
+  .section-heading h2,.center-heading h2,.art-faq-head h2{font-size:clamp(40px,11vw,54px)}
+  .section-heading p,.art-faq-head>p{font-size:15px}
+  .service-card h3{font-size:23px}
+  .service-card p{font-size:15px}
+  .calc-tabs button{font-size:12px}
+  .calc-fields label,.booking-form label{font-size:11px}
+  .calc-fields select,.booking-form select,.booking-form input,.booking-form textarea{font-size:16px;min-height:48px}
+  .mover-selector button{font-size:13px}
+  .mover-selector button small{font-size:11px}
+  .switch-grid button{font-size:12px;min-height:48px}
+  .estimate-box strong{font-size:32px}
+  .minimum-charge-note{align-items:flex-start;flex-direction:column;gap:7px}
+  .minimum-charge-note>div{width:100%;justify-content:space-between}
+  .minimum-charge-note span,.minimum-charge-note small{font-size:12px;text-align:left}
+  .steps-grid p{font-size:14px}
+  .art-faq-grid summary{font-size:14px;line-height:1.45}
+  .art-faq-grid details>p{font-size:14px}
+  .booking-benefits span{font-size:13px}
+  .submit-button{font-size:15px;min-height:54px}
+  .contact-copy>p{font-size:15px}
+  footer a,.footer-brand p,.footer-rating{font-size:13px}
+  .seo-copy>p{font-size:18px}
+  .seo-bullets span,.seo-trust-row span,.seo-actions a{font-size:13px}
+}
+@media(max-width:460px){
+  .hero-copy>p{font-size:18px}
+  .service-card p,.section-heading p,.art-faq-head>p{font-size:14px}
+  .calc-tabs button{font-size:11px}
+  .estimate-box strong{font-size:30px}
+  .contact-actions a{font-size:13px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-media,.hero-glow,.availability-pill,
+  .services-section::before,.calculator-section::before,.process-section::before,.portal-section::before,.reviews-section::before,.booking-section::before,.contact-section::before,
+  .services-section::after,.calculator-section::after,.process-section::after,.portal-section::after,.reviews-section::after,.booking-section::after,.contact-section::after,
+  .seo-hero-section::before{animation:none!important}
+  .ui-motion-ready{opacity:1!important;transform:none!important;transition:none!important}
+}
