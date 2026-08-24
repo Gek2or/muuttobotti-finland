@@ -1,0 +1,182 @@
+/* Muuttobotti v6.1 — mobile readability + booking success polish */
+
+/* Booking success — secure, useful and readable */
+.booking-runtime-success{padding:18px!important;overflow:auto!important}
+.booking-runtime-success .booking-success-v61{
+  width:min(620px,100%)!important;
+  max-width:620px!important;
+  max-height:calc(100dvh - 36px)!important;
+  overflow:auto!important;
+  padding:30px!important;
+  border-radius:28px!important;
+  background:#f7f9f4!important;
+  color:#071b22!important;
+  box-shadow:0 34px 110px rgba(0,0,0,.34)!important;
+}
+.booking-runtime-success .success-status-icon{width:58px;height:58px;border-radius:18px;background:#c8ff65;display:grid;place-items:center;margin-bottom:18px}
+.booking-runtime-success .success-status-icon svg{width:29px;height:29px;color:#071b22!important}
+.booking-runtime-success h3{font-size:32px!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:0 0 10px!important}
+.booking-runtime-success .booking-success-v61>p{font-size:15px!important;line-height:1.62!important;color:#5d706e!important;margin:0 0 20px!important}
+.booking-runtime-success .booking-success-primary{margin:0 0 12px!important;padding:16px 17px!important;background:#edf3eb!important}
+.booking-runtime-success .booking-success-primary span{font-size:11px!important}
+.booking-runtime-success .booking-success-primary strong{font-size:21px!important}
+.booking-private-data{display:grid;gap:10px;margin-top:10px}
+.booking-private-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 12px;padding:15px;border:1px solid rgba(7,27,34,.1);border-radius:16px;background:#fff}
+.booking-private-heading{grid-column:1/-1;display:flex;align-items:center;gap:8px;color:#5c706d;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+.booking-private-heading svg{width:16px;height:16px;color:#66894c}
+.booking-private-row code{min-width:0;padding:10px 11px;border-radius:10px;background:#f1f4ef;color:#153139;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;line-height:1.45;overflow-wrap:anywhere;word-break:break-all}
+.booking-private-row button{border:1px solid rgba(7,27,34,.1);border-radius:10px;background:#071b22;color:#fff;min-width:132px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;font-weight:850;cursor:pointer}
+.booking-private-row button svg{width:15px;height:15px}
+.booking-private-note{display:flex;align-items:flex-start;gap:9px;margin:12px 0 16px;padding:12px 13px;border-radius:13px;background:#eef5e6;color:#536b5c;font-size:11px;line-height:1.5}
+.booking-private-note svg{width:16px;height:16px;min-width:16px;color:#6f9440;margin-top:1px}
+.booking-runtime-success .booking-success-actions-v61{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+.booking-runtime-success .booking-success-actions-v61 a{min-height:48px!important;border-radius:12px!important;font-size:12px!important;font-weight:850!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;text-decoration:none!important;padding:0 14px!important}
+.booking-runtime-success .booking-open-tracking{background:#071b22!important;color:#fff!important}
+.booking-runtime-success .booking-share-whatsapp{background:#49ad5b!important;color:#fff!important}
+.booking-runtime-success .booking-success-actions-v61 svg{width:16px!important;height:16px!important}
+.booking-runtime-success .success-close{width:100%!important;min-height:42px!important;margin-top:8px!important;font-size:12px!important;font-weight:800!important}
+
+/* Desktop readability — modest lift */
+@media(min-width:761px){
+  .service-card p{font-size:16px!important;line-height:1.68!important}
+  .service-card button{font-size:14px!important}
+  .art-faq-grid summary{font-size:16px!important;line-height:1.45!important}
+  .art-faq-grid details>p{font-size:15px!important;line-height:1.75!important}
+  .booking-form label{font-size:12px!important}
+  .booking-form input,.booking-form select,.booking-form textarea{font-size:16px!important}
+  .booking-benefits span{font-size:15px!important}
+}
+
+/* Mobile readability */
+@media(max-width:760px){
+  html{-webkit-text-size-adjust:100%}
+  body{font-size:17px!important}
+  .site-shell{padding-bottom:92px!important}
+
+  /* Header */
+  .topbar .brand{font-size:18px!important;letter-spacing:-.72px!important}
+  .topbar .brand-mark{box-shadow:0 8px 22px rgba(145,198,64,.24)!important}
+  .topbar .theme-button,.topbar .menu-button{width:43px!important;min-width:43px!important;height:43px!important;min-height:43px!important}
+  .topbar .theme-button svg,.topbar .menu-button svg{width:22px!important;height:22px!important}
+  .topbar .lang-button{min-width:62px!important;height:43px!important;min-height:43px!important;font-size:13px!important;font-weight:800!important}
+  .topbar .mobile-nav button{font-size:15px!important;font-weight:750!important}
+
+  /* Hero */
+  .eyebrow{font-size:12px!important;line-height:1.4!important}
+  .hero-copy>p{font-size:19px!important;line-height:1.62!important}
+  .primary-button,.secondary-button{font-size:16px!important;min-height:56px!important}
+  .rating-row small{font-size:13px!important;line-height:1.45!important}
+  .hero-v6-smart{font-size:11.5px!important;padding:8px 11px!important}
+  .hero-v6-price-grid button{min-height:70px!important;padding:11px 12px!important}
+  .hero-v6-price-grid small{font-size:11px!important;line-height:1.3!important}
+  .hero-v6-price-grid b{font-size:14px!important;line-height:1.35!important}
+  .hero-v6-price-grid button>svg:first-child{width:21px!important;height:21px!important}
+
+  /* Stats / section intros */
+  .stats-band strong{font-size:27px!important}
+  .stats-band span{font-size:10px!important;line-height:1.35!important}
+  .kicker{font-size:12px!important}
+  .section-heading p,.art-faq-head>p,.calculator-intro>p,.booking-copy>p{font-size:16px!important;line-height:1.68!important}
+
+  /* Service cards */
+  .service-card{padding:26px 23px!important;min-height:315px!important}
+  .service-card h3{font-size:26px!important;line-height:1.08!important;margin-top:22px!important}
+  .service-card p{font-size:16.5px!important;line-height:1.65!important}
+  .service-price span{font-size:12px!important}
+  .service-price strong{font-size:24px!important}
+  .service-card button{font-size:15px!important;min-height:45px!important}
+
+  /* Calculator v3 */
+  .bc3-card{padding:9px!important}
+  .bc3-tabs button{font-size:13px!important;min-height:50px!important;font-weight:850!important}
+  .bc3-tabs button svg{width:17px!important;height:17px!important}
+  .bc3-move-band{font-size:15px!important}
+  .bc3-grid{padding:19px!important;gap:19px!important}
+  .bc3-grid label{font-size:12.5px!important;line-height:1.4!important;letter-spacing:.055em!important}
+  .bc3-grid label>strong{font-size:18px!important}
+  .bc3-grid select{font-size:16px!important;min-height:54px!important}
+  .bc3-movers b{font-size:15px!important}
+  .bc3-movers small{font-size:13px!important}
+  .bc3-movers button{min-height:70px!important}
+  .bc3-switches button{font-size:13px!important;min-height:56px!important;line-height:1.35!important}
+  .bc3-switches button small{font-size:11px!important;line-height:1.35!important}
+  .bc3-recommendation span{font-size:11px!important}
+  .bc3-recommendation strong{font-size:16px!important;line-height:1.35!important}
+  .bc3-recommendation p{font-size:13px!important;line-height:1.5!important}
+  .bc3-recommendation>button{font-size:13px!important;min-height:45px!important}
+  .bc3-compare>span{font-size:11px!important}
+  .bc3-compare small{font-size:11.5px!important}
+  .bc3-compare b{font-size:14px!important;line-height:1.4!important}
+  .bc3-rule{font-size:13px!important;line-height:1.55!important}
+  .bc3-summary span{font-size:11.5px!important}
+  .bc3-summary strong{font-size:36px!important}
+  .bc3-summary b{font-size:19px!important}
+  .bc3-breakdown small{font-size:11.5px!important;line-height:1.45!important}
+  .bc3-summary button{font-size:15px!important;min-height:56px!important}
+  .bc3-summary>p{font-size:11px!important;line-height:1.45!important}
+
+  /* FAQ */
+  .art-faq{padding-left:0!important;padding-right:0!important}
+  .art-faq-filters button{font-size:14px!important;min-height:47px!important;padding:0 15px!important}
+  .art-faq-filters button small{font-size:11px!important;min-width:24px!important;height:24px!important}
+  .art-faq-grid{gap:12px!important}
+  .art-faq-grid details{border-radius:20px!important}
+  .art-faq-grid summary{min-height:84px!important;padding:20px 20px!important;font-size:17px!important;font-weight:820!important;line-height:1.42!important;gap:16px!important}
+  .art-faq-grid summary svg{width:21px!important;height:21px!important;min-width:21px!important}
+  .art-faq-grid details>p{padding:18px 20px 22px!important;font-size:16px!important;line-height:1.72!important}
+  .art-faq-cta strong{font-size:19px!important}
+  .art-faq-cta span{font-size:15px!important;line-height:1.55!important}
+  .art-faq-cta a{font-size:15px!important;min-height:50px!important}
+
+  /* Booking form */
+  .booking-form{padding-left:20px!important;padding-right:20px!important}
+  .booking-form label{font-size:12.5px!important;line-height:1.4!important;letter-spacing:.065em!important}
+  .booking-form input,.booking-form select,.booking-form textarea{font-size:17px!important;line-height:1.45!important;min-height:54px!important;padding:15px 16px!important}
+  .booking-form textarea{min-height:130px!important}
+  .booking-benefits span{font-size:15px!important;line-height:1.5!important}
+  .upload-field{min-height:92px!important;padding:18px!important}
+  .upload-field strong{font-size:14px!important}
+  .upload-field small{font-size:12.5px!important;line-height:1.45!important}
+  .submit-button{font-size:16.5px!important;min-height:58px!important}
+  .form-error{font-size:14px!important;line-height:1.5!important}
+
+  /* Contact / footer */
+  .contact-copy>p{font-size:16px!important;line-height:1.65!important}
+  .contact-actions a{font-size:15px!important;min-height:49px!important}
+  .hours div,.hours strong,.hours span{font-size:14px!important;line-height:1.5!important}
+  footer a,.footer-brand p,.footer-rating{font-size:14px!important;line-height:1.55!important}
+  footer strong{font-size:13px!important}
+  .footer-bottom{font-size:12.5px!important;line-height:1.5!important}
+
+  /* Bottom sticky actions */
+  .mobile-conversion-bar{left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom))!important;padding:6px!important;gap:6px!important;border-radius:19px!important}
+  .mobile-conversion-bar a,.mobile-conversion-bar button{min-height:58px!important;border-radius:14px!important;font-size:12.5px!important;font-weight:850!important;gap:7px!important}
+  .mobile-conversion-bar svg{width:19px!important;height:19px!important}
+
+  /* Success modal */
+  .booking-runtime-success{padding:10px!important;align-items:flex-start!important}
+  .booking-runtime-success .booking-success-v61{max-height:calc(100dvh - 20px)!important;padding:23px 18px 18px!important;border-radius:23px!important}
+  .booking-runtime-success .success-status-icon{width:54px;height:54px;border-radius:16px;margin-bottom:15px}
+  .booking-runtime-success h3{font-size:29px!important}
+  .booking-runtime-success .booking-success-v61>p{font-size:15px!important}
+  .booking-runtime-success .booking-success-primary{padding:15px!important}
+  .booking-private-row{grid-template-columns:1fr!important;padding:14px!important}
+  .booking-private-heading{font-size:11.5px!important}
+  .booking-private-row code{font-size:12px!important;padding:11px!important}
+  .booking-private-row button{width:100%!important;min-height:46px!important;font-size:13px!important}
+  .booking-private-note{font-size:12.5px!important;line-height:1.5!important}
+  .booking-runtime-success .booking-success-actions-v61{grid-template-columns:1fr!important}
+  .booking-runtime-success .booking-success-actions-v61 a{min-height:52px!important;font-size:14px!important}
+  .booking-runtime-success .success-close{min-height:46px!important;font-size:13px!important}
+}
+
+@media(max-width:420px){
+  .topbar .brand{font-size:17px!important}
+  .topbar .lang-button{width:52px!important;min-width:52px!important;font-size:13px!important}
+  .hero-v6-price-grid{grid-template-columns:1fr!important}
+  .hero-v6-price-grid button{min-height:66px!important}
+  .art-faq-grid summary{font-size:16.5px!important;padding:19px 18px!important}
+  .art-faq-grid details>p{font-size:15.5px!important;padding:17px 18px 21px!important}
+  .booking-form{padding-left:17px!important;padding-right:17px!important}
+  .mobile-conversion-bar a,.mobile-conversion-bar button{font-size:12px!important}
+}
