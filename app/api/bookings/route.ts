@@ -41,27 +41,62 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid upload" }, { status: 400 });
   }
 
+  if (!env.DB) {
+    console.error("Booking API: Cloudflare D1 binding DB is unavailable");
+    return Response.json({ error: "Booking storage unavailable" }, { status: 503 });
+  }
+  if (files.length > 0 && !env.BUCKET) {
+    console.error("Booking API: Cloudflare R2 binding BUCKET is unavailable");
+    return Response.json({ error: "Photo storage unavailable" }, { status: 503 });
+  }
+
   const id = `MB-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const accessKey = crypto.randomUUID().replaceAll("-", "");
   const accessTokenHash = await hashAccessKey(accessKey);
   const db = env.DB;
-  await db.prepare(`CREATE TABLE IF NOT EXISTS bookings (
-    id TEXT PRIMARY KEY, service TEXT NOT NULL, customer_name TEXT NOT NULL,
-    phone TEXT NOT NULL, email TEXT NOT NULL, pickup TEXT NOT NULL,
-    destination TEXT NOT NULL, preferred_date TEXT NOT NULL, preferred_time TEXT NOT NULL,
-    notes TEXT NOT NULL DEFAULT '', photo_count INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'new', access_token_hash TEXT,
-    notification_status TEXT NOT NULL DEFAULT 'queued',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  )`).run();
-  await db.prepare("INSERT INTO bookings (id, service, customer_name, phone, email, pickup, destination, preferred_date, preferred_time, notes, photo_count, access_token_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-    .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, files.length, accessTokenHash).run();
 
-  await Promise.all(files.map((file, index) => env.BUCKET.put(
-    `bookings/${id}/${index + 1}-${safeFileName(file.name)}`,
-    file.stream(),
-    { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
-  )));
+  try {
+    await db.prepare(`CREATE TABLE IF NOT EXISTS bookings (
+      id TEXT PRIMARY KEY, service TEXT NOT NULL, customer_name TEXT NOT NULL,
+      phone TEXT NOT NULL, email TEXT NOT NULL, pickup TEXT NOT NULL,
+      destination TEXT NOT NULL, preferred_date TEXT NOT NULL, preferred_time TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '', photo_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'new', access_token_hash TEXT,
+      notification_status TEXT NOT NULL DEFAULT 'queued',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`).run();
+
+    // CREATE TABLE IF NOT EXISTS does not upgrade an already-existing D1 table.
+    // Older Muuttobotti deployments may therefore miss columns added later.
+    const schemaInfo = await db.prepare("PRAGMA table_info(bookings)").all();
+    const schemaRows = (schemaInfo.results ?? []) as Array<{ name?: string }>;
+    const columns = new Set(schemaRows.map(row => String(row.name ?? "")));
+    const additions: Array<[string, string]> = [
+      ["notes", "notes TEXT NOT NULL DEFAULT ''"],
+      ["photo_count", "photo_count INTEGER NOT NULL DEFAULT 0"],
+      ["status", "status TEXT NOT NULL DEFAULT 'new'"],
+      ["access_token_hash", "access_token_hash TEXT"],
+      ["notification_status", "notification_status TEXT NOT NULL DEFAULT 'queued'"],
+    ];
+
+    for (const [name, sql] of additions) {
+      if (!columns.has(name)) await db.prepare(`ALTER TABLE bookings ADD COLUMN ${sql}`).run();
+    }
+
+    await db.prepare("INSERT INTO bookings (id, service, customer_name, phone, email, pickup, destination, preferred_date, preferred_time, notes, photo_count, access_token_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(id, payload.service, payload.name, payload.phone, payload.email, payload.pickup, payload.destination, payload.date, payload.time, payload.notes, files.length, accessTokenHash).run();
+
+    if (files.length > 0 && env.BUCKET) {
+      await Promise.all(files.map((file, index) => env.BUCKET.put(
+        `bookings/${id}/${index + 1}-${safeFileName(file.name)}`,
+        file.stream(),
+        { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
+      )));
+    }
+  } catch (error) {
+    console.error("Booking API storage failure", error);
+    return Response.json({ error: "Booking could not be saved" }, { status: 500 });
+  }
 
   return Response.json(
     { ok: true, bookingId: id, accessKey, trackingPath: `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}` },
