@@ -4,6 +4,7 @@ import "./globals.css";
 import "./overrides.css";
 import "./seo-pages.css";
 import "./commercial-v2.css";
+import "./art-v3.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
@@ -78,6 +79,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     priceRange: "€€",
     telephone: "+3584578767567",
     email: "autochemixfin@gmail.com",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: "34",
+      bestRating: "5",
+      worstRating: "1",
+    },
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+3584578767567",
@@ -85,14 +93,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       availableLanguage: ["Finnish", "English", "Russian", "Ukrainian"],
     },
     openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        opens: "07:00",
-        closes: "22:00",
-      },
+      { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "22:30" },
+      { "@type": "OpeningHoursSpecification", dayOfWeek: "Saturday", opens: "08:00", closes: "23:00" },
+      { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "12:00", closes: "18:00" },
     ],
-    address: { "@type": "PostalAddress", addressRegion: "Uusimaa", addressCountry: "FI" },
+    address: { "@type": "PostalAddress", streetAddress: "Aromikuja 2", postalCode: "04320", addressLocality: "Tuusula", addressRegion: "Uusimaa", addressCountry: "FI" },
   };
 
   return (

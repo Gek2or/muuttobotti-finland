@@ -1,5 +1,5 @@
-import MuuttobottiCommercialV2 from "./MuuttobottiCommercialV2";
+import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 
 export default function Home() {
-  return <MuuttobottiCommercialV2 />;
+  return <MuuttobottiArtV3 />;
 }
