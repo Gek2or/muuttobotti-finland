@@ -3,15 +3,11 @@ import { ensureBookingSchema } from "../../bookings/schema";
 
 const STATUSES = new Set(["new", "confirmed", "in_progress", "completed", "cancelled"]);
 
-function noStore(payload: unknown, init?: ResponseInit) {
-  return Response.json(payload, {
-    ...init,
-    headers: {
-      "Cache-Control": "no-store",
-      "X-Robots-Tag": "noindex, nofollow",
-      ...(init?.headers || {}),
-    },
-  });
+function noStore(payload: unknown, init: ResponseInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("Cache-Control", "no-store");
+  headers.set("X-Robots-Tag", "noindex, nofollow");
+  return Response.json(payload, { ...init, headers });
 }
 
 export async function GET(request: Request) {
