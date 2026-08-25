@@ -31,7 +31,7 @@ export default function RootLayout() {
   }, []);
 
   return <LanguageProvider>
-    <StatusBar style="light" backgroundColor={colors.ink} />
+    <StatusBar style="light" />
     <Stack screenOptions={{ headerStyle:{backgroundColor:colors.ink}, headerTintColor:'#fff', headerTitleStyle:{fontWeight:'900'}, contentStyle:{backgroundColor:colors.ink}, headerBackTitle:'Takaisin' }}>
       <Stack.Screen name="index" options={{headerShown:false}} />
       <Stack.Screen name="client" options={{headerShown:false}} />
