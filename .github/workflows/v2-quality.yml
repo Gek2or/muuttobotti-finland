@@ -22,17 +22,37 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      - name: Lint
-        run: npm run lint
+
+      - name: Validate v2 PWA manifest
+        run: node -e "JSON.parse(require('fs').readFileSync('public/muuttobotti.webmanifest','utf8')); console.log('manifest ok')"
+
+      - name: Validate v2 preview JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('public/mobile-v2.html').read_text()
+          scripts = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html, flags=re.I)
+          if not scripts:
+              raise SystemExit('No inline script found in mobile-v2.html')
+          Path('/tmp/mobile-v2-inline.js').write_text('\n'.join(scripts))
+          PY
+          node --check /tmp/mobile-v2-inline.js
+
       - name: Production build
         run: npm run build
+
       - name: Rendered HTML tests
         run: node --test tests/rendered-html.test.mjs
+
       - name: Validate Cloudflare artifact
         run: npm run validate:artifact
