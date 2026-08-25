@@ -1,0 +1,10 @@
+import { ensureBookingSchema } from '../../bookings/schema';
+function text(v:unknown,max=500){return String(v??'').trim().slice(0,max)}
+async function sha(value:string){const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')}
+function sameOrigin(request:Request){const origin=request.headers.get('origin');return !origin||new URL(origin).host===new URL(request.url).host}
+export async function POST(request:Request){
+ if(!sameOrigin(request))return Response.json({error:'Invalid origin'},{status:403});const{env}=await import('cloudflare:workers');if(!env.DB)return Response.json({error:'DB_UNAVAILABLE'},{status:503});await ensureBookingSchema(env.DB);
+ const body=await request.json().catch(()=>({})) as Record<string,unknown>;const session=text(body.session,200),bookingId=text(body.bookingId,40).toUpperCase(),token=text(body.token,500),platform=text(body.platform,30),locale=text(body.locale,10)||'fi';if(!session||!bookingId||!token)return Response.json({error:'INVALID_INPUT'},{status:400});
+ const sessionHash=await sha(session);const account:any=await env.DB.prepare(`SELECT email FROM client_accounts WHERE session_hash=? AND datetime(session_expires_at)>datetime('now') LIMIT 1`).bind(sessionHash).first();if(!account)return Response.json({error:'SESSION_INVALID'},{status:401});const booking:any=await env.DB.prepare('SELECT id FROM bookings WHERE id=? AND lower(email)=lower(?) LIMIT 1').bind(bookingId,String(account.email)).first();if(!booking)return Response.json({error:'BOOKING_NOT_FOUND'},{status:404});
+ await env.DB.prepare(`INSERT INTO push_tokens(token,booking_id,platform,locale,active,updated_at) VALUES(?,?,?,?,1,CURRENT_TIMESTAMP) ON CONFLICT(token) DO UPDATE SET booking_id=excluded.booking_id,platform=excluded.platform,locale=excluded.locale,active=1,updated_at=CURRENT_TIMESTAMP`).bind(token,bookingId,platform,locale).run();return Response.json({ok:true},{headers:{'Cache-Control':'no-store'}})
+}

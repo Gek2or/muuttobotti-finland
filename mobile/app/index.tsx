@@ -1,168 +1,32 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { getAdminBookings, getBooking } from '../src/api';
+import { getAdminBookings, getBooking, requestClientCode, verifyClientCode } from '../src/api';
 import { localeOptions, useLanguage } from '../src/i18n';
 import { secureStorage } from '../src/storage';
 import { colors, radius, shadow } from '../src/theme';
 
-type Role = 'client' | 'admin';
+type Role='client'|'admin'; type ClientMode='account'|'booking';
+const c:any={
+fi:{welcome:'Tervetuloa Muuttobottiin.',subtitle:'Varaa, hyväksy hinta ja seuraa muuttoa reaaliajassa.',client:'Asiakas',admin:'Admin',account:'Oma tili',booking:'Varauskoodi',email:'Sähköposti',code:'6-numeroinen koodi',sendCode:'Lähetä kirjautumiskoodi',verify:'Vahvista ja avaa tili',bookingId:'Varausnumero',accessKey:'Pääsykoodi',signIn:'Avaa varaus',adminToken:'Admin token',adminSign:'Avaa Operations',guest:'Uusi asiakas? Tee varaus ilman tiliä',guestBtn:'Aloita',accountCopy:'Näet samalla sähköpostilla tehdyt varaukset yhdessä profiilissa.',bookingCopy:'Avaa yksittäinen varaus numerolla ja yksityisellä pääsykoodilla.'},
+en:{welcome:'Welcome to Muuttobotti.',subtitle:'Book, approve the price and follow your move live.',client:'Customer',admin:'Admin',account:'My account',booking:'Booking code',email:'Email',code:'6-digit code',sendCode:'Send login code',verify:'Verify and open account',bookingId:'Booking number',accessKey:'Access code',signIn:'Open booking',adminToken:'Admin token',adminSign:'Open Operations',guest:'New customer? Book without an account',guestBtn:'Start',accountCopy:'See bookings made with the same email in one profile.',bookingCopy:'Open one booking with its number and private access code.'},
+ru:{welcome:'Добро пожаловать в Muuttobotti.',subtitle:'Заказывайте, подтверждайте цену и следите за переездом в реальном времени.',client:'Клиент',admin:'Админ',account:'Мой аккаунт',booking:'Код заказа',email:'Email',code:'6-значный код',sendCode:'Отправить код входа',verify:'Подтвердить и открыть аккаунт',bookingId:'Номер заказа',accessKey:'Код доступа',signIn:'Открыть заказ',adminToken:'Admin token',adminSign:'Открыть Operations',guest:'Новый клиент? Создайте заказ без аккаунта',guestBtn:'Начать',accountCopy:'Все заказы на один email отображаются в одном профиле.',bookingCopy:'Откройте отдельный заказ по номеру и приватному коду.'},
+uk:{welcome:'Ласкаво просимо до Muuttobotti.',subtitle:'Бронюйте, підтверджуйте ціну та стежте за переїздом наживо.',client:'Клієнт',admin:'Адмін',account:'Мій акаунт',booking:'Код замовлення',email:'Email',code:'6-значний код',sendCode:'Надіслати код входу',verify:'Підтвердити та відкрити акаунт',bookingId:'Номер замовлення',accessKey:'Код доступу',signIn:'Відкрити замовлення',adminToken:'Admin token',adminSign:'Відкрити Operations',guest:'Новий клієнт? Створіть замовлення без акаунта',guestBtn:'Почати',accountCopy:'Усі замовлення на один email відображаються в одному профілі.',bookingCopy:'Відкрийте окреме замовлення за номером і приватним кодом.'}}
 
-const loginCopy = {
-  fi: {
-    welcome: 'Tervetuloa takaisin.',
-    subtitle: 'Avaa oma varauksesi tai hallitse Muuttobotin tilauksia.',
-    client: 'Asiakas', admin: 'Admin',
-    clientTitle: 'Avaa oma varaus',
-    clientCopy: 'Käytä varauksen jälkeen saamaasi varausnumeroa ja yksityistä pääsykoodia.',
-    adminTitle: 'Admin-kirjautuminen',
-    adminCopy: 'Vain Muuttobotin henkilöstölle. Token tallennetaan laitteen SecureStoreen.',
-    bookingId: 'Varausnumero', accessKey: 'Pääsykoodi', adminToken: 'Admin token',
-    signIn: 'Kirjaudu sisään', checking: 'Tarkistetaan…',
-    newCustomer: 'Uusi asiakas?', continueGuest: 'Jatka ilman kirjautumista',
-    hint: 'Pääsykoodi löytyy varauksen vahvistuksen yksityisestä linkistä.',
-    invalidClient: 'Varausta ei löytynyt näillä tunnuksilla.', invalidAdmin: 'Admin-kirjautuminen epäonnistui.',
-  },
-  en: {
-    welcome: 'Welcome back.', subtitle: 'Open your booking or manage Muuttobotti orders.', client: 'Customer', admin: 'Admin',
-    clientTitle: 'Open your booking', clientCopy: 'Use the booking number and private access code received after booking.',
-    adminTitle: 'Admin sign in', adminCopy: 'For Muuttobotti staff only. The token is stored in the device SecureStore.',
-    bookingId: 'Booking number', accessKey: 'Access code', adminToken: 'Admin token', signIn: 'Sign in', checking: 'Checking…',
-    newCustomer: 'New customer?', continueGuest: 'Continue without signing in', hint: 'The access code is included in your private booking link.',
-    invalidClient: 'No booking was found with these credentials.', invalidAdmin: 'Admin sign in failed.',
-  },
-  uk: {
-    welcome: 'З поверненням.', subtitle: 'Відкрийте своє замовлення або керуйте замовленнями Muuttobotti.', client: 'Клієнт', admin: 'Admin',
-    clientTitle: 'Відкрити замовлення', clientCopy: 'Використайте номер замовлення та приватний код доступу, отримані після бронювання.',
-    adminTitle: 'Вхід адміністратора', adminCopy: 'Лише для команди Muuttobotti. Token зберігається в SecureStore пристрою.',
-    bookingId: 'Номер замовлення', accessKey: 'Код доступу', adminToken: 'Admin token', signIn: 'Увійти', checking: 'Перевіряємо…',
-    newCustomer: 'Новий клієнт?', continueGuest: 'Продовжити без входу', hint: 'Код доступу є у приватному посиланні на замовлення.',
-    invalidClient: 'Замовлення з такими даними не знайдено.', invalidAdmin: 'Не вдалося увійти до admin.',
-  },
-  ru: {
-    welcome: 'С возвращением.', subtitle: 'Откройте свой заказ или управляйте заказами Muuttobotti.', client: 'Клиент', admin: 'Администратор',
-    clientTitle: 'Открыть свой заказ', clientCopy: 'Используйте номер заказа и приватный код доступа, полученные после бронирования.',
-    adminTitle: 'Вход администратора', adminCopy: 'Только для команды Muuttobotti. Token сохраняется в SecureStore устройства.',
-    bookingId: 'Номер заказа', accessKey: 'Код доступа', adminToken: 'Admin token', signIn: 'Войти', checking: 'Проверяем…',
-    newCustomer: 'Новый клиент?', continueGuest: 'Продолжить без входа', hint: 'Код доступа находится в приватной ссылке после бронирования.',
-    invalidClient: 'Заказ с такими данными не найден.', invalidAdmin: 'Не удалось войти в admin.',
-  },
-} as const;
-
-export default function IndexScreen() {
-  const { locale, setLocale } = useLanguage();
-  const t = loginCopy[locale];
-  const [role, setRole] = useState<Role>('client');
-  const [bookingId, setBookingId] = useState('');
-  const [accessKey, setAccessKey] = useState('');
-  const [adminToken, setAdminToken] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    void (async () => {
-      const [client, token] = await Promise.all([secureStorage.getClientCredentials(), secureStorage.getAdminToken()]);
-      if (client.id) setBookingId(client.id);
-      if (client.key) setAccessKey(client.key);
-      if (token) setAdminToken(token);
-    })();
-  }, []);
-
-  const signIn = async () => {
-    setBusy(true);
-    setMessage('');
-    try {
-      if (role === 'client') {
-        const id = bookingId.trim().toUpperCase();
-        const key = accessKey.trim().toLowerCase();
-        if (!id || !key) throw new Error(t.invalidClient);
-        await getBooking(id, key);
-        await secureStorage.setClientCredentials(id, key);
-        router.replace({ pathname: '/(client)/track', params: { id, key } });
-      } else {
-        const token = adminToken.trim();
-        if (!token) throw new Error(t.invalidAdmin);
-        await getAdminBookings(token);
-        await secureStorage.setAdminToken(token);
-        router.replace('/admin');
-      }
-    } catch (error) {
-      setMessage(error instanceof Error && error.message ? error.message : role === 'client' ? t.invalidClient : t.invalidAdmin);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const changeRole = (next: Role) => { setRole(next); setMessage(''); };
-
-  return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
-          <View style={styles.brandRow}>
-            <View style={styles.logoRow}><View style={styles.mark}><Text style={styles.markText}>M</Text></View><Text style={styles.logo}>Muuttobotti</Text></View>
-            <View style={styles.languages}>{localeOptions.map(item => <TouchableOpacity key={item.value} style={[styles.lang, locale === item.value && styles.langActive]} onPress={() => setLocale(item.value)}><Text style={[styles.langText, locale === item.value && styles.langTextActive]}>{item.label}</Text></TouchableOpacity>)}</View>
-          </View>
-
-          <View style={styles.hero}>
-            <Text style={styles.kicker}>MUUTTOBOTTI MOBILE</Text>
-            <Text style={styles.title}>{t.welcome}</Text>
-            <Text style={styles.copy}>{t.subtitle}</Text>
-          </View>
-
-          <View style={styles.loginCard}>
-            <View style={styles.roleTabs}>
-              <TouchableOpacity style={[styles.roleTab, role === 'client' && styles.roleTabActive]} onPress={() => changeRole('client')}><Text style={[styles.roleText, role === 'client' && styles.roleTextActive]}>{t.client}</Text></TouchableOpacity>
-              <TouchableOpacity style={[styles.roleTab, role === 'admin' && styles.roleTabActive]} onPress={() => changeRole('admin')}><Text style={[styles.roleText, role === 'admin' && styles.roleTextActive]}>{t.admin}</Text></TouchableOpacity>
-            </View>
-
-            <Text style={styles.formTitle}>{role === 'client' ? t.clientTitle : t.adminTitle}</Text>
-            <Text style={styles.formCopy}>{role === 'client' ? t.clientCopy : t.adminCopy}</Text>
-
-            {role === 'client' ? <>
-              <Field label={t.bookingId} value={bookingId} onChangeText={setBookingId} autoCapitalize="characters" placeholder="MB-12AB34CD" />
-              <Field label={t.accessKey} value={accessKey} onChangeText={setAccessKey} autoCapitalize="none" secureTextEntry placeholder="••••••••••••••••" />
-              <Text style={styles.hint}>{t.hint}</Text>
-            </> : <Field label={t.adminToken} value={adminToken} onChangeText={setAdminToken} autoCapitalize="none" secureTextEntry placeholder="••••••••••••••••" />}
-
-            {!!message && <Text style={styles.error}>{message}</Text>}
-            <TouchableOpacity style={[styles.primary, busy && styles.disabled]} disabled={busy} onPress={signIn}>
-              {busy ? <ActivityIndicator color={colors.ink} /> : <Text style={styles.primaryText}>{t.signIn}</Text>}
-            </TouchableOpacity>
-
-            {role === 'client' && <View style={styles.guestBlock}>
-              <Text style={styles.guestLabel}>{t.newCustomer}</Text>
-              <TouchableOpacity style={styles.secondary} onPress={() => router.replace('/(client)')}><Text style={styles.secondaryText}>{t.continueGuest}</Text></TouchableOpacity>
-            </View>}
-          </View>
-
-          <View style={styles.securityRow}><View style={styles.securityDot} /><Text style={styles.securityText}>SecureStore · HTTPS · private booking access</Text></View>
-          <Text style={styles.footer}>Autochemix Oy · Y-tunnus 3543357-8</Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+export default function IndexScreen(){
+ const {locale,setLocale}=useLanguage();const t=c[locale]||c.fi;const[role,setRole]=useState<Role>('client');const[mode,setMode]=useState<ClientMode>('account');const[bookingId,setBookingId]=useState('');const[accessKey,setAccessKey]=useState('');const[adminToken,setAdminToken]=useState('');const[email,setEmail]=useState('');const[code,setCode]=useState('');const[codeSent,setCodeSent]=useState(false);const[busy,setBusy]=useState(false);const[message,setMessage]=useState('');
+ useEffect(()=>{void(async()=>{const[client,admin,session]=await Promise.all([secureStorage.getClientCredentials(),secureStorage.getAdminToken(),secureStorage.getClientSession()]);if(client.id)setBookingId(client.id);if(client.key)setAccessKey(client.key);if(admin)setAdminToken(admin);if(session.email)setEmail(session.email)})()},[]);
+ const bookingLogin=async()=>{const id=bookingId.trim().toUpperCase(),key=accessKey.trim().toLowerCase();if(!id||!key)throw new Error('Missing booking credentials');await getBooking(id,key);await secureStorage.setClientCredentials(id,key);router.replace({pathname:'/(client)/track',params:{id,key}})};
+ const accountAction=async()=>{if(!codeSent){await requestClientCode(email.trim().toLowerCase());setCodeSent(true);setMessage('✓')}else{const result=await verifyClientCode(email.trim().toLowerCase(),code.trim());await secureStorage.setClientSession(result.token,email.trim().toLowerCase());router.replace('/(client)/profile')}};
+ const submit=async()=>{setBusy(true);setMessage('');try{if(role==='admin'){const token=adminToken.trim();if(!token)throw new Error('Admin token required');await getAdminBookings(token);await secureStorage.setAdminToken(token);router.replace('/admin')}else if(mode==='booking')await bookingLogin();else await accountAction()}catch(error){setMessage(error instanceof Error?error.message:'Login failed')}finally{setBusy(false)}};
+ return <SafeAreaView style={s.safe}><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}><ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="handled">
+  <View style={s.orbA}/><View style={s.orbB}/><View style={s.brand}><View style={s.logoRow}><View style={s.mark}><Text style={s.markText}>M</Text></View><Text style={s.logo}>Muuttobotti</Text></View><View style={s.langs}>{localeOptions.map(item=><TouchableOpacity key={item.value} onPress={()=>setLocale(item.value)} style={[s.lang,locale===item.value&&s.langOn]}><Text style={[s.langText,locale===item.value&&s.langTextOn]}>{item.label}</Text></TouchableOpacity>)}</View></View>
+  <View style={s.hero}><View style={s.version}><Text style={s.versionText}>V2.0 · OPERATIONS READY</Text></View><Text style={s.title}>{t.welcome}</Text><Text style={s.copy}>{t.subtitle}</Text></View>
+  <View style={s.card}><View style={s.tabs}><TouchableOpacity style={[s.tab,role==='client'&&s.tabOn]} onPress={()=>{setRole('client');setMessage('')}}><Text style={[s.tabText,role==='client'&&s.tabTextOn]}>{t.client}</Text></TouchableOpacity><TouchableOpacity style={[s.tab,role==='admin'&&s.tabOn]} onPress={()=>{setRole('admin');setMessage('')}}><Text style={[s.tabText,role==='admin'&&s.tabTextOn]}>{t.admin}</Text></TouchableOpacity></View>
+   {role==='client'?<><View style={s.modeRow}><TouchableOpacity onPress={()=>{setMode('account');setMessage('')}} style={[s.mode,mode==='account'&&s.modeOn]}><Text style={[s.modeText,mode==='account'&&s.modeTextOn]}>{t.account}</Text></TouchableOpacity><TouchableOpacity onPress={()=>{setMode('booking');setMessage('')}} style={[s.mode,mode==='booking'&&s.modeOn]}><Text style={[s.modeText,mode==='booking'&&s.modeTextOn]}>{t.booking}</Text></TouchableOpacity></View><Text style={s.formCopy}>{mode==='account'?t.accountCopy:t.bookingCopy}</Text>{mode==='account'?<><Field label={t.email} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address"/>{codeSent&&<Field label={t.code} value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6}/>}<TouchableOpacity disabled={busy} style={s.primary} onPress={submit}>{busy?<ActivityIndicator color={colors.ink}/>:<Text style={s.primaryText}>{codeSent?t.verify:t.sendCode}</Text>}</TouchableOpacity>{codeSent&&<TouchableOpacity style={s.link} onPress={()=>{setCodeSent(false);setCode('')}}><Text style={s.linkText}>← {t.email}</Text></TouchableOpacity>}</>:<><Field label={t.bookingId} value={bookingId} onChangeText={setBookingId} autoCapitalize="characters" placeholder="MB-12AB34CD"/><Field label={t.accessKey} value={accessKey} onChangeText={setAccessKey} autoCapitalize="none" secureTextEntry/><TouchableOpacity disabled={busy} style={s.primary} onPress={submit}>{busy?<ActivityIndicator color={colors.ink}/>:<Text style={s.primaryText}>{t.signIn}</Text>}</TouchableOpacity></>}</>:<><Text style={s.formCopy}>Muuttobotti staff only · live D1 Operations Console.</Text><Field label={t.adminToken} value={adminToken} onChangeText={setAdminToken} autoCapitalize="none" secureTextEntry/><TouchableOpacity disabled={busy} style={s.primary} onPress={submit}>{busy?<ActivityIndicator color={colors.ink}/>:<Text style={s.primaryText}>{t.adminSign}</Text>}</TouchableOpacity></>}
+   {!!message&&<Text style={s.message}>{message}</Text>}{role==='client'&&<View style={s.guest}><Text style={s.guestText}>{t.guest}</Text><TouchableOpacity style={s.secondary} onPress={()=>router.replace('/(client)')}><Text style={s.secondaryText}>{t.guestBtn} →</Text></TouchableOpacity></View>}
+  </View><View style={s.secure}><View style={s.dot}/><Text style={s.secureText}>HTTPS · SecureStore · D1 · private access</Text></View>
+ </ScrollView></KeyboardAvoidingView></SafeAreaView>
 }
-
-function Field(props: any) {
-  return <View style={styles.field}><Text style={styles.label}>{props.label}</Text><TextInput {...props} placeholderTextColor="#738A87" style={styles.input} /></View>;
-}
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.ink }, flex: { flex: 1 },
-  wrap: { flexGrow: 1, padding: 18, paddingBottom: 32, backgroundColor: colors.ink },
-  brandRow: { gap: 14, marginTop: 4 }, logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  mark: { width: 42, height: 42, borderRadius: 13, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' }, markText: { color: colors.ink, fontWeight: '950', fontSize: 20 },
-  logo: { color: '#fff', fontSize: 23, fontWeight: '950', letterSpacing: -.8 },
-  languages: { flexDirection: 'row', gap: 6 }, lang: { minWidth: 43, height: 34, borderRadius: 10, borderWidth: 1, borderColor: '#29464E', alignItems: 'center', justifyContent: 'center' }, langActive: { backgroundColor: '#18353D', borderColor: '#45636A' }, langText: { color: '#88A09D', fontWeight: '900', fontSize: 11 }, langTextActive: { color: colors.lime },
-  hero: { paddingTop: 34, paddingBottom: 26 }, kicker: { color: colors.lime, fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
-  title: { color: '#fff', fontSize: 39, lineHeight: 42, fontWeight: '950', letterSpacing: -1.7, marginTop: 8 }, copy: { color: '#A9BCB8', fontSize: 16, lineHeight: 24, marginTop: 10, maxWidth: 390 },
-  loginCard: { backgroundColor: '#F4F6F2', borderRadius: 28, padding: 18, gap: 12, ...shadow },
-  roleTabs: { flexDirection: 'row', backgroundColor: '#E4EAE2', borderRadius: 15, padding: 4, gap: 4 }, roleTab: { flex: 1, minHeight: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }, roleTabActive: { backgroundColor: colors.ink }, roleText: { color: '#6A7B77', fontSize: 13, fontWeight: '900' }, roleTextActive: { color: '#fff' },
-  formTitle: { color: colors.ink, fontSize: 25, fontWeight: '950', letterSpacing: -.8, marginTop: 5 }, formCopy: { color: '#667975', fontSize: 13, lineHeight: 20, marginBottom: 2 },
-  field: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#DDE5DC', borderRadius: radius.md, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 8 }, label: { color: '#667A75', fontSize: 10, fontWeight: '900', letterSpacing: .8, textTransform: 'uppercase' }, input: { minHeight: 42, padding: 0, color: colors.ink, fontSize: 16, fontWeight: '750' },
-  hint: { color: '#788985', fontSize: 11, lineHeight: 16, marginTop: -3 }, error: { color: colors.danger, fontSize: 13, lineHeight: 19, fontWeight: '700' },
-  primary: { minHeight: 56, borderRadius: radius.md, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center', marginTop: 2 }, primaryText: { color: colors.ink, fontSize: 16, fontWeight: '950' }, disabled: { opacity: .65 },
-  guestBlock: { borderTopWidth: 1, borderTopColor: '#DDE4DC', paddingTop: 13, gap: 8 }, guestLabel: { color: '#71827E', fontSize: 12, fontWeight: '800', textAlign: 'center' }, secondary: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: '#CAD6CC', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }, secondaryText: { color: colors.ink, fontSize: 14, fontWeight: '900' },
-  securityRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 18 }, securityDot: { width: 7, height: 7, borderRadius: 99, backgroundColor: colors.lime }, securityText: { color: '#718C89', fontSize: 10, fontWeight: '750' }, footer: { color: '#5F7976', textAlign: 'center', fontSize: 10, marginTop: 9 },
-});
+function Field(props:any){return <View style={s.field}><Text style={s.label}>{props.label}</Text><TextInput {...props} placeholderTextColor="#78908B" style={s.input}/></View>}
+const s=StyleSheet.create({safe:{flex:1,backgroundColor:'#06191F'},wrap:{flexGrow:1,padding:18,paddingBottom:34,backgroundColor:'#06191F',overflow:'hidden'},orbA:{position:'absolute',width:300,height:300,borderRadius:150,right:-130,top:-110,backgroundColor:'#224A52',opacity:.65},orbB:{position:'absolute',width:230,height:230,borderRadius:115,left:-130,bottom:100,backgroundColor:'#173D35',opacity:.5},brand:{zIndex:2,gap:13,marginTop:4},logoRow:{flexDirection:'row',alignItems:'center',gap:10},mark:{width:43,height:43,borderRadius:14,backgroundColor:'#C8FF36',alignItems:'center',justifyContent:'center',shadowColor:'#C8FF36',shadowOpacity:.3,shadowRadius:18},markText:{color:'#06191F',fontSize:20,fontWeight:'900'},logo:{color:'#fff',fontSize:23,fontWeight:'900',letterSpacing:-.8},langs:{flexDirection:'row',gap:6},lang:{minWidth:43,height:34,borderRadius:10,borderWidth:1,borderColor:'#31505A',alignItems:'center',justifyContent:'center'},langOn:{backgroundColor:'#14353D',borderColor:'#57777E'},langText:{color:'#8BA5A0',fontSize:10,fontWeight:'900'},langTextOn:{color:'#C8FF36'},hero:{zIndex:2,paddingTop:31,paddingBottom:24},version:{alignSelf:'flex-start',backgroundColor:'#10343A',borderRadius:999,paddingHorizontal:10,paddingVertical:6},versionText:{color:'#C8FF36',fontSize:9,fontWeight:'900',letterSpacing:.8},title:{color:'#fff',fontSize:38,lineHeight:41,fontWeight:'900',letterSpacing:-1.6,marginTop:11},copy:{color:'#A9C0BB',fontSize:15,lineHeight:23,marginTop:9},card:{zIndex:2,backgroundColor:'#F3F6F2',borderRadius:28,padding:17,...shadow},tabs:{flexDirection:'row',backgroundColor:'#E1EAE2',borderRadius:15,padding:4,gap:4},tab:{flex:1,minHeight:44,borderRadius:12,alignItems:'center',justifyContent:'center'},tabOn:{backgroundColor:'#06191F'},tabText:{color:'#6F807C',fontWeight:'900'},tabTextOn:{color:'#fff'},modeRow:{flexDirection:'row',gap:7,marginTop:13},mode:{flex:1,minHeight:42,borderRadius:12,borderWidth:1,borderColor:'#D6E0D8',alignItems:'center',justifyContent:'center',backgroundColor:'#fff'},modeOn:{backgroundColor:'#EFFFCC',borderColor:'#C8E98B'},modeText:{color:'#657873',fontSize:12,fontWeight:'900'},modeTextOn:{color:'#263E2F'},formCopy:{color:'#687B76',fontSize:12,lineHeight:18,marginTop:13,marginBottom:1},field:{backgroundColor:'#fff',borderWidth:1,borderColor:'#DCE5DD',borderRadius:radius.md,paddingHorizontal:14,paddingTop:10,paddingBottom:8,marginTop:9},label:{color:'#687C77',fontSize:9,fontWeight:'900',letterSpacing:.8,textTransform:'uppercase'},input:{minHeight:42,padding:0,color:'#06191F',fontSize:16,fontWeight:'700'},primary:{minHeight:56,borderRadius:radius.md,backgroundColor:'#C8FF36',alignItems:'center',justifyContent:'center',marginTop:12},primaryText:{color:'#06191F',fontSize:15,fontWeight:'900'},secondary:{minHeight:49,borderRadius:radius.md,borderWidth:1,borderColor:'#C9D6CC',backgroundColor:'#fff',alignItems:'center',justifyContent:'center'},secondaryText:{color:'#06191F',fontWeight:'900'},link:{alignItems:'center',paddingTop:11},linkText:{color:'#647A75',fontSize:11,fontWeight:'800'},message:{color:'#4D7647',fontSize:12,fontWeight:'800',marginTop:9},guest:{borderTopWidth:1,borderTopColor:'#DDE5DE',marginTop:14,paddingTop:13,gap:9},guestText:{color:'#738580',fontSize:11,textAlign:'center',fontWeight:'800'},secure:{zIndex:2,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:7,marginTop:17},dot:{width:7,height:7,borderRadius:7,backgroundColor:'#C8FF36'},secureText:{color:'#718E88',fontSize:10,fontWeight:'700'}})

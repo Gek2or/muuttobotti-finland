@@ -1,0 +1,15 @@
+{
+  "name": "Muuttobotti",
+  "short_name": "Muuttobotti",
+  "description": "Moving, transport and cleaning bookings with live tracking.",
+  "start_url": "/mobile-preview.html?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06191f",
+  "theme_color": "#06191f",
+  "lang": "fi",
+  "icons": [
+    { "src": "/muuttobotti-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

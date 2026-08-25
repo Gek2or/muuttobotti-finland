@@ -3,12 +3,12 @@ import { Text, View } from 'react-native';
 import { useLanguage } from '../../src/i18n';
 import { colors } from '../../src/theme';
 
-const icon = (value: string, focused: boolean) => <View style={{ width: 34, height: 30, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? colors.lime : 'transparent' }}><Text style={{ fontSize: 17, color: focused ? colors.ink : '#78908B', fontWeight: '950' }}>{value}</Text></View>;
+const icon = (value: string, focused: boolean) => <View style={{ width: 34, height: 30, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? colors.lime : 'transparent' }}><Text style={{ fontSize: 17, color: focused ? colors.ink : '#78908B', fontWeight: '900' }}>{value}</Text></View>;
 
 export default function ClientTabsLayout() {
   const { tr } = useLanguage();
   return <Tabs screenOptions={{
-    headerStyle: { backgroundColor: colors.ink }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '950' },
+    headerStyle: { backgroundColor: colors.ink }, headerTintColor: '#fff', headerTitleStyle: { fontWeight: '900' },
     tabBarStyle: { height: 78, paddingTop: 7, paddingBottom: 9, backgroundColor: '#071B22', borderTopColor: '#17343C', borderTopWidth: 1, elevation: 18 },
     tabBarActiveTintColor: colors.lime, tabBarInactiveTintColor: '#78908B', tabBarLabelStyle: { fontSize: 9, fontWeight: '900', marginTop: 1 },
   }}>
