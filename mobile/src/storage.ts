@@ -5,8 +5,10 @@ const CLIENT_ID = 'muuttobotti_client_booking_id';
 const CLIENT_KEY = 'muuttobotti_client_booking_key';
 const CLIENT_HISTORY = 'muuttobotti_client_booking_history';
 const PUSH_TOKEN = 'muuttobotti_push_token';
+const PENDING_ESTIMATE = 'muuttobotti_pending_estimate';
 
 export type SavedBookingCredential = { id: string; key: string; savedAt: string };
+export type PendingEstimate = { service: 'moving' | 'cleaning' | 'transport'; snapshot: Record<string, unknown>; savedAt: string };
 
 async function readHistory(): Promise<SavedBookingCredential[]> {
   const raw = await SecureStore.getItemAsync(CLIENT_HISTORY);
@@ -19,6 +21,15 @@ async function readHistory(): Promise<SavedBookingCredential[]> {
 
 async function writeHistory(items: SavedBookingCredential[]) {
   await SecureStore.setItemAsync(CLIENT_HISTORY, JSON.stringify(items.slice(0, 20)));
+}
+
+async function readPendingEstimate(): Promise<PendingEstimate | null> {
+  const raw = await SecureStore.getItemAsync(PENDING_ESTIMATE);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as PendingEstimate;
+    return parsed?.service && parsed?.snapshot ? parsed : null;
+  } catch { return null; }
 }
 
 export const secureStorage = {
@@ -54,4 +65,7 @@ export const secureStorage = {
   getPushToken: () => SecureStore.getItemAsync(PUSH_TOKEN),
   setPushToken: (token: string) => SecureStore.setItemAsync(PUSH_TOKEN, token),
   clearPushToken: () => SecureStore.deleteItemAsync(PUSH_TOKEN),
+  getPendingEstimate: readPendingEstimate,
+  setPendingEstimate: (estimate: Omit<PendingEstimate, 'savedAt'>) => SecureStore.setItemAsync(PENDING_ESTIMATE, JSON.stringify({ ...estimate, savedAt: new Date().toISOString() })),
+  clearPendingEstimate: () => SecureStore.deleteItemAsync(PENDING_ESTIMATE),
 };
