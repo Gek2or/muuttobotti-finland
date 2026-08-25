@@ -12,16 +12,28 @@ export async function registerForNotifications() {
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('bookings', {
-      name: 'Muuttobotti bookings',
+      name: 'Muuttobotti orders',
+      description: 'Booking status, price offers and crew updates',
       importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 180, 80, 180],
-      lightColor: '#B8FF00',
+      vibrationPattern: [0,180,80,180],
+      lightColor: '#C8FF36',
+      sound: 'default',
     });
   }
 
   const current = await Notifications.getPermissionsAsync();
   const permission = current.status === 'granted' ? current : await Notifications.requestPermissionsAsync();
   if (permission.status !== 'granted') return { ok: false as const, reason: 'PERMISSION_DENIED' };
+
+  try {
+    const expo = await Notifications.getExpoPushTokenAsync();
+    if (expo?.data) {
+      await secureStorage.setPushToken(expo.data);
+      return { ok: true as const, token: expo.data, type: 'expo' as const };
+    }
+  } catch {
+    // Standalone local builds may not have an EAS project id. Native token is still useful locally.
+  }
 
   try {
     const token = await Notifications.getDevicePushTokenAsync();
@@ -33,6 +45,6 @@ export async function registerForNotifications() {
   }
 }
 
-export async function scheduleLocalBookingNotice(title: string, body: string) {
-  return Notifications.scheduleNotificationAsync({ content: { title, body, sound: true }, trigger: null });
+export async function scheduleLocalBookingNotice(title:string,body:string,data:Record<string,unknown>={}) {
+  return Notifications.scheduleNotificationAsync({ content:{ title,body,sound:true,data }, trigger:null });
 }
