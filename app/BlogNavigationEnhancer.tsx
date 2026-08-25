@@ -51,9 +51,18 @@ export default function BlogNavigationEnhancer() {
 
     syncBlogLinks();
 
-    // Only watch the actual language attribute. Watching the full DOM caused
-    // our own injected link mutations to retrigger the observer continuously
-    // on mobile, which could make the homepage appear frozen.
+    // The mobile navigation is mounted only after the hamburger button is
+    // clicked. Re-sync once React has rendered it, without observing the full
+    // DOM (which previously caused a mutation loop and froze mobile browsers).
+    const handleMenuClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest(".menu-button")) return;
+      window.setTimeout(syncBlogLinks, 0);
+    };
+
+    document.addEventListener("click", handleMenuClick);
+
+    // Keep labels in sync when the site language changes.
     const observer = new MutationObserver((mutations) => {
       if (mutations.some((mutation) => mutation.type === "attributes" && mutation.attributeName === "lang")) {
         syncBlogLinks();
@@ -66,6 +75,7 @@ export default function BlogNavigationEnhancer() {
     });
 
     return () => {
+      document.removeEventListener("click", handleMenuClick);
       observer.disconnect();
       document.querySelectorAll("[data-blog-nav='true'], [data-blog-footer='true']").forEach((node) => node.remove());
     };
