@@ -26,8 +26,9 @@ export default function BlogNavigationEnhancer() {
           });
           nav.appendChild(button);
         }
-        button.textContent = label;
-        button.setAttribute("aria-label", label);
+
+        if (button.textContent !== label) button.textContent = label;
+        if (button.getAttribute("aria-label") !== label) button.setAttribute("aria-label", label);
       });
 
       const companyColumn = Array.from(document.querySelectorAll<HTMLElement>("footer > div")).find(
@@ -44,16 +45,22 @@ export default function BlogNavigationEnhancer() {
           if (firstLink) companyColumn.insertBefore(link, firstLink);
           else companyColumn.appendChild(link);
         }
-        link.textContent = label;
+        if (link.textContent !== label) link.textContent = label;
       }
     };
 
     syncBlogLinks();
 
-    const observer = new MutationObserver(syncBlogLinks);
+    // Only watch the actual language attribute. Watching the full DOM caused
+    // our own injected link mutations to retrigger the observer continuously
+    // on mobile, which could make the homepage appear frozen.
+    const observer = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.type === "attributes" && mutation.attributeName === "lang")) {
+        syncBlogLinks();
+      }
+    });
+
     observer.observe(document.documentElement, {
-      subtree: true,
-      childList: true,
       attributes: true,
       attributeFilter: ["lang"],
     });
