@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build standalone release APK
+    name: Build stable v1 standalone APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -48,9 +48,8 @@ jobs:
         working-directory: mobile
         run: npm ls react react-dom react-native expo expo-modules-core react-native-reanimated react-native-worklets react-native-safe-area-context
 
-      - name: Typecheck diagnostics
+      - name: Typecheck
         working-directory: mobile
-        continue-on-error: true
         run: npm run typecheck
 
       - name: Generate Android project
@@ -67,19 +66,20 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Verify embedded JS bundle and prepare APK
+      - name: Verify standalone bundle and prepare APK
         run: |
           test -f mobile/android/app/build/outputs/apk/release/app-release.apk
-          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v0.4.0-standalone.apk
-          sha256sum Muuttobotti-v0.4.0-standalone.apk > Muuttobotti-v0.4.0-standalone.apk.sha256
-          ls -lh Muuttobotti-v0.4.0-standalone.apk
+          unzip -l mobile/android/app/build/outputs/apk/release/app-release.apk | grep -q 'assets/index.android.bundle'
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v1.0.0-standalone.apk
+          sha256sum Muuttobotti-v1.0.0-standalone.apk > Muuttobotti-v1.0.0-standalone.apk.sha256
+          ls -lh Muuttobotti-v1.0.0-standalone.apk
 
       - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Muuttobotti-v0.4.0-standalone-apk
+          name: Muuttobotti-v1.0.0-standalone-apk
           path: |
-            Muuttobotti-v0.4.0-standalone.apk
-            Muuttobotti-v0.4.0-standalone.apk.sha256
+            Muuttobotti-v1.0.0-standalone.apk
+            Muuttobotti-v1.0.0-standalone.apk.sha256
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
