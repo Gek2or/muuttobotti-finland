@@ -7,4 +7,6 @@ Production deployments are managed by Cloudflare Workers Builds.
 - Build command: `npm run build:cloudflare`
 - Deploy command: `npx wrangler deploy`
 
-Every merge to `main` triggers an automatic production build.
+Every merge or push to `main` triggers an automatic production build.
+
+_Last deploy retrigger: 2026-08-25._
