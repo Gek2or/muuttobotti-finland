@@ -36,12 +36,22 @@ export const secureStorage = {
   removeClientCredential: async (id: string) => {
     const current = await readHistory();
     await writeHistory(current.filter(item => item.id !== id));
+    const activeId = await SecureStore.getItemAsync(CLIENT_ID);
+    if (activeId === id) {
+      await SecureStore.deleteItemAsync(CLIENT_ID);
+      await SecureStore.deleteItemAsync(CLIENT_KEY);
+    }
   },
   clearClientCredentials: async () => {
     await SecureStore.deleteItemAsync(CLIENT_ID);
     await SecureStore.deleteItemAsync(CLIENT_KEY);
   },
-  clearClientHistory: () => SecureStore.deleteItemAsync(CLIENT_HISTORY),
+  clearClientHistory: async () => {
+    await SecureStore.deleteItemAsync(CLIENT_HISTORY);
+    await SecureStore.deleteItemAsync(CLIENT_ID);
+    await SecureStore.deleteItemAsync(CLIENT_KEY);
+  },
   getPushToken: () => SecureStore.getItemAsync(PUSH_TOKEN),
   setPushToken: (token: string) => SecureStore.setItemAsync(PUSH_TOKEN, token),
+  clearPushToken: () => SecureStore.deleteItemAsync(PUSH_TOKEN),
 };
