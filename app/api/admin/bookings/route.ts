@@ -1,5 +1,5 @@
 import { isAdminRequest, unauthorized } from "../admin-auth";
-import { ensureBookingSchema } from "../../bookings/schema";
+import { appendBookingEvent, ensureBookingSchema } from "../../bookings/schema";
 
 const STATUSES = new Set(["new", "confirmed", "assigned", "in_progress", "completed", "cancelled"]);
 
@@ -70,6 +70,9 @@ export async function PATCH(request: Request) {
   try {
     await ensureBookingSchema(env.DB);
     const result = await env.DB.prepare("UPDATE bookings SET status = ? WHERE id = ?").bind(status, id).run();
+    if ((result.meta?.changes ?? 0) > 0) {
+      await appendBookingEvent(env.DB, id, status, "status", "admin", `Admin changed status to ${status}`);
+    }
     return noStore({ ok: true, id, status, changes: result.meta?.changes ?? 0 });
   } catch (error) {
     console.error("Admin status update failed", error);
