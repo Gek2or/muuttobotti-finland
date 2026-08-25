@@ -70,16 +70,16 @@ jobs:
       - name: Verify embedded JS bundle and prepare APK
         run: |
           test -f mobile/android/app/build/outputs/apk/release/app-release.apk
-          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v0.4.0-standalone.apk
-          sha256sum Muuttobotti-v0.4.0-standalone.apk > Muuttobotti-v0.4.0-standalone.apk.sha256
-          ls -lh Muuttobotti-v0.4.0-standalone.apk
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v0.5.0-standalone.apk
+          sha256sum Muuttobotti-v0.5.0-standalone.apk > Muuttobotti-v0.5.0-standalone.apk.sha256
+          ls -lh Muuttobotti-v0.5.0-standalone.apk
 
       - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Muuttobotti-v0.4.0-standalone-apk
+          name: Muuttobotti-v0.5.0-standalone-apk
           path: |
-            Muuttobotti-v0.4.0-standalone.apk
-            Muuttobotti-v0.4.0-standalone.apk.sha256
+            Muuttobotti-v0.5.0-standalone.apk
+            Muuttobotti-v0.5.0-standalone.apk.sha256
           if-no-files-found: error
           retention-days: 14
