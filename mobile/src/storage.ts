@@ -6,6 +6,7 @@ const CLIENT_KEY = 'muuttobotti_client_booking_key';
 const CLIENT_HISTORY = 'muuttobotti_client_booking_history';
 const CLIENT_PROFILE = 'muuttobotti_client_profile';
 const LAST_ESTIMATE = 'muuttobotti_last_estimate';
+const LAST_BOOKING_TEMPLATE = 'muuttobotti_last_booking_template';
 const PUSH_TOKEN = 'muuttobotti_push_token';
 
 export type SavedBookingCredential = { id: string; key: string; savedAt: string };
@@ -16,6 +17,13 @@ export type SavedEstimate = {
   hours: number;
   summary: string;
   bookingNotes: string;
+  savedAt: string;
+};
+export type SavedBookingTemplate = {
+  service: 'moving' | 'cleaning' | 'transport';
+  pickup: string;
+  destination: string;
+  notes: string;
   savedAt: string;
 };
 
@@ -64,6 +72,10 @@ export const secureStorage = {
   getLastEstimate: () => readJson<SavedEstimate | null>(LAST_ESTIMATE, null),
   setLastEstimate: (estimate: SavedEstimate) => SecureStore.setItemAsync(LAST_ESTIMATE, JSON.stringify(estimate)),
   clearLastEstimate: () => SecureStore.deleteItemAsync(LAST_ESTIMATE),
+
+  getLastBookingTemplate: () => readJson<SavedBookingTemplate | null>(LAST_BOOKING_TEMPLATE, null),
+  setLastBookingTemplate: (template: SavedBookingTemplate) => SecureStore.setItemAsync(LAST_BOOKING_TEMPLATE, JSON.stringify(template)),
+  clearLastBookingTemplate: () => SecureStore.deleteItemAsync(LAST_BOOKING_TEMPLATE),
 
   getPushToken: () => SecureStore.getItemAsync(PUSH_TOKEN),
   setPushToken: (token: string) => SecureStore.setItemAsync(PUSH_TOKEN, token),
