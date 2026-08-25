@@ -45,7 +45,7 @@ async function findBooking(db: D1Database, id: string, key: string) {
 
 async function response(db: D1Database, booking: BookingRow) {
   const storedEvents = await getBookingEvents(db, booking.id) as Array<Record<string, unknown>>;
-  const events = storedEvents.length ? storedEvents : [{
+  const createdEvent = {
     event_id: 0,
     booking_id: booking.id,
     status: "new",
@@ -53,7 +53,9 @@ async function response(db: D1Database, booking: BookingRow) {
     source: "client",
     note: "Booking created",
     created_at: booking.created_at,
-  }];
+  };
+  const hasCreatedEvent = storedEvents.some(event => event.event_type === "created");
+  const events = hasCreatedEvent ? storedEvents : [createdEvent, ...storedEvents];
   return Response.json({ booking, events }, { headers: { "Cache-Control": "no-store" } });
 }
 
