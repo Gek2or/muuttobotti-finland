@@ -25,50 +25,26 @@ function parseJsonOutput(raw) {
   }
 }
 
-function extractDatabaseId(value) {
-  if (!value) return '';
-  if (typeof value === 'string') return value;
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const id = extractDatabaseId(item);
-      if (id) return id;
-    }
-    return '';
-  }
-  return value.uuid || value.id || value.database_id || value.databaseId ||
-    extractDatabaseId(value.database) || extractDatabaseId(value.result) || extractDatabaseId(value.results);
-}
-
-let databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID?.trim();
-
-if (!databaseId) {
-  const parsed = parseJsonOutput(runWrangler(['d1', 'list', '--json']));
+function findDatabaseId(parsed) {
   const databases = Array.isArray(parsed) ? parsed : parsed?.databases || parsed?.results || [];
   const match = databases.find(item => item?.name === databaseName || item?.database_name === databaseName);
-  databaseId = extractDatabaseId(match);
+  return String(match?.uuid || match?.id || match?.database_id || '').trim();
 }
+
+function resolveDatabaseId() {
+  return findDatabaseId(parseJsonOutput(runWrangler(['d1', 'list', '--json'])));
+}
+
+let databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID?.trim() || resolveDatabaseId();
 
 if (!databaseId) {
   console.log(`Cloudflare D1 database "${databaseName}" was not found. Creating it now...`);
-  let created;
-  try {
-    created = parseJsonOutput(runWrangler(['d1', 'create', databaseName, '--json']));
-  } catch {
-    runWrangler(['d1', 'create', databaseName]);
-    created = null;
-  }
-  databaseId = extractDatabaseId(created);
-
-  if (!databaseId) {
-    const parsed = parseJsonOutput(runWrangler(['d1', 'list', '--json']));
-    const databases = Array.isArray(parsed) ? parsed : parsed?.databases || parsed?.results || [];
-    const match = databases.find(item => item?.name === databaseName || item?.database_name === databaseName);
-    databaseId = extractDatabaseId(match);
-  }
+  runWrangler(['d1', 'create', databaseName]);
+  databaseId = resolveDatabaseId();
 }
 
 if (!databaseId) {
-  console.error(`Unable to resolve Cloudflare D1 database "${databaseName}". Refusing to deploy without ${bindingName}.`);
+  console.error(`Unable to resolve Cloudflare D1 database "${databaseName}" after creation. Refusing to deploy without ${bindingName}.`);
   process.exit(1);
 }
 
