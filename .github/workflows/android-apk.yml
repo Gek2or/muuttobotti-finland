@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android Standalone APK
 
 on:
   push:
@@ -18,9 +18,9 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build installable APK
+    name: Build standalone release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -44,18 +44,12 @@ jobs:
         working-directory: mobile
         run: npm install --no-audit --no-fund
 
-      - name: Align Expo SDK 57 dependencies
+      - name: Verify native dependency alignment
         working-directory: mobile
-        env:
-          CI: '1'
-        run: |
-          npx expo install --fix
-          npx expo install react-native-reanimated react-native-worklets
-          npm ls react react-native expo expo-modules-core react-native-reanimated react-native-worklets || true
+        run: npm ls react react-dom react-native expo expo-modules-core react-native-reanimated react-native-worklets
 
-      - name: Typecheck diagnostics
+      - name: Typecheck
         working-directory: mobile
-        continue-on-error: true
         run: npm run typecheck
 
       - name: Generate Android project
@@ -64,23 +58,27 @@ jobs:
           CI: '1'
         run: npx expo prebuild --platform android --clean
 
-      - name: Build debug APK
+      - name: Build standalone release APK
         working-directory: mobile/android
+        env:
+          NODE_ENV: production
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Prepare APK
+      - name: Verify embedded JS bundle and prepare APK
         run: |
-          cp mobile/android/app/build/outputs/apk/debug/app-debug.apk Muuttobotti-v0.3-test.apk
-          sha256sum Muuttobotti-v0.3-test.apk > Muuttobotti-v0.3-test.apk.sha256
+          test -f mobile/android/app/build/outputs/apk/release/app-release.apk
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v0.3.1-standalone.apk
+          sha256sum Muuttobotti-v0.3.1-standalone.apk > Muuttobotti-v0.3.1-standalone.apk.sha256
+          ls -lh Muuttobotti-v0.3.1-standalone.apk
 
-      - name: Upload APK artifact
+      - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Muuttobotti-v0.3-test-apk
+          name: Muuttobotti-v0.3.1-standalone-apk
           path: |
-            Muuttobotti-v0.3-test.apk
-            Muuttobotti-v0.3-test.apk.sha256
+            Muuttobotti-v0.3.1-standalone.apk
+            Muuttobotti-v0.3.1-standalone.apk.sha256
           if-no-files-found: error
           retention-days: 14
