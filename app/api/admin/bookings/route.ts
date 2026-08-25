@@ -1,7 +1,7 @@
 import { isAdminRequest, unauthorized } from "../admin-auth";
 import { ensureBookingSchema } from "../../bookings/schema";
 
-const STATUSES = new Set(["new", "confirmed", "in_progress", "completed", "cancelled"]);
+const STATUSES = new Set(["new", "confirmed", "assigned", "in_progress", "completed", "cancelled"]);
 
 function noStore(payload: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
