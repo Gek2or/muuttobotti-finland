@@ -1,24 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import Script from "next/script";
 
-const SORO_EMBED_URL = "https://app.trysoro.com/api/embed/564b9f0a-6fd7-4cbb-9a53-c3748cfd677a";
+const SORO_EMBED_URL =
+  "https://app.trysoro.com/api/embed/564b9f0a-6fd7-4cbb-9a53-c3748cfd677a?theme=dark";
 
 export default function SoroBlogEmbed() {
-  useEffect(() => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SORO_EMBED_URL}"]`);
-    if (existing) return;
-
-    const script = document.createElement("script");
-    script.src = SORO_EMBED_URL;
-    script.defer = true;
-    script.dataset.muuttobottiSoro = "true";
-    document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, []);
-
-  return <div id="soro-blog" className="soro-blog-embed" aria-live="polite" />;
+  return (
+    <>
+      <div id="soro-blog" className="soro-blog-embed" aria-live="polite" />
+      <Script
+        id="muuttobotti-soro-blog"
+        src={SORO_EMBED_URL}
+        strategy="afterInteractive"
+      />
+    </>
+  );
 }
