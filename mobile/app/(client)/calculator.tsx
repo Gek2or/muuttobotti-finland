@@ -1,1 +1,1 @@
-export { default } from '../calculator';
+export { default } from '../../src/screens/ClientCalculatorScreen';

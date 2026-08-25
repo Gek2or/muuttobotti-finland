@@ -34,6 +34,16 @@ export const BOOKING_TABLE_SQL = `CREATE TABLE IF NOT EXISTS bookings (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`;
 
+export const BOOKING_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS booking_events (
+  event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  booking_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  event_type TEXT NOT NULL DEFAULT 'status',
+  source TEXT NOT NULL DEFAULT 'system',
+  note TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+
 const COLUMN_ADDITIONS: Array<[string, string]> = [
   ["notes", "notes TEXT NOT NULL DEFAULT ''"],
   ["photo_count", "photo_count INTEGER NOT NULL DEFAULT 0"],
@@ -71,4 +81,29 @@ export async function ensureBookingSchema(db: any) {
       await db.prepare(`ALTER TABLE bookings ADD COLUMN ${sql}`).run();
     }
   }
+
+  await db.prepare(BOOKING_EVENTS_TABLE_SQL).run();
+  await db.prepare("CREATE INDEX IF NOT EXISTS idx_booking_events_booking_id ON booking_events(booking_id, event_id)").run();
+}
+
+export async function appendBookingEvent(
+  db: any,
+  bookingId: string,
+  status: string,
+  eventType = "status",
+  source = "system",
+  note = "",
+) {
+  await ensureBookingSchema(db);
+  await db.prepare(`INSERT INTO booking_events (booking_id, status, event_type, source, note)
+    VALUES (?, ?, ?, ?, ?)`)
+    .bind(bookingId, status, eventType, source, String(note || "").slice(0, 1000)).run();
+}
+
+export async function getBookingEvents(db: any, bookingId: string) {
+  await ensureBookingSchema(db);
+  const result = await db.prepare(`SELECT event_id, booking_id, status, event_type, source, note, created_at
+    FROM booking_events WHERE booking_id = ? ORDER BY event_id ASC LIMIT 100`)
+    .bind(bookingId).all();
+  return result.results ?? [];
 }

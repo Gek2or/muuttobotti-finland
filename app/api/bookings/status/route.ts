@@ -1,3 +1,5 @@
+import { appendBookingEvent, getBookingEvents } from "../schema";
+
 type BookingRow = {
   id: string;
   service: string;
@@ -41,8 +43,20 @@ async function findBooking(db: D1Database, id: string, key: string) {
     .bind(id, accessTokenHash).first<BookingRow>();
 }
 
-function response(booking: BookingRow) {
-  return Response.json({ booking }, { headers: { "Cache-Control": "no-store" } });
+async function response(db: D1Database, booking: BookingRow) {
+  const storedEvents = await getBookingEvents(db, booking.id) as Array<Record<string, unknown>>;
+  const createdEvent = {
+    event_id: 0,
+    booking_id: booking.id,
+    status: "new",
+    event_type: "created",
+    source: "client",
+    note: "Booking created",
+    created_at: booking.created_at,
+  };
+  const hasCreatedEvent = storedEvents.some(event => event.event_type === "created");
+  const events = hasCreatedEvent ? storedEvents : [createdEvent, ...storedEvents];
+  return Response.json({ booking, events }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {
@@ -53,7 +67,7 @@ export async function POST(request: Request) {
   const key = text(body.key, 64).toLowerCase();
   const booking = await findBooking(env.DB, id, key);
   if (!booking) return Response.json({ error: "Booking not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
-  return response(booking);
+  return response(env.DB, booking);
 }
 
 export async function PATCH(request: Request) {
@@ -68,6 +82,7 @@ export async function PATCH(request: Request) {
 
   if (body.action === "cancel") {
     await env.DB.prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?").bind(id).run();
+    await appendBookingEvent(env.DB, id, "cancelled", "status", "client", "Client cancelled booking");
   } else if (body.action === "modify") {
     const pickup = text(body.pickup);
     const destination = text(body.destination);
@@ -80,10 +95,11 @@ export async function PATCH(request: Request) {
     await env.DB.prepare(`UPDATE bookings SET pickup = ?, destination = ?, preferred_date = ?,
       preferred_time = ?, notes = ?, status = 'change_requested' WHERE id = ?`)
       .bind(pickup, destination, date, time, notes, id).run();
+    await appendBookingEvent(env.DB, id, "change_requested", "change", "client", "Client requested booking changes");
   } else {
     return Response.json({ error: "Unknown action" }, { status: 400 });
   }
 
   const updated = await findBooking(env.DB, id, key);
-  return updated ? response(updated) : Response.json({ error: "Booking not found" }, { status: 404 });
+  return updated ? response(env.DB, updated) : Response.json({ error: "Booking not found" }, { status: 404 });
 }
