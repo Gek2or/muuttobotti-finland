@@ -23,31 +23,15 @@ async function json<T>(response: Response): Promise<T> {
   return payload as T;
 }
 
-export async function createBooking(data: FormData) {
-  return json<BookingCreateResult>(await fetch(`${API_BASE}/api/bookings`, { method: 'POST', headers: { Accept: 'application/json' }, body: data }));
-}
-export async function getBooking(id: string, key: string) {
-  return json<{ booking: Booking; events: BookingEvent[] }>(await fetch(`${API_BASE}/api/bookings/status`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ id, key }) }));
-}
-export async function updateClientBooking(id: string, key: string, patch: Record<string, unknown>) {
-  return json<{ booking: Booking; events: BookingEvent[] }>(await fetch(`${API_BASE}/api/bookings/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ id, key, ...patch }) }));
-}
-export async function registerBookingPush(id: string, key: string, token: string, platform: string, locale: string) {
-  return json<{ ok: true }>(await fetch(`${API_BASE}/api/bookings/push`, { method:'POST', headers:{'Content-Type':'application/json',Accept:'application/json'}, body:JSON.stringify({id,key,token,platform,locale}) }));
-}
-export async function getAdminBookings(token: string) {
-  return json<{ ok: true; bookings: Booking[]; count: number; db: boolean; bucket: boolean }>(await fetch(`${API_BASE}/api/admin/bookings?limit=200`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }));
-}
-export async function getAdminOperations(token: string, filters: { date?: string; status?: string; q?: string } = {}) {
-  const qs = new URLSearchParams(); Object.entries(filters).forEach(([k,v]) => { if (v) qs.set(k,v); });
-  return json<{ ok:true; bookings:Booking[]; workers:Worker[]; stats:any }>(await fetch(`${API_BASE}/api/admin/operations?${qs.toString()}`, { headers:{ Authorization:`Bearer ${token}`, Accept:'application/json' } }));
-}
-export async function adminOperation(token: string, id: string, action: string, patch: Record<string, unknown> = {}) {
-  return json<{ok:true;booking:Booking}>(await fetch(`${API_BASE}/api/admin/operations`, { method:'PATCH', headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',Accept:'application/json'}, body:JSON.stringify({id,action,...patch}) }));
-}
-export async function upsertWorker(token:string, worker:Partial<Worker>&{name:string}) {
-  return json<{ok:true;worker:Worker}>(await fetch(`${API_BASE}/api/admin/operations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'worker_upsert',...worker})}));
-}
-export async function requestClientCode(email:string){return json<{ok:true;expiresIn:number}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'request_code',email})}))}
-export async function verifyClientCode(email:string,code:string){return json<{ok:true;token:string;profile:any;bookings:Booking[]}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'verify_code',email,code})}))}
-export async function getClientAccount(token:string,bookingId?:string){return json<any>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'me',token,bookingId})}))}
+export async function createBooking(data: FormData) { return json<BookingCreateResult>(await fetch(`${API_BASE}/api/bookings`, { method:'POST', headers:{Accept:'application/json'}, body:data })); }
+export async function getBooking(id:string,key:string) { return json<{booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/bookings/status`, {method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key})})); }
+export async function updateClientBooking(id:string,key:string,patch:Record<string,unknown>) { return json<{booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/bookings/status`, {method:'PATCH',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key,...patch})})); }
+export async function registerBookingPush(id:string,key:string,token:string,platform:string,locale:string) { return json<{ok:true}>(await fetch(`${API_BASE}/api/bookings/push`, {method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key,token,platform,locale})})); }
+export async function getAdminBookings(token:string) { return json<{ok:true;bookings:Booking[];count:number;db:boolean;bucket:boolean}>(await fetch(`${API_BASE}/api/admin/bookings?limit=200`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}})); }
+export async function getAdminOperations(token:string,filters:{date?:string;status?:string;q?:string}={}) { const qs=new URLSearchParams();Object.entries(filters).forEach(([k,v])=>{if(v)qs.set(k,v)});return json<{ok:true;bookings:Booking[];workers:Worker[];stats:any}>(await fetch(`${API_BASE}/api/admin/operations?${qs.toString()}`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}})); }
+export async function adminOperation(token:string,id:string,action:string,patch:Record<string,unknown>={}) { return json<{ok:true;booking:Booking}>(await fetch(`${API_BASE}/api/admin/operations`,{method:'PATCH',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,action,...patch})})); }
+export async function upsertWorker(token:string,worker:Partial<Worker>&{name:string}) { return json<{ok:true;worker:Worker}>(await fetch(`${API_BASE}/api/admin/operations`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'worker_upsert',...worker})})); }
+export async function requestClientCode(email:string) { return json<{ok:true;expiresIn:number}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'request_code',email})})); }
+export async function verifyClientCode(email:string,code:string) { return json<{ok:true;token:string;profile:any;bookings:Booking[]}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'verify_code',email,code})})); }
+export async function getClientAccount(token:string,bookingId?:string) { return json<any>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'me',token,bookingId})})); }
+export async function updateClientAccountBooking(token:string,bookingId:string,bookingAction:string,patch:Record<string,unknown>={}) { return json<{ok:true;booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'booking_action',token,bookingId,bookingAction,...patch})})); }
