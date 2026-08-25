@@ -48,9 +48,8 @@ jobs:
         working-directory: mobile
         run: npm ls react react-dom react-native expo expo-modules-core react-native-reanimated react-native-worklets react-native-safe-area-context
 
-      - name: Typecheck diagnostics
+      - name: Typecheck
         working-directory: mobile
-        continue-on-error: true
         run: npm run typecheck
 
       - name: Generate Android project
@@ -68,18 +67,22 @@ jobs:
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Verify embedded JS bundle and prepare APK
+        shell: bash
         run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./mobile/package.json').version")
           test -f mobile/android/app/build/outputs/apk/release/app-release.apk
-          cp mobile/android/app/build/outputs/apk/release/app-release.apk Muuttobotti-v1.1.0-standalone.apk
-          sha256sum Muuttobotti-v1.1.0-standalone.apk > Muuttobotti-v1.1.0-standalone.apk.sha256
-          ls -lh Muuttobotti-v1.1.0-standalone.apk
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk "Muuttobotti-v${VERSION}-standalone.apk"
+          sha256sum "Muuttobotti-v${VERSION}-standalone.apk" > "Muuttobotti-v${VERSION}-standalone.apk.sha256"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          ls -lh "Muuttobotti-v${VERSION}-standalone.apk"
 
       - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Muuttobotti-v1.1.0-standalone-apk
+          name: Muuttobotti-v${{ env.VERSION }}-standalone-apk
           path: |
-            Muuttobotti-v1.1.0-standalone.apk
-            Muuttobotti-v1.1.0-standalone.apk.sha256
+            Muuttobotti-v${{ env.VERSION }}-standalone.apk
+            Muuttobotti-v${{ env.VERSION }}-standalone.apk.sha256
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
