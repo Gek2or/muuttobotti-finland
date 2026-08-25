@@ -1,7 +1,7 @@
 import { useFocusEffect, router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Booking, getClientAccount, registerBookingPush } from '../../src/api';
+import { Booking, getClientAccount, registerAccountPush, registerBookingPush } from '../../src/api';
 import { localeOptions, useLanguage } from '../../src/i18n';
 import { registerForNotifications } from '../../src/notifications';
 import { SavedBookingCredential, secureStorage } from '../../src/storage';
@@ -17,7 +17,7 @@ export default function ProfileScreen(){
  const {locale,setLocale,tr}=useLanguage();const t=copy[locale]||copy.fi;const[history,setHistory]=useState<SavedBookingCredential[]>([]);const[activeId,setActiveId]=useState('');const[pushEnabled,setPushEnabled]=useState(false);const[pushState,setPushState]=useState('');const[sessionEmail,setSessionEmail]=useState('');const[accountBookings,setAccountBookings]=useState<Booking[]>([]);
  const refresh=useCallback(async()=>{const[items,current,pushToken,session]=await Promise.all([secureStorage.getClientHistory(),secureStorage.getClientCredentials(),secureStorage.getPushToken(),secureStorage.getClientSession()]);setHistory(items);setActiveId(current.id);setPushEnabled(Boolean(pushToken));setSessionEmail(session.email);if(session.token){try{const account=await getClientAccount(session.token);setAccountBookings(account.bookings||[])}catch{setAccountBookings([])}}else setAccountBookings([])},[]);
  useFocusEffect(useCallback(()=>{void refresh()},[refresh]));
- const enablePush=async()=>{const result=await registerForNotifications();if(!result.ok){setPushState(tr('notificationUnavailable'));return}const current=await secureStorage.getClientCredentials();if(current.id&&current.key){try{await registerBookingPush(current.id,current.key,result.token,Platform.OS,locale)}catch{}}setPushState(tr('notificationReady'));await refresh()};
+ const enablePush=async()=>{const result=await registerForNotifications();if(!result.ok){setPushState(tr('notificationUnavailable'));return}try{const [current,session]=await Promise.all([secureStorage.getClientCredentials(),secureStorage.getClientSession()]);if(session.token&&accountBookings.length){await Promise.all(accountBookings.slice(0,20).map(item=>registerAccountPush(session.token,item.id,result.token,Platform.OS,locale).catch(()=>null)))}else if(current.id&&current.key){await registerBookingPush(current.id,current.key,result.token,Platform.OS,locale)}}catch{}setPushState(tr('notificationReady'));await refresh()};
  const signOut=async()=>{await Promise.all([secureStorage.clearClientCredentials(),secureStorage.clearClientSession()]);router.replace('/')};
  const removeBooking=async(id:string)=>{await secureStorage.removeClientCredential(id);await refresh()};
  const clearBookings=()=>Alert.alert(t.clear,'',[{text:'Cancel',style:'cancel'},{text:t.clear,style:'destructive',onPress:async()=>{await secureStorage.clearClientHistory();await refresh()}}]);
