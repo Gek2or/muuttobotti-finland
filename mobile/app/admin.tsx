@@ -1,139 +1,56 @@
 import { useEffect, useMemo, useState } from 'react';
+import { router } from 'expo-router';
 import { Linking, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Booking, getAdminBookings, updateAdminStatus } from '../src/api';
 import { secureStorage } from '../src/storage';
 import { colors, radius, shadow } from '../src/theme';
 
-const statuses = ['new', 'confirmed', 'in_progress', 'completed', 'cancelled'];
-const statusFi: Record<string, string> = { new: 'Uusi', confirmed: 'Vahvistettu', in_progress: 'Käynnissä', completed: 'Valmis', cancelled: 'Peruttu', change_requested: 'Muutos pyydetty' };
+const statuses=['all','new','confirmed','in_progress','completed','cancelled'] as const;
+const statusFi:Record<string,string>={all:'Kaikki',new:'Uusi',confirmed:'Vahvistettu',assigned:'Tiimi määritetty',in_progress:'Käynnissä',completed:'Valmis',cancelled:'Peruttu',change_requested:'Muutos pyydetty'};
+function whatsappNumber(phone?:string){const digits=(phone||'').replace(/\D/g,'');if(!digits)return'';return digits.startsWith('0')?`358${digits.slice(1)}`:digits;}
 
-export default function AdminScreen() {
-  const [token, setToken] = useState('');
-  const [authorized, setAuthorized] = useState(false);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [selected, setSelected] = useState<Booking | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+export default function AdminScreen(){
+  const [token,setToken]=useState(''); const [authorized,setAuthorized]=useState(false); const [bookings,setBookings]=useState<Booking[]>([]); const [selected,setSelected]=useState<Booking|null>(null);
+  const [busy,setBusy]=useState(false); const [message,setMessage]=useState(''); const [query,setQuery]=useState(''); const [filter,setFilter]=useState<(typeof statuses)[number]>('all');
 
-  useEffect(() => { secureStorage.getAdminToken().then(saved => { if (saved) { setToken(saved); void load(saved); } }); }, []);
+  useEffect(()=>{secureStorage.getAdminToken().then(saved=>{if(saved){setToken(saved);void load(saved)}})},[]);
+  const load=async(value=token)=>{if(!value)return;setBusy(true);setMessage('');try{const result=await getAdminBookings(value.trim());setBookings(result.bookings||[]);setAuthorized(true);await secureStorage.setAdminToken(value.trim());if(!result.db)setMessage('Tietokantayhteys ei ole käytössä productionissa.');}catch(error){setAuthorized(false);setMessage(error instanceof Error?error.message:'Admin-yhteys epäonnistui.');}finally{setBusy(false)}};
+  const update=async(status:string)=>{if(!selected)return;setBusy(true);setMessage('');try{await updateAdminStatus(token,selected.id,status);const next={...selected,status};setSelected(next);setBookings(items=>items.map(item=>item.id===next.id?next:item));}catch(error){setMessage(error instanceof Error?error.message:'Tilaa ei voitu päivittää.');}finally{setBusy(false)}};
+  const logout=async()=>{await secureStorage.clearAdminToken();setAuthorized(false);setToken('');router.replace('/')};
 
-  const load = async (value = token) => {
-    if (!value) return;
-    setBusy(true); setMessage('');
-    try {
-      const result = await getAdminBookings(value.trim());
-      setBookings(result.bookings);
-      setAuthorized(true);
-      await secureStorage.setAdminToken(value.trim());
-      if (!result.db) setMessage('D1 ei ole käytössä productionissa.');
-    } catch (error) {
-      setAuthorized(false);
-      setMessage(error instanceof Error ? error.message : 'Admin-yhteys epäonnistui.');
-    } finally { setBusy(false); }
-  };
+  const visible=useMemo(()=>{const q=query.trim().toLowerCase();return bookings.filter(b=>(filter==='all'||b.status===filter)&&(!q||[b.id,b.customer_name,b.phone,b.email,b.pickup,b.destination].some(v=>String(v||'').toLowerCase().includes(q))));},[bookings,query,filter]);
+  const counts=useMemo(()=>({all:bookings.length,new:bookings.filter(b=>b.status==='new').length,active:bookings.filter(b=>['confirmed','assigned','in_progress','change_requested'].includes(b.status)).length}),[bookings]);
 
-  const update = async (booking: Booking, status: string) => {
-    setBusy(true); setMessage('');
-    try {
-      await updateAdminStatus(token, booking.id, status);
-      const next = { ...booking, status };
-      setBookings(items => items.map(item => item.id === booking.id ? next : item));
-      setSelected(next);
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'Tilaa ei voitu päivittää.'); }
-    finally { setBusy(false); }
-  };
+  if(!authorized)return <ScrollView contentContainerStyle={s.wrap} keyboardShouldPersistTaps="handled"><View style={s.login}><Text style={s.kicker}>MUUTTOBOTTI ADMIN · V1</Text><Text style={s.loginTitle}>Admin-kirjautuminen</Text><Text style={s.copy}>Syötä admin token. Se tallennetaan vain laitteen SecureStoreen.</Text><TextInput value={token} onChangeText={setToken} secureTextEntry autoCapitalize="none" placeholder="Admin token" placeholderTextColor="#78908B" style={s.token}/>{!!message&&<Text style={s.error}>{message}</Text>}<TouchableOpacity style={s.primary} disabled={busy} onPress={()=>load()}><Text style={s.primaryText}>{busy?'Tarkistetaan…':'Avaa admin'}</Text></TouchableOpacity><TouchableOpacity style={s.secondary} onPress={()=>router.replace('/')}><Text style={s.secondaryText}>← Login</Text></TouchableOpacity></View></ScrollView>;
 
-  const counts = useMemo(() => ({
-    all: bookings.length,
-    new: bookings.filter(b => b.status === 'new').length,
-    attention: bookings.filter(b => b.recommendation_level === 'attention' || b.recommendation_level === 'high').length,
-  }), [bookings]);
+  if(selected){const wa=whatsappNumber(selected.phone);return <ScrollView contentContainerStyle={s.wrap} showsVerticalScrollIndicator={false}>
+    <TouchableOpacity onPress={()=>setSelected(null)}><Text style={s.back}>← Varaukset</Text></TouchableOpacity>
+    <View style={s.detailHero}><Text style={s.kicker}>{selected.id}</Text><Text style={s.detailTitle}>{selected.customer_name}</Text><Text style={s.detailMeta}>{selected.service} · {selected.preferred_date} {selected.preferred_time}</Text><View style={s.statusBadge}><Text style={s.statusBadgeText}>{statusFi[selected.status]||selected.status}</Text></View></View>
+    <View style={s.quickRow}><TouchableOpacity style={s.quick} disabled={!selected.phone} onPress={()=>selected.phone&&Linking.openURL(`tel:${selected.phone}`)}><Text style={s.quickText}>Soita</Text></TouchableOpacity><TouchableOpacity style={s.quick} disabled={!wa} onPress={()=>wa&&Linking.openURL(`https://wa.me/${wa}`)}><Text style={s.quickText}>WhatsApp</Text></TouchableOpacity><TouchableOpacity style={s.quick} disabled={!selected.email} onPress={()=>selected.email&&Linking.openURL(`mailto:${selected.email}`)}><Text style={s.quickText}>Email</Text></TouchableOpacity></View>
+    <Section title="Asiakas"><Row label="Puhelin" value={selected.phone}/><Row label="Sähköposti" value={selected.email}/><Row label="Nouto" value={selected.pickup}/><Row label="Kohde" value={selected.destination}/></Section>
+    <Section title="Tilaus"><Row label="Palvelu" value={selected.service}/><Row label="Päivä" value={selected.preferred_date}/><Row label="Aika" value={selected.preferred_time}/><Row label="Lisätiedot" value={selected.notes}/><Row label="Kuvia" value={String(selected.photo_count||0)}/></Section>
+    {!!selected.recommendation&&<View style={s.recommend}><Text style={s.sectionTitle}>AUTOMAATTINEN HUOMIO</Text><Text style={s.recommendText}>{selected.recommendation}</Text></View>}
+    <Text style={s.heading}>Muuta tila</Text><View style={s.statusGrid}>{statuses.filter(x=>x!=='all').map(status=><TouchableOpacity key={status} disabled={busy} onPress={()=>update(status)} style={[s.statusButton,selected.status===status&&s.statusButtonActive]}><Text style={[s.statusButtonText,selected.status===status&&s.statusButtonTextActive]}>{statusFi[status]}</Text></TouchableOpacity>)}</View>
+    {!!message&&<Text style={s.error}>{message}</Text>}
+  </ScrollView>}
 
-  if (!authorized) return <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled"><View style={styles.loginCard}><Text style={styles.kicker}>MUUTTOBOTTI ADMIN</Text><Text style={styles.loginTitle}>Kirjaudu admin-tokenilla</Text><Text style={styles.copy}>Token tallennetaan laitteen SecureStoreen, ei sovelluskoodiin.</Text><TextInput value={token} onChangeText={setToken} autoCapitalize="none" secureTextEntry placeholder="Admin token" placeholderTextColor="#80918E" style={styles.tokenInput} />{!!message && <Text style={styles.error}>{message}</Text>}<TouchableOpacity style={styles.primary} disabled={busy} onPress={() => load()}><Text style={styles.primaryText}>{busy ? 'Tarkistetaan…' : 'Avaa admin'}</Text></TouchableOpacity></View></ScrollView>;
-
-  if (selected) return <ScrollView contentContainerStyle={styles.wrap}>
-    <TouchableOpacity onPress={() => setSelected(null)}><Text style={styles.back}>← Kaikki varaukset</Text></TouchableOpacity>
-    <View style={styles.detailHero}><Text style={styles.kicker}>{selected.id}</Text><Text style={styles.detailTitle}>{selected.customer_name}</Text><Text style={styles.detailSub}>{selected.service} · {selected.preferred_date} {selected.preferred_time}</Text><View style={styles.priority}><Text style={styles.priorityText}>{(selected.recommendation_level || 'normal').toUpperCase()}</Text></View></View>
-
-    <Section title="Asiakas"><Row label="Puhelin" value={selected.phone} /><Row label="Sähköposti" value={selected.email} /><Row label="Nouto" value={selected.pickup} /><Row label="Kohde" value={selected.destination} /></Section>
-    <View style={styles.quickRow}><TouchableOpacity style={styles.quick} onPress={() => selected.phone && Linking.openURL(`tel:${selected.phone}`)}><Text style={styles.quickText}>Soita</Text></TouchableOpacity><TouchableOpacity style={styles.quick} onPress={() => selected.phone && Linking.openURL(`https://wa.me/${selected.phone.replace(/\D/g, '')}`)}><Text style={styles.quickText}>WhatsApp</Text></TouchableOpacity><TouchableOpacity style={styles.quick} onPress={() => selected.email && Linking.openURL(`mailto:${selected.email}`)}><Text style={styles.quickText}>Email</Text></TouchableOpacity></View>
-
-    <Section title="Tilaus"><Row label="Palvelu" value={selected.service} /><Row label="Päivä" value={selected.preferred_date} /><Row label="Aika" value={selected.preferred_time} /><Row label="Lisätiedot" value={selected.notes} /><Row label="Kuvia" value={String(selected.photo_count || 0)} /></Section>
-
-    <View style={styles.recommend}><Text style={styles.sectionLabel}>SUOSITUS</Text><Text style={styles.recommendText}>{selected.recommendation || 'Ei automaattista huomiota tähän tilaukseen.'}</Text></View>
-
-    {!!selected.calculator_snapshot && <Section title="Laskuri"><Text selectable style={styles.code}>{prettySnapshot(selected.calculator_snapshot)}</Text></Section>}
-
-    <Section title="Tekniset tiedot"><Row label="IP" value={selected.client_ip} /><Row label="Laite / selain" value={selected.user_agent} /><Row label="Sijainti" value={[selected.client_city, selected.client_region, selected.client_country].filter(Boolean).join(', ')} /><Row label="ASN / colo" value={[selected.client_asn, selected.cf_colo].filter(Boolean).join(' · ')} /><Row label="Aikavyöhyke" value={selected.timezone} /><Row label="Näyttö" value={selected.screen_size} /></Section>
-    <Section title="Lähde"><Row label="Sivu" value={selected.page_url} /><Row label="Referer" value={selected.referer} /><Row label="UTM" value={[selected.utm_source, selected.utm_medium, selected.utm_campaign].filter(Boolean).join(' / ')} /></Section>
-
-    <Text style={styles.sectionTitle}>Muuta tila</Text><View style={styles.statusGrid}>{statuses.map(status => <TouchableOpacity key={status} disabled={busy} onPress={() => update(selected, status)} style={[styles.statusButton, selected.status === status && styles.statusButtonActive]}><Text style={[styles.statusButtonText, selected.status === status && styles.statusButtonTextActive]}>{statusFi[status]}</Text></TouchableOpacity>)}</View>
-    {!!message && <Text style={styles.error}>{message}</Text>}
-  </ScrollView>;
-
-  return <ScrollView contentContainerStyle={styles.wrap} refreshControl={<RefreshControl refreshing={busy} onRefresh={() => load()} tintColor={colors.ink} />}>
-    <View style={styles.topRow}><View><Text style={styles.kickerDark}>MUUTTOBOTTI ADMIN</Text><Text style={styles.pageTitle}>Varaukset</Text></View><TouchableOpacity onPress={async () => { await secureStorage.clearAdminToken(); setAuthorized(false); setToken(''); }}><Text style={styles.logout}>Kirjaudu ulos</Text></TouchableOpacity></View>
-    <View style={styles.stats}><Stat label="Kaikki" value={counts.all} /><Stat label="Uudet" value={counts.new} /><Stat label="Huomio" value={counts.attention} /></View>
-    {!!message && <Text style={styles.error}>{message}</Text>}
-    <View style={styles.list}>{bookings.map(booking => <TouchableOpacity key={booking.id} style={styles.bookingCard} onPress={() => setSelected(booking)}><View style={styles.cardTop}><Text style={styles.bookingId}>{booking.id}</Text><View style={[styles.badge, (booking.recommendation_level === 'high' || booking.recommendation_level === 'attention') && styles.badgeWarn]}><Text style={styles.badgeText}>{statusFi[booking.status] || booking.status}</Text></View></View><Text style={styles.customer}>{booking.customer_name}</Text><Text style={styles.meta}>{booking.service} · {booking.preferred_date} {booking.preferred_time}</Text><Text style={styles.route}>{booking.pickup}{booking.destination ? ` → ${booking.destination}` : ''}</Text>{!!booking.recommendation && <Text numberOfLines={2} style={styles.recPreview}>{booking.recommendation}</Text>}</TouchableOpacity>)}</View>
+  return <ScrollView contentContainerStyle={s.wrap} refreshControl={<RefreshControl refreshing={busy} onRefresh={()=>load()} tintColor={colors.ink}/>} showsVerticalScrollIndicator={false}>
+    <View style={s.top}><View><Text style={s.kickerDark}>MUUTTOBOTTI ADMIN · V1</Text><Text style={s.pageTitle}>Varaukset</Text></View><TouchableOpacity onPress={logout}><Text style={s.logout}>Kirjaudu ulos</Text></TouchableOpacity></View>
+    <View style={s.stats}><Stat label="Kaikki" value={counts.all}/><Stat label="Uudet" value={counts.new}/><Stat label="Aktiiviset" value={counts.active}/></View>
+    <TextInput value={query} onChangeText={setQuery} placeholder="Hae nimellä, numerolla, osoitteella…" placeholderTextColor="#81908D" style={s.search}/>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filters}>{statuses.map(status=><TouchableOpacity key={status} onPress={()=>setFilter(status)} style={[s.filter,filter===status&&s.filterActive]}><Text style={[s.filterText,filter===status&&s.filterTextActive]}>{statusFi[status]}</Text></TouchableOpacity>)}</ScrollView>
+    {!!message&&<Text style={s.error}>{message}</Text>}
+    <Text style={s.resultCount}>{visible.length} varausta</Text>
+    <View style={s.list}>{visible.map(b=><TouchableOpacity key={b.id} style={s.card} onPress={()=>setSelected(b)}><View style={s.cardTop}><Text style={s.bookingId}>{b.id}</Text><View style={s.badge}><Text style={s.badgeText}>{statusFi[b.status]||b.status}</Text></View></View><Text style={s.customer}>{b.customer_name}</Text><Text style={s.meta}>{b.service} · {b.preferred_date} {b.preferred_time}</Text><Text style={s.route}>{b.pickup}{b.destination?` → ${b.destination}`:''}</Text></TouchableOpacity>)}</View>
   </ScrollView>;
 }
 
-function Stat({ label, value }: { label: string; value: number }) { return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>; }
-function Section({ title, children }: { title: string; children: React.ReactNode }) { return <View style={styles.section}><Text style={styles.sectionLabel}>{title.toUpperCase()}</Text>{children}</View>; }
-function Row({ label, value }: { label: string; value?: string }) { return <View style={styles.row}><Text style={styles.rowLabel}>{label}</Text><Text selectable style={styles.rowValue}>{value || '—'}</Text></View>; }
-function prettySnapshot(raw: string) { try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; } }
+function Stat({label,value}:{label:string;value:number}){return <View style={s.stat}><Text style={s.statValue}>{value}</Text><Text style={s.statLabel}>{label}</Text></View>}
+function Section({title,children}:{title:string;children:React.ReactNode}){return <View style={s.section}><Text style={s.sectionTitle}>{title.toUpperCase()}</Text>{children}</View>}
+function Row({label,value}:{label:string;value?:string}){return <View style={s.row}><Text style={s.rowLabel}>{label}</Text><Text selectable style={s.rowValue}>{value||'—'}</Text></View>}
 
-const styles = StyleSheet.create({
-  wrap: { padding: 16, paddingBottom: 44, gap: 14 },
-  loginCard: { backgroundColor: colors.ink, borderRadius: radius.xl, padding: 23, gap: 13, marginTop: 28 },
-  kicker: { color: colors.lime, fontSize: 11, fontWeight: '900', letterSpacing: 1.2 },
-  kickerDark: { color: '#6D817D', fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
-  loginTitle: { color: '#fff', fontSize: 29, fontWeight: '950', letterSpacing: -1 },
-  copy: { color: '#AFC1BD', fontSize: 14, lineHeight: 21 },
-  tokenInput: { minHeight: 54, borderRadius: 15, paddingHorizontal: 15, backgroundColor: '#11313A', color: '#fff', fontSize: 15 },
-  primary: { minHeight: 55, borderRadius: 15, backgroundColor: colors.lime, alignItems: 'center', justifyContent: 'center' },
-  primaryText: { color: colors.ink, fontWeight: '900', fontSize: 16 },
-  error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
-  topRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  pageTitle: { color: colors.ink, fontSize: 34, fontWeight: '950', letterSpacing: -1.2 },
-  logout: { color: '#647773', fontSize: 13, fontWeight: '800', paddingBottom: 5 },
-  stats: { flexDirection: 'row', gap: 8 },
-  stat: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, padding: 14 },
-  statValue: { color: colors.ink, fontSize: 26, fontWeight: '950' },
-  statLabel: { color: colors.muted, fontSize: 11, fontWeight: '800', marginTop: 2 },
-  list: { gap: 10 },
-  bookingCard: { backgroundColor: '#fff', borderRadius: radius.lg, padding: 17, borderWidth: 1, borderColor: colors.line, ...shadow },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  bookingId: { color: '#71827F', fontSize: 11, fontWeight: '900', letterSpacing: .7 },
-  badge: { borderRadius: 999, backgroundColor: '#EAF1E7', paddingHorizontal: 10, paddingVertical: 5 },
-  badgeWarn: { backgroundColor: '#FFF0D8' },
-  badgeText: { color: colors.ink, fontSize: 10, fontWeight: '900' },
-  customer: { color: colors.ink, fontSize: 20, fontWeight: '900', marginTop: 9 },
-  meta: { color: '#667A76', fontSize: 13, fontWeight: '750', marginTop: 4 },
-  route: { color: colors.ink, fontSize: 14, lineHeight: 20, marginTop: 9 },
-  recPreview: { color: '#728178', fontSize: 12, lineHeight: 18, marginTop: 9 },
-  back: { color: '#5F746F', fontWeight: '850', fontSize: 14 },
-  detailHero: { backgroundColor: colors.ink, borderRadius: radius.xl, padding: 22 },
-  detailTitle: { color: '#fff', fontSize: 31, fontWeight: '950', letterSpacing: -1, marginTop: 6 },
-  detailSub: { color: '#AFC1BD', fontSize: 14, marginTop: 6 },
-  priority: { alignSelf: 'flex-start', marginTop: 14, borderRadius: 999, backgroundColor: colors.lime, paddingHorizontal: 11, paddingVertical: 6 },
-  priorityText: { color: colors.ink, fontSize: 10, fontWeight: '950' },
-  section: { backgroundColor: '#fff', borderRadius: radius.lg, padding: 17, borderWidth: 1, borderColor: colors.line },
-  sectionLabel: { color: '#6B7D79', fontSize: 10, fontWeight: '900', letterSpacing: 1.1, marginBottom: 8 },
-  row: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#EEF1ED' },
-  rowLabel: { color: '#83918F', fontSize: 10, fontWeight: '850', textTransform: 'uppercase' },
-  rowValue: { color: colors.ink, fontSize: 14, lineHeight: 20, fontWeight: '650', marginTop: 3 },
-  quickRow: { flexDirection: 'row', gap: 8 },
-  quick: { flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: colors.inkSoft, alignItems: 'center', justifyContent: 'center' },
-  quickText: { color: '#fff', fontSize: 13, fontWeight: '850' },
-  recommend: { backgroundColor: '#EDF6E3', borderRadius: radius.lg, padding: 18 },
-  recommendText: { color: '#405749', fontSize: 15, lineHeight: 23, fontWeight: '700' },
-  code: { color: '#3F5550', fontSize: 11, lineHeight: 17, fontFamily: 'monospace' },
-  sectionTitle: { color: colors.ink, fontSize: 19, fontWeight: '900', marginTop: 4 },
-  statusGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  statusButton: { minHeight: 45, borderRadius: 13, paddingHorizontal: 13, borderWidth: 1, borderColor: colors.line, backgroundColor: '#fff', justifyContent: 'center' },
-  statusButtonActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  statusButtonText: { color: colors.ink, fontWeight: '850', fontSize: 12 },
-  statusButtonTextActive: { color: '#fff' },
+const s=StyleSheet.create({
+  wrap:{padding:16,paddingBottom:44,gap:13},login:{backgroundColor:colors.ink,borderRadius:24,padding:22,gap:12,marginTop:26},kicker:{color:colors.lime,fontSize:10,fontWeight:'900',letterSpacing:1.1},loginTitle:{color:'#fff',fontSize:29,fontWeight:'900'},copy:{color:'#AFC1BD',fontSize:13,lineHeight:20},token:{minHeight:54,borderRadius:14,paddingHorizontal:14,backgroundColor:'#11313A',color:'#fff',fontSize:15},primary:{minHeight:54,borderRadius:14,backgroundColor:colors.lime,alignItems:'center',justifyContent:'center'},primaryText:{color:colors.ink,fontSize:15,fontWeight:'900'},secondary:{minHeight:48,borderRadius:14,borderWidth:1,borderColor:'#35515A',alignItems:'center',justifyContent:'center'},secondaryText:{color:'#fff',fontWeight:'800'},error:{color:colors.danger,fontSize:13,lineHeight:19},
+  top:{flexDirection:'row',alignItems:'flex-end',justifyContent:'space-between'},kickerDark:{color:'#6D817D',fontSize:10,fontWeight:'900',letterSpacing:1.1},pageTitle:{color:colors.ink,fontSize:34,fontWeight:'900'},logout:{color:'#647773',fontSize:12,fontWeight:'800',paddingBottom:5},stats:{flexDirection:'row',gap:8},stat:{flex:1,backgroundColor:'#fff',borderWidth:1,borderColor:colors.line,borderRadius:15,padding:13},statValue:{color:colors.ink,fontSize:25,fontWeight:'900'},statLabel:{color:colors.muted,fontSize:10,fontWeight:'800',marginTop:2},search:{minHeight:52,borderRadius:15,backgroundColor:'#fff',borderWidth:1,borderColor:colors.line,paddingHorizontal:14,color:colors.ink,fontSize:14},filters:{gap:7},filter:{minHeight:42,borderRadius:999,paddingHorizontal:13,backgroundColor:'#EEF2ED',alignItems:'center',justifyContent:'center'},filterActive:{backgroundColor:colors.ink},filterText:{color:'#62736F',fontSize:11,fontWeight:'800'},filterTextActive:{color:'#fff'},resultCount:{color:colors.muted,fontSize:11,fontWeight:'800'},list:{gap:9},card:{backgroundColor:'#fff',borderRadius:19,padding:16,borderWidth:1,borderColor:colors.line,...shadow},cardTop:{flexDirection:'row',justifyContent:'space-between',alignItems:'center'},bookingId:{color:'#71827F',fontSize:10,fontWeight:'900'},badge:{borderRadius:999,backgroundColor:'#EAF1E7',paddingHorizontal:9,paddingVertical:5},badgeText:{color:colors.ink,fontSize:9,fontWeight:'900'},customer:{color:colors.ink,fontSize:19,fontWeight:'900',marginTop:8},meta:{color:'#667A76',fontSize:12,fontWeight:'700',marginTop:4},route:{color:colors.ink,fontSize:13,lineHeight:19,marginTop:8},
+  back:{color:'#5F746F',fontWeight:'800',fontSize:13},detailHero:{backgroundColor:colors.ink,borderRadius:24,padding:21},detailTitle:{color:'#fff',fontSize:29,fontWeight:'900',marginTop:6},detailMeta:{color:'#AFC1BD',fontSize:13,marginTop:6},statusBadge:{alignSelf:'flex-start',marginTop:13,borderRadius:999,backgroundColor:colors.lime,paddingHorizontal:10,paddingVertical:6},statusBadgeText:{color:colors.ink,fontSize:10,fontWeight:'900'},quickRow:{flexDirection:'row',gap:7},quick:{flex:1,minHeight:47,borderRadius:13,backgroundColor:colors.inkSoft,alignItems:'center',justifyContent:'center'},quickText:{color:'#fff',fontSize:12,fontWeight:'800'},section:{backgroundColor:'#fff',borderRadius:19,padding:16,borderWidth:1,borderColor:colors.line},sectionTitle:{color:'#6B7D79',fontSize:10,fontWeight:'900',letterSpacing:1,marginBottom:7},row:{paddingVertical:8,borderTopWidth:1,borderTopColor:'#EEF1ED'},rowLabel:{color:'#83918F',fontSize:9,fontWeight:'900',textTransform:'uppercase'},rowValue:{color:colors.ink,fontSize:13,lineHeight:19,fontWeight:'600',marginTop:3},recommend:{backgroundColor:'#EDF6E3',borderRadius:19,padding:16},recommendText:{color:'#405749',fontSize:14,lineHeight:21,fontWeight:'700'},heading:{color:colors.ink,fontSize:18,fontWeight:'900'},statusGrid:{flexDirection:'row',flexWrap:'wrap',gap:7},statusButton:{minHeight:44,borderRadius:12,paddingHorizontal:12,borderWidth:1,borderColor:colors.line,backgroundColor:'#fff',justifyContent:'center'},statusButtonActive:{backgroundColor:colors.ink,borderColor:colors.ink},statusButtonText:{color:colors.ink,fontWeight:'800',fontSize:11},statusButtonTextActive:{color:'#fff'},
 });

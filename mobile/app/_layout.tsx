@@ -6,7 +6,7 @@ import { colors } from '../src/theme';
 export default function RootLayout() {
   return (
     <LanguageProvider>
-      <StatusBar style="light" backgroundColor={colors.ink} />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.ink },

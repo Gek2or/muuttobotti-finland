@@ -2,7 +2,7 @@
   "expo": {
     "name": "Muuttobotti",
     "slug": "muuttobotti",
-    "version": "0.4.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "muuttobotti",
     "userInterfaceStyle": "automatic",
@@ -26,10 +26,12 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "fi.muuttobotti.app"
+      "bundleIdentifier": "fi.muuttobotti.app",
+      "buildNumber": "1"
     },
     "android": {
       "package": "fi.muuttobotti.app",
+      "versionCode": 1,
       "adaptiveIcon": { "backgroundColor": "#071B22" },
       "intentFilters": [
         {
