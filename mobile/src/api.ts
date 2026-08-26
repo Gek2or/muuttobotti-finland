@@ -13,12 +13,14 @@ export type Booking = {
   screen_size?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string;
 };
 export type Worker = { worker_id: string; name: string; phone?: string; email?: string; active: number };
+export type Availability = { ok: true; db: boolean; from?: string; to?: string; fullDays: string[]; blocks: Array<{date:string;start:string;end:string}>; bookedStarts: Array<{date:string;time:string}> };
 export type BookingCreateResult =
   | { bookingId: string; trackingPath: string; accessKey: string; warning?: string }
   | { fallback: 'whatsapp'; code?: string; draftId: string; whatsappUrl: string };
 
 async function json<T>(response:Response):Promise<T>{const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error((payload as any).error||`HTTP ${response.status}`);return payload as T}
 export async function createBooking(data:FormData){return json<BookingCreateResult>(await fetch(`${API_BASE}/api/bookings`,{method:'POST',headers:{Accept:'application/json'},body:data}))}
+export async function getAvailability(from:string,to=from){const qs=new URLSearchParams({from,to});return json<Availability>(await fetch(`${API_BASE}/api/availability?${qs.toString()}`,{headers:{Accept:'application/json'}}))}
 export async function getBooking(id:string,key:string){return json<{booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/bookings/status`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key})}))}
 export async function updateClientBooking(id:string,key:string,patch:Record<string,unknown>){return json<{booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/bookings/status`,{method:'PATCH',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key,...patch})}))}
 export async function registerBookingPush(id:string,key:string,token:string,platform:string,locale:string){return json<{ok:true}>(await fetch(`${API_BASE}/api/bookings/push`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,key,token,platform,locale})}))}
