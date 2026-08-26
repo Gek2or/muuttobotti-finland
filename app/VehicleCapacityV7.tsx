@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, CheckCircle2, PackageCheck, Truck } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, PackageCheck, Truck } from "lucide-react";
 
 type Locale = "fi" | "en" | "uk" | "ru";
+type Vehicle = "van" | "trailer";
+
+const VEHICLE_KEY = "muuttobotti-vehicle-choice";
 
 const copy = {
   fi: {
@@ -20,7 +23,10 @@ const copy = {
     comboVolume: "noin 20 m³",
     comboPrice: "+10 €/h",
     comboText: "Kun tavaraa on selvästi enemmän, 7–8 m³ perävaunu kasvattaa käytännön kokonaiskapasiteetin noin 20 kuutioon.",
-    comboItems: ["Sopii suurempiin asuntoihin ja runsaisiin tavaramääriin", "Vähemmän edestakaisia ajoja voi säästää työaikaa", "Valitse suoraan laskurista ennen varausta"],
+    comboItems: ["Sopii suurempiin asuntoihin ja runsaisiin tavaramääriin", "Vähemmän edestakaisia ajoja voi säästää työaikaa", "Valitse suoraan ennen hinnan laskemista"],
+    selectVan: "Valitse Crafter 13–15 m³",
+    selectTrailer: "Valitse noin 20 m³",
+    selected: "Valittu",
     cta: "Laske oma muutto",
     note: "Tilavuudet ovat suuntaa-antavia. Käytännön kapasiteettiin vaikuttavat tavaroiden muodot, pakkaustapa ja turvallinen kuormaus.",
   },
@@ -37,7 +43,10 @@ const copy = {
     comboVolume: "about 20 m³",
     comboPrice: "+€10/h",
     comboText: "For a clearly larger load, a 7–8 m³ trailer increases practical total capacity to around 20 cubic metres.",
-    comboItems: ["Better for larger homes and heavier volumes", "Fewer back-and-forth trips can reduce total working time", "Select it directly in the calculator before booking"],
+    comboItems: ["Better for larger homes and heavier volumes", "Fewer back-and-forth trips can reduce total working time", "Choose it before calculating the final estimate"],
+    selectVan: "Choose Crafter 13–15 m³",
+    selectTrailer: "Choose about 20 m³",
+    selected: "Selected",
     cta: "Calculate your move",
     note: "Volumes are approximate. Practical capacity depends on item shapes, packing and safe loading.",
   },
@@ -54,7 +63,10 @@ const copy = {
     comboVolume: "близько 20 м³",
     comboPrice: "+10 €/год",
     comboText: "Якщо речей значно більше, причіп 7–8 м³ збільшує практичний загальний об’єм приблизно до 20 кубів.",
-    comboItems: ["Для більших квартир і великої кількості речей", "Менше повторних рейсів може скоротити час роботи", "Можна вибрати прямо в калькуляторі"],
+    comboItems: ["Для більших квартир і великої кількості речей", "Менше повторних рейсів може скоротити час роботи", "Оберіть варіант перед розрахунком ціни"],
+    selectVan: "Обрати Crafter 13–15 м³",
+    selectTrailer: "Обрати близько 20 м³",
+    selected: "Обрано",
     cta: "Розрахувати переїзд",
     note: "Об’єми орієнтовні. Реальна місткість залежить від форми речей, пакування та безпечного завантаження.",
   },
@@ -71,7 +83,10 @@ const copy = {
     comboVolume: "около 20 м³",
     comboPrice: "+10 €/ч",
     comboText: "Если вещей заметно больше, прицеп 7–8 м³ увеличивает практический общий объём примерно до 20 кубов.",
-    comboItems: ["Подходит для больших квартир и большого количества вещей", "Меньше повторных рейсов может сократить общее время работы", "Можно выбрать прямо в калькуляторе перед бронированием"],
+    comboItems: ["Подходит для больших квартир и большого количества вещей", "Меньше повторных рейсов может сократить общее время работы", "Выберите вариант перед расчётом цены"],
+    selectVan: "Выбрать Crafter 13–15 м³",
+    selectTrailer: "Выбрать около 20 м³",
+    selected: "Выбрано",
     cta: "Рассчитать свой переезд",
     note: "Объёмы ориентировочные. Реальная вместимость зависит от формы вещей, упаковки и безопасной загрузки.",
   },
@@ -85,6 +100,7 @@ function localeNow(): Locale {
 export default function VehicleCapacityV7() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [locale, setLocale] = useState<Locale>("fi");
+  const [vehicle, setVehicle] = useState<Vehicle>("van");
 
   useEffect(() => {
     const mount = () => {
@@ -100,10 +116,8 @@ export default function VehicleCapacityV7() {
     };
     mount();
     setLocale(localeNow());
-    const observer = new MutationObserver(() => {
-      setLocale(localeNow());
-      if (!document.getElementById("vehicle-capacity-v7")) mount();
-    });
+    setVehicle(sessionStorage.getItem(VEHICLE_KEY) === "trailer" ? "trailer" : "van");
+    const observer = new MutationObserver(() => setLocale(localeNow()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
     return () => observer.disconnect();
   }, []);
@@ -111,6 +125,11 @@ export default function VehicleCapacityV7() {
   if (!target) return null;
   const t = copy[locale];
 
+  const choose = (next: Vehicle) => {
+    setVehicle(next);
+    sessionStorage.setItem(VEHICLE_KEY, next);
+    window.dispatchEvent(new CustomEvent("muuttobotti:vehicle", { detail: { vehicle: next } }));
+  };
   const scrollToCalculator = () => document.querySelector(".calculator-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return createPortal(
@@ -123,22 +142,28 @@ export default function VehicleCapacityV7() {
         </div>
 
         <div className="vehicle-v7-grid">
-          <article className="vehicle-v7-card">
+          <article className={`vehicle-v7-card ${vehicle === "van" ? "vehicle-v7-selected" : ""}`}>
             <div className="vehicle-v7-cardtop">
               <div className="vehicle-v7-icon"><Truck /></div>
               <div><h3>{t.vanTitle}</h3><p>{t.vanText}</p></div>
             </div>
             <div className="vehicle-v7-metric"><strong>{t.vanVolume}</strong><span>{t.vanPrice}</span></div>
             <ul>{t.vanItems.map(item => <li key={item}><CheckCircle2 />{item}</li>)}</ul>
+            <button className="vehicle-v7-select" type="button" onClick={() => choose("van")} aria-pressed={vehicle === "van"}>
+              {vehicle === "van" ? <><Check />{t.selected}</> : t.selectVan}
+            </button>
           </article>
 
-          <article className="vehicle-v7-card vehicle-v7-card-featured">
+          <article className={`vehicle-v7-card vehicle-v7-card-featured ${vehicle === "trailer" ? "vehicle-v7-selected" : ""}`}>
             <div className="vehicle-v7-cardtop">
               <div className="vehicle-v7-icon"><PackageCheck /></div>
               <div><h3>{t.comboTitle}</h3><p>{t.comboText}</p></div>
             </div>
             <div className="vehicle-v7-metric"><strong>{t.comboVolume}</strong><span>{t.comboPrice}</span></div>
             <ul>{t.comboItems.map(item => <li key={item}><CheckCircle2 />{item}</li>)}</ul>
+            <button className="vehicle-v7-select" type="button" onClick={() => choose("trailer")} aria-pressed={vehicle === "trailer"}>
+              {vehicle === "trailer" ? <><Check />{t.selected}</> : t.selectTrailer}
+            </button>
           </article>
         </div>
 
