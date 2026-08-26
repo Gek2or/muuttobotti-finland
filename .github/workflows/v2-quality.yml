@@ -34,19 +34,19 @@ jobs:
       - name: Validate v2 PWA manifest
         run: node -e "JSON.parse(require('fs').readFileSync('public/muuttobotti.webmanifest','utf8')); console.log('manifest ok')"
 
-      - name: Validate v2 preview JavaScript syntax
+      - name: Validate v2.1 preview JavaScript syntax
         shell: bash
         run: |
           python3 - <<'PY'
           import re
           from pathlib import Path
-          html = Path('public/mobile-v2.html').read_text()
+          html = Path('public/mobile-v2.1.html').read_text()
           scripts = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html, flags=re.I)
           if not scripts:
-              raise SystemExit('No inline script found in mobile-v2.html')
-          Path('/tmp/mobile-v2-inline.js').write_text('\n'.join(scripts))
+              raise SystemExit('No inline script found in mobile-v2.1.html')
+          Path('/tmp/mobile-v2.1-inline.js').write_text('\n'.join(scripts))
           PY
-          node --check /tmp/mobile-v2-inline.js
+          node --check /tmp/mobile-v2.1-inline.js
 
       - name: Production build
         run: npm run build
