@@ -1,12 +1,30 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LanguageProvider } from '../src/i18n';
 import { secureStorage } from '../src/storage';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
+  const segments = useSegments();
+
+  useEffect(() => {
+    const guardProtectedRoute = async () => {
+      const route = String(segments[0] || '');
+      if (route === 'admin') {
+        const token = await secureStorage.getAdminToken();
+        if (!token) router.replace('/');
+        return;
+      }
+      if (route === 'account-order') {
+        const session = await secureStorage.getClientSession();
+        if (!session.token) router.replace('/');
+      }
+    };
+    void guardProtectedRoute();
+  }, [segments]);
+
   useEffect(() => {
     const openFromNotification = async (data: Record<string, unknown> | undefined) => {
       if (!data) return;
@@ -20,6 +38,7 @@ export default function RootLayout() {
       }
       const session = await secureStorage.getClientSession();
       if (session.token) router.push({ pathname: '/account-order', params: { id } });
+      else router.replace('/');
     };
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       void openFromNotification(response.notification.request.content.data as Record<string, unknown> | undefined);
