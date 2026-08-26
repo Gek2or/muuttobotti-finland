@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AdminBookingsClient from "./AdminBookingsClient";
+import AdminAvailabilityShortcut from "./AdminAvailabilityShortcut";
 import "./admin-bookings.css";
+import "./admin-availability-shortcut.css";
 
 export const metadata: Metadata = {
   title: "Muuttobotti Admin · Bookings",
@@ -17,5 +19,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminBookingsPage() {
-  return <AdminBookingsClient />;
+  return <><AdminBookingsClient /><AdminAvailabilityShortcut /></>;
 }
