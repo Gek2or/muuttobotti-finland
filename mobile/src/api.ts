@@ -37,5 +37,8 @@ export async function requestClientCode(email:string){return json<{ok:true;expir
 export async function verifyClientCode(email:string,code:string){return json<{ok:true;token:string;profile:any;bookings:Booking[]}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'verify_code',email,code})}))}
 export async function getClientAccount(token:string,bookingId?:string){return json<any>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'me',token,bookingId})}))}
 export async function updateClientAccountBooking(token:string,bookingId:string,bookingAction:string,patch:Record<string,unknown>={}){return json<{ok:true;booking:Booking;events:BookingEvent[]}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'booking_action',token,bookingId,bookingAction,...patch})}))}
-export async function logoutClientAccount(token:string){return json<{ok:true}>(await fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'logout',token})}))}
+export async function logoutClientAccount(token:string){
+  void fetch(`${API_BASE}/api/client/auth`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({action:'logout',token})}).catch(()=>null);
+  return {ok:true as const};
+}
 export async function registerAccountPush(session:string,bookingId:string,token:string,platform:string,locale:string){return json<{ok:true}>(await fetch(`${API_BASE}/api/client/push`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({session,bookingId,token,platform,locale})}))}
