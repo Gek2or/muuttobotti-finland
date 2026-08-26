@@ -64,7 +64,7 @@ export default function CalculatorBridgeV6(){
       const mode = card.dataset.mode;
       if (mode === "cleaning" || snapshot.mode !== mode) return;
 
-      const basePrice = Number(snapshot.quotedPrice || 0);
+      const basePrice = Number(snapshot.baseQuotedPrice ?? snapshot.quotedPrice ?? 0);
       const hours = parseHours(snapshot.quotedDuration);
       const surcharge = withTrailer ? Math.round(hours * 10) : 0;
       const finalPrice = basePrice + surcharge;
@@ -77,11 +77,14 @@ export default function CalculatorBridgeV6(){
 
       if (
         snapshot.vehicle !== (withTrailer ? "crafter-trailer" : "crafter") ||
-        snapshot.finalQuotedPrice !== finalPrice ||
+        snapshot.quotedPrice !== finalPrice ||
+        snapshot.baseQuotedPrice !== basePrice ||
         snapshot.trailerHourlySurcharge !== (withTrailer ? 10 : 0)
       ) {
         const enhanced = {
           ...snapshot,
+          baseQuotedPrice: basePrice,
+          quotedPrice: finalPrice,
           vehicle: withTrailer ? "crafter-trailer" : "crafter",
           vehicleVolumeM3: withTrailer ? "~20" : "13-15",
           trailerVolumeM3: withTrailer ? "7-8" : undefined,
@@ -125,7 +128,7 @@ export default function CalculatorBridgeV6(){
           const snapshot = getSnapshot();
           const t = copy[localeNow()];
           const vehicleText = withTrailer ? t.bookingTrailer : t.bookingVan;
-          const adjustedText = withTrailer && snapshot?.finalQuotedPrice ? ` ${t.adjusted}: ${snapshot.finalQuotedPrice} €.` : "";
+          const adjustedText = withTrailer && snapshot?.quotedPrice ? ` ${t.adjusted}: ${snapshot.quotedPrice} €.` : "";
           const next = `${notes.value.trim()} ${vehicleText}${adjustedText}`.trim();
           const descriptor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
           descriptor?.set?.call(notes, next);
