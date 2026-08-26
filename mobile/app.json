@@ -2,7 +2,7 @@
   "expo": {
     "name": "Muuttobotti",
     "slug": "muuttobotti",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "scheme": "muuttobotti",
     "userInterfaceStyle": "automatic",
@@ -27,12 +27,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "fi.muuttobotti.app",
-      "buildNumber": "20",
+      "buildNumber": "21",
       "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
     },
     "android": {
       "package": "fi.muuttobotti.app",
-      "versionCode": 20,
+      "versionCode": 21,
       "adaptiveIcon": { "backgroundColor": "#06191F" },
       "intentFilters": [
         {
@@ -43,6 +43,6 @@
         }
       ]
     },
-    "extra": { "apiBaseUrl": "https://muuttobotti.fi", "releaseChannel": "v2" }
+    "extra": { "apiBaseUrl": "https://muuttobotti.fi", "releaseChannel": "v2.1" }
   }
 }
