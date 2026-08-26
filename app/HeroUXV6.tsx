@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, MessageCircle, Phone, Sparkles, Truck, UserRound, UsersRound } from "lucide-react";
+import { ArrowRight, CalendarDays, MessageCircle, Phone, Sparkles, Truck, UserRound, UsersRound } from "lucide-react";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 
 const copy = {
-  fi: { one:"1 muuttaja", two:"2 muuttajaa + Crafter", clean:"Siivous", from:"alkaen", calculate:"Laske hinta", call:"Soita", whatsapp:"WhatsApp", smart:"Selkeä arvio ennen varausta" },
-  en: { one:"1 mover", two:"2 movers + Crafter", clean:"Cleaning", from:"from", calculate:"Calculate", call:"Call", whatsapp:"WhatsApp", smart:"Clear estimate before booking" },
-  uk: { one:"1 вантажник", two:"2 вантажники + Crafter", clean:"Прибирання", from:"від", calculate:"Розрахувати", call:"Дзвінок", whatsapp:"WhatsApp", smart:"Зрозумілий розрахунок до бронювання" },
-  ru: { one:"1 грузчик", two:"2 грузчика + Crafter", clean:"Уборка", from:"от", calculate:"Рассчитать", call:"Позвонить", whatsapp:"WhatsApp", smart:"Понятный расчёт до бронирования" },
+  fi: { one:"1 muuttaja", two:"2 muuttajaa + Crafter", clean:"Siivous", from:"alkaen", calculate:"Laske hinta", book:"Varaa", call:"Soita", whatsapp:"WhatsApp", smart:"Selkeä arvio ennen varausta" },
+  en: { one:"1 mover", two:"2 movers + Crafter", clean:"Cleaning", from:"from", calculate:"Calculate", book:"Book", call:"Call", whatsapp:"WhatsApp", smart:"Clear estimate before booking" },
+  uk: { one:"1 вантажник", two:"2 вантажники + Crafter", clean:"Прибирання", from:"від", calculate:"Розрахувати", book:"Замовити", call:"Дзвінок", whatsapp:"WhatsApp", smart:"Зрозумілий розрахунок до бронювання" },
+  ru: { one:"1 грузчик", two:"2 грузчика + Crafter", clean:"Уборка", from:"от", calculate:"Рассчитать", book:"Заказать", call:"Позвонить", whatsapp:"WhatsApp", smart:"Понятный расчёт до бронирования" },
 } as const;
 
 function getLocale(): Locale {
@@ -36,7 +36,8 @@ export default function HeroUXV6(){
 
   if(!mounted)return null;
   const t=copy[locale];
-  const scrollCalc=()=>document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"});
+  const scrollCalc=()=>document.getElementById("calculator")?.scrollIntoView({behavior:"smooth",block:"start"});
+  const scrollBooking=()=>document.getElementById("booking")?.scrollIntoView({behavior:"smooth",block:"start"});
 
   return <>
     {hero&&createPortal(<div className="hero-v6-atmosphere" aria-hidden="true"><span className="hero-v6-orb orb-a"/><span className="hero-v6-orb orb-b"/><span className="hero-v6-route"><i/><i/><i/></span></div>,hero)}
@@ -51,7 +52,8 @@ export default function HeroUXV6(){
     {createPortal(<nav className="mobile-conversion-bar" aria-label="Quick actions">
       <a href="tel:+3584578767567"><Phone/><span>{t.call}</span></a>
       <a href="https://wa.me/3584578767567"><MessageCircle/><span>{t.whatsapp}</span></a>
-      <button onClick={scrollCalc}><Truck/><span>{t.calculate}</span></button>
+      <button className="mobile-calc-action" onClick={scrollCalc}><Truck/><span>{t.calculate}</span></button>
+      <button className="mobile-book-action" onClick={scrollBooking}><CalendarDays/><span>{t.book}</span></button>
     </nav>,document.body)}
   </>;
 }
