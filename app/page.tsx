@@ -7,6 +7,7 @@ import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import HeroUXV6 from "./HeroUXV6";
 import CalculatorBridgeV6 from "./CalculatorBridgeV6";
 import BlogNavigationEnhancer from "./BlogNavigationEnhancer";
+import HomeBlogPreview from "./HomeBlogPreview";
 import { faqContent } from "./faq-content";
 import "./experience-v5.css";
 import "./business-calculator-v2.css";
@@ -15,6 +16,7 @@ import "./v6-ui.css";
 import "./mobile-header-polish.css";
 import "./mobile-readability-v61.css";
 import "./calculator-v4.css";
+import "./home-blog-preview.css";
 
 export default function Home() {
   const faqSchema = {
@@ -35,6 +37,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <MuuttobottiArtV3 />
       <BlogNavigationEnhancer />
+      <HomeBlogPreview />
       <FaqPortal />
       <LocalizedSurfaceFixes />
       <BusinessCalculatorV4 />
