@@ -9,6 +9,7 @@ import HeroUXV6 from "./HeroUXV6";
 import CalculatorBridgeV6 from "./CalculatorBridgeV6";
 import BlogNavigationEnhancer from "./BlogNavigationEnhancer";
 import HomeBlogPreview from "./HomeBlogPreview";
+import VehicleCapacityV7 from "./VehicleCapacityV7";
 import { faqContent } from "./faq-content";
 import "./experience-v5.css";
 import "./business-calculator-v2.css";
@@ -20,6 +21,7 @@ import "./calculator-v4.css";
 import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
 import "./booking-availability.css";
+import "./vehicle-capacity-v7.css";
 
 export default function Home() {
   const faqSchema = {
@@ -44,6 +46,7 @@ export default function Home() {
       <FaqPortal />
       <LocalizedSurfaceFixes />
       <BusinessCalculatorV4 />
+      <VehicleCapacityV7 />
       <BookingAvailabilityPicker />
       <BookingRuntimeController />
       <VisualMotionEnhancer />
