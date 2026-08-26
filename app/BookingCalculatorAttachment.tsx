@@ -29,6 +29,11 @@ function readSnapshot(): Snapshot|null {
   } catch { return null; }
 }
 
+function clearAttachment() {
+  sessionStorage.removeItem(SNAPSHOT_KEY);
+  sessionStorage.removeItem(ATTACHED_KEY);
+}
+
 export default function BookingCalculatorAttachment(){
   const [target,setTarget]=useState<HTMLElement|null>(null);
   const [locale,setLocale]=useState<Locale>("fi");
@@ -53,14 +58,33 @@ export default function BookingCalculatorAttachment(){
 
     const onAttach=()=>setSnapshot(readSnapshot());
     const onSnapshot=()=>{if(sessionStorage.getItem(ATTACHED_KEY)==="1")setSnapshot(readSnapshot());};
+    const onSubmitGate=(event:Event)=>{
+      const form=event.target as HTMLFormElement|null;
+      if(!form?.classList?.contains("booking-form"))return;
+      if(sessionStorage.getItem(ATTACHED_KEY)!=="1")sessionStorage.removeItem(SNAPSHOT_KEY);
+    };
+    const onServiceChange=(event:Event)=>{
+      const select=event.target as HTMLSelectElement|null;
+      if(select?.name!=="service"||sessionStorage.getItem(ATTACHED_KEY)!=="1")return;
+      const current=readSnapshot();
+      if(current?.mode&&current.mode!==select.value){
+        clearAttachment();
+        setSnapshot(null);
+      }
+    };
+
     window.addEventListener("muuttobotti:calculator-attach",onAttach);
     window.addEventListener("muuttobotti:calculator-snapshot",onSnapshot);
+    document.addEventListener("submit",onSubmitGate,true);
+    document.addEventListener("change",onServiceChange,true);
     const observer=new MutationObserver(()=>setLocale(localeNow()));
     observer.observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
     return()=>{
       observer.disconnect();
       window.removeEventListener("muuttobotti:calculator-attach",onAttach);
       window.removeEventListener("muuttobotti:calculator-snapshot",onSnapshot);
+      document.removeEventListener("submit",onSubmitGate,true);
+      document.removeEventListener("change",onServiceChange,true);
     };
   },[]);
 
@@ -94,8 +118,7 @@ export default function BookingCalculatorAttachment(){
   const t=copy[locale];
 
   const remove=()=>{
-    sessionStorage.removeItem(SNAPSHOT_KEY);
-    sessionStorage.removeItem(ATTACHED_KEY);
+    clearAttachment();
     setSnapshot(null);
     window.dispatchEvent(new CustomEvent("muuttobotti:calculator-detach"));
   };
