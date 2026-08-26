@@ -9,53 +9,21 @@ type Locale = "fi" | "en" | "uk" | "ru";
 
 const copy = {
   fi: {
-    title: "Ajoneuvo ja kuljetustila",
-    van: "Korkea Crafter",
-    vanVolume: "13–15 m³",
-    vanNote: "Sisältyy perushintaan",
-    trailer: "Crafter + perävaunu",
-    trailerVolume: "noin 20 m³ yhteensä",
-    trailerNote: "+10 €/h",
-    surcharge: "Perävaunu +10 €/h",
     bookingVan: "Ajoneuvo: korkea Crafter, 13–15 m³.",
     bookingTrailer: "Ajoneuvo: korkea Crafter 13–15 m³ + perävaunu 7–8 m³, käytännön kokonaiskapasiteetti noin 20 m³ (+10 €/h).",
     adjusted: "Arvio perävaunulla",
   },
   en: {
-    title: "Vehicle and cargo space",
-    van: "High-roof Crafter",
-    vanVolume: "13–15 m³",
-    vanNote: "Included in the base price",
-    trailer: "Crafter + trailer",
-    trailerVolume: "about 20 m³ total",
-    trailerNote: "+€10/h",
-    surcharge: "Trailer +€10/h",
     bookingVan: "Vehicle: high-roof Crafter, 13–15 m³.",
     bookingTrailer: "Vehicle: high-roof Crafter 13–15 m³ + 7–8 m³ trailer, practical total capacity about 20 m³ (+€10/h).",
     adjusted: "Estimate with trailer",
   },
   uk: {
-    title: "Автомобіль та об’єм",
-    van: "Високий Crafter",
-    vanVolume: "13–15 м³",
-    vanNote: "Входить у базову ціну",
-    trailer: "Crafter + причіп",
-    trailerVolume: "близько 20 м³ разом",
-    trailerNote: "+10 €/год",
-    surcharge: "Причіп +10 €/год",
     bookingVan: "Автомобіль: високий Crafter, 13–15 м³.",
     bookingTrailer: "Автомобіль: високий Crafter 13–15 м³ + причіп 7–8 м³, практичний загальний об’єм близько 20 м³ (+10 €/год).",
     adjusted: "Оцінка з причепом",
   },
   ru: {
-    title: "Машина и объём",
-    van: "Высокий Crafter",
-    vanVolume: "13–15 м³",
-    vanNote: "Входит в базовую цену",
-    trailer: "Crafter + прицеп",
-    trailerVolume: "около 20 м³ вместе",
-    trailerNote: "+10 €/ч",
-    surcharge: "Прицеп +10 €/ч",
     bookingVan: "Машина: высокий Crafter, 13–15 м³.",
     bookingTrailer: "Машина: высокий Crafter 13–15 м³ + прицеп 7–8 м³, практический общий объём около 20 м³ (+10 €/ч).",
     adjusted: "Оценка с прицепом",
@@ -89,46 +57,6 @@ export default function CalculatorBridgeV6(){
       }
     };
 
-    const updateVehiclePicker = () => {
-      const card = document.querySelector<HTMLElement>(".bc3-card");
-      if (!card) return;
-      const mode = card.dataset.mode;
-      let picker = card.querySelector<HTMLElement>(".bc6-vehicle-picker");
-
-      if (mode === "cleaning") {
-        picker?.remove();
-        return;
-      }
-
-      const grid = card.querySelector<HTMLElement>(".bc3-body .bc3-grid");
-      if (!grid) return;
-
-      if (!picker) {
-        picker = document.createElement("div");
-        picker.className = "bc6-vehicle-picker bc3-full";
-        grid.appendChild(picker);
-      }
-
-      const locale = localeNow();
-      const signature = `${locale}:${withTrailer ? "trailer" : "van"}`;
-      if (picker.dataset.signature === signature) return;
-      picker.dataset.signature = signature;
-      const t = copy[locale];
-
-      picker.innerHTML = `
-        <span class="bc6-vehicle-title">${t.title}</span>
-        <div class="bc6-vehicle-options">
-          <button type="button" class="bc6-vehicle-option ${withTrailer ? "" : "active"}" data-vehicle="van">
-            <span class="bc6-vehicle-icon" aria-hidden="true">▰</span>
-            <span><b>${t.van}</b><strong>${t.vanVolume}</strong><small>${t.vanNote}</small></span>
-          </button>
-          <button type="button" class="bc6-vehicle-option ${withTrailer ? "active" : ""}" data-vehicle="trailer">
-            <span class="bc6-vehicle-icon bc6-combo" aria-hidden="true">▰◻</span>
-            <span><b>${t.trailer}</b><strong>${t.trailerVolume}</strong><small>${t.trailerNote}</small></span>
-          </button>
-        </div>`;
-    };
-
     const applyTrailerPrice = () => {
       const card = document.querySelector<HTMLElement>(".bc3-card");
       const snapshot = getSnapshot();
@@ -140,25 +68,12 @@ export default function CalculatorBridgeV6(){
       const hours = parseHours(snapshot.quotedDuration);
       const surcharge = withTrailer ? Math.round(hours * 10) : 0;
       const finalPrice = basePrice + surcharge;
-      const t = copy[localeNow()];
 
       const price = card.querySelector<HTMLElement>(".bc3-price strong");
       const nextPrice = `${finalPrice} €`;
       if (price && basePrice > 0 && price.textContent?.trim() !== nextPrice) price.textContent = nextPrice;
 
-      const breakdown = card.querySelector<HTMLElement>(".bc3-breakdown");
-      let surchargeLine = breakdown?.querySelector<HTMLElement>(".bc6-trailer-surcharge");
-      if (withTrailer && breakdown) {
-        if (!surchargeLine) {
-          surchargeLine = document.createElement("small");
-          surchargeLine.className = "bc6-trailer-surcharge";
-          breakdown.appendChild(surchargeLine);
-        }
-        const nextLine = `${t.surcharge}: ${surcharge} €`;
-        if (surchargeLine.textContent !== nextLine) surchargeLine.textContent = nextLine;
-      } else {
-        surchargeLine?.remove();
-      }
+      card.querySelector(".bc6-trailer-surcharge")?.remove();
 
       if (
         snapshot.vehicle !== (withTrailer ? "crafter-trailer" : "crafter") ||
@@ -177,9 +92,11 @@ export default function CalculatorBridgeV6(){
       }
     };
 
-    const sync = () => {
-      updateVehiclePicker();
-      applyTrailerPrice();
+    const onVehicle = (event: Event) => {
+      const custom = event as CustomEvent<{ vehicle?: string }>;
+      withTrailer = custom.detail?.vehicle === "trailer";
+      sessionStorage.setItem(VEHICLE_KEY, withTrailer ? "trailer" : "van");
+      window.setTimeout(applyTrailerPrice, 0);
     };
 
     const onClick=(event:MouseEvent)=>{
@@ -198,13 +115,6 @@ export default function CalculatorBridgeV6(){
         const offers=Array.from(document.querySelectorAll(".hero-v6-price-grid button"));
         const index=offers.indexOf(offer);
         select(index===2?1:0);
-      }
-
-      const vehicleButton = target?.closest<HTMLButtonElement>("[data-vehicle]");
-      if (vehicleButton) {
-        withTrailer = vehicleButton.dataset.vehicle === "trailer";
-        sessionStorage.setItem(VEHICLE_KEY, withTrailer ? "trailer" : "van");
-        window.setTimeout(sync, 0);
       }
 
       const continueButton = target?.closest(".bc3-summary > button");
@@ -226,11 +136,13 @@ export default function CalculatorBridgeV6(){
     };
 
     document.addEventListener("click",onClick,true);
-    const interval = window.setInterval(sync, 300);
-    sync();
+    window.addEventListener("muuttobotti:vehicle", onVehicle as EventListener);
+    const interval = window.setInterval(applyTrailerPrice, 300);
+    applyTrailerPrice();
 
     return()=>{
       document.removeEventListener("click",onClick,true);
+      window.removeEventListener("muuttobotti:vehicle", onVehicle as EventListener);
       window.clearInterval(interval);
     };
   },[]);
