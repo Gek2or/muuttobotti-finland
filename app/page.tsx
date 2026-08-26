@@ -22,6 +22,7 @@ import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
 import "./booking-availability.css";
 import "./vehicle-capacity-v7.css";
+import "./vehicle-capacity-v7-controls.css";
 
 export default function Home() {
   const faqSchema = {
