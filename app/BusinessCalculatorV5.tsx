@@ -1,0 +1,273 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  AlertTriangle, ArrowRight, Boxes, Check, CheckCircle2, Clock3, Gauge,
+  Minus, PackageCheck, PackageOpen, Plus, Sparkles, Truck, UserRound, UsersRound,
+} from "lucide-react";
+
+type Mode = "moving" | "cleaning" | "transport";
+type Locale = "fi" | "en" | "uk" | "ru";
+type CleanType = "regular" | "moveout" | "deep";
+type LoadLevel = "light" | "normal" | "full";
+type Vehicle = "van" | "trailer";
+
+const SNAPSHOT_KEY = "muuttobotti-calculator-snapshot";
+const ATTACHED_KEY = "muuttobotti-booking-calculator-attached";
+
+const ui = {
+  fi: {
+    tabs:["Muutto","Siivous","Kuljetus"], movers:"Muuttajien määrä", one:"1 muuttaja", two:"2 muuttajaa",
+    size:"Asunnon koko", load:"Tavaramäärä", light:"Vähän tavaraa", normalLoad:"Normaali", full:"Paljon tavaraa",
+    sizeHint:"Pinta-ala vaikuttaa arvioon vain kevyesti. Tavaramäärä, kerros ja raskaat esineet vaikuttavat enemmän.",
+    floor:"Kerros", distance:"Etäisyys", elevator:"Hissi", packing:"Pakkausapua", afterClean:"Muuttosiivous",
+    heavy:"Raskaita esineitä", heavyHint:"esim. sohva, pesukone, painava pöytä", windows:"Ikkunoita", cleanType:"Siivoustyyppi",
+    regular:"Perussiivous", moveout:"Muuttosiivous", deep:"Suursiivous", weight:"Arvioitu paino", delivery:"Toimitus",
+    normal:"Normaali", express:"Pikakuljetus", estimate:"Alustava arvio", duration:"Arvioitu kesto", continue:"Jatka varaukseen",
+    breakdown:"Mistä arvio muodostuu", work:"Työ", driving:"Ajokulu", extra:"Lisäpalvelut", minimum:"Minimiveloitus",
+    moveSmall:"Pieni muutto", moveMedium:"Keskikokoinen muutto", moveLarge:"Suuri muutto", recommendation:"Suositus",
+    recTwo:"Suosittelemme 2 muuttajaa", recOne:"1 muuttaja riittää todennäköisesti", recHeavy:"Painava kuorma kannattaa vahvistaa ennen tilausta",
+    recCleaning:"Arvio perustuu pinta-alaan, siivoustyyppiin ja ikkunoihin", recTransport:"Crafter sopii tähän kuljetukseen",
+    whyTwo:"Kahdella muuttajalla työ valmistuu nopeammin ja kokonaisuus pysyy usein järkevämpänä.",
+    minMove:"Minimi 2 h. Ensimmäiset 10 km sisältyvät, sen jälkeen 0,85 €/km.",
+    minClean:"32,90 €/h · minimiveloitus 2 h · perusvälineet sisältyvät.",
+    minTransport:"Crafter-kuljetuksen minimiveloitus 79 €. Ensimmäiset 10 km sisältyvät.",
+    compare:"Vertailu", withOne:"1 muuttajalla", withTwo:"2 muuttajalla", saveTime:"Säästät aikaa noin",
+    finalNote:"Tämä on alustava arvio. Lopullinen hinta vahvistetaan ennen työn alkua.",
+    vehicle:"Ajoneuvo", vehicleHint:"Valitse tarvittava tavaratila. Korkea Crafter kuuluu perushintaan.",
+    van:"Korkea Crafter", vanVolume:"13–15 m³", vanPrice:"sisältyy hintaan", vanDesc:"Pitkä ja korkea tavaratila useimpiin muuttoihin.",
+    trailer:"Crafter + perävaunu", trailerVolume:"noin 20 m³", trailerPrice:"+10 €/h", trailerDesc:"7–8 m³ lisätila suurempaan tavaramäärään.",
+    trailerRec:"Tavaramäärän perusteella noin 20 m³ vaihtoehto voi vähentää lisäajoja.", chooseTrailer:"Valitse 20 m³",
+    trailerFee:"Perävaunu +10 €/h", attached:"Laskelma lisätään varaukseen erillisenä AI-tietona.",
+  },
+  en: {
+    tabs:["Moving","Cleaning","Transport"], movers:"Number of movers", one:"1 mover", two:"2 movers",
+    size:"Home size", load:"Amount of belongings", light:"Light", normalLoad:"Normal", full:"Lots of belongings",
+    sizeHint:"Home size only affects the estimate lightly. Amount of belongings, floor and heavy items matter more.",
+    floor:"Floor", distance:"Distance", elevator:"Elevator", packing:"Packing help", afterClean:"Move-out cleaning",
+    heavy:"Heavy items", heavyHint:"e.g. sofa, washer, heavy table", windows:"Windows", cleanType:"Cleaning type",
+    regular:"Regular", moveout:"Move-out", deep:"Deep clean", weight:"Estimated weight", delivery:"Delivery",
+    normal:"Normal", express:"Express", estimate:"Preliminary estimate", duration:"Estimated duration", continue:"Continue to booking",
+    breakdown:"Estimate breakdown", work:"Work", driving:"Distance", extra:"Extras", minimum:"Minimum charge",
+    moveSmall:"Small move", moveMedium:"Medium move", moveLarge:"Large move", recommendation:"Recommendation",
+    recTwo:"We recommend 2 movers", recOne:"1 mover is likely enough", recHeavy:"Confirm a heavy load before booking",
+    recCleaning:"Estimate is based on size, cleaning type and windows", recTransport:"The Crafter fits this transport",
+    whyTwo:"Two movers finish faster and often keep the overall job more efficient.",
+    minMove:"2 h minimum. First 10 km included, then €0.85/km.", minClean:"€32.90/h · 2 h minimum · basic supplies included.",
+    minTransport:"Crafter transport minimum €79. First 10 km included.", compare:"Compare", withOne:"With 1 mover", withTwo:"With 2 movers",
+    saveTime:"Estimated time saved", finalNote:"This is a preliminary estimate. Final price is confirmed before work starts.",
+    vehicle:"Vehicle", vehicleHint:"Choose the cargo volume you need. The high-roof Crafter is included in the base price.",
+    van:"High-roof Crafter", vanVolume:"13–15 m³", vanPrice:"included", vanDesc:"Long, high cargo space for most moves.",
+    trailer:"Crafter + trailer", trailerVolume:"about 20 m³", trailerPrice:"+€10/h", trailerDesc:"An extra 7–8 m³ for larger loads.",
+    trailerRec:"Based on the amount of belongings, the ~20 m³ option may reduce extra trips.", chooseTrailer:"Choose 20 m³",
+    trailerFee:"Trailer +€10/h", attached:"The estimate will be attached to the booking as separate AI information.",
+  },
+  uk: {
+    tabs:["Переїзд","Прибирання","Перевезення"], movers:"Кількість вантажників", one:"1 вантажник", two:"2 вантажники",
+    size:"Площа житла", load:"Кількість речей", light:"Мало речей", normalLoad:"Звичайно", full:"Багато речей",
+    sizeHint:"Площа лише трохи впливає на оцінку. Кількість речей, поверх і важкі предмети важливіші.",
+    floor:"Поверх", distance:"Відстань", elevator:"Ліфт", packing:"Допомога з пакуванням", afterClean:"Прибирання після переїзду",
+    heavy:"Важкі речі", heavyHint:"напр. диван, пральна машина, важкий стіл", windows:"Вікна", cleanType:"Тип прибирання",
+    regular:"Звичайне", moveout:"Після переїзду", deep:"Генеральне", weight:"Орієнтовна вага", delivery:"Доставка",
+    normal:"Звичайна", express:"Експрес", estimate:"Попередня оцінка", duration:"Орієнтовний час", continue:"До бронювання",
+    breakdown:"З чого складається оцінка", work:"Робота", driving:"Пробіг", extra:"Додатково", minimum:"Мінімальна оплата",
+    moveSmall:"Малий переїзд", moveMedium:"Середній переїзд", moveLarge:"Великий переїзд", recommendation:"Рекомендація",
+    recTwo:"Рекомендуємо 2 вантажників", recOne:"Ймовірно, достатньо 1 вантажника", recHeavy:"Важкий вантаж краще підтвердити до замовлення",
+    recCleaning:"Оцінка враховує площу, тип прибирання та вікна", recTransport:"Crafter підходить для цього перевезення",
+    whyTwo:"Двоє вантажників працюють швидше й часто роблять весь переїзд ефективнішим.",
+    minMove:"Мінімум 2 год. Перші 10 км включено, далі 0,85 €/км.", minClean:"32,90 €/год · мінімум 2 год · базові засоби включено.",
+    minTransport:"Мінімум для Crafter — 79 €. Перші 10 км включено.", compare:"Порівняння", withOne:"З 1 вантажником", withTwo:"З 2 вантажниками",
+    saveTime:"Орієнтовна економія часу", finalNote:"Це попередня оцінка. Остаточну ціну підтверджуємо до початку роботи.",
+    vehicle:"Автомобіль", vehicleHint:"Оберіть потрібний вантажний об’єм. Високий Crafter входить у базову ціну.",
+    van:"Високий Crafter", vanVolume:"13–15 м³", vanPrice:"включено", vanDesc:"Довгий високий відсік для більшості переїздів.",
+    trailer:"Crafter + причіп", trailerVolume:"близько 20 м³", trailerPrice:"+10 €/год", trailerDesc:"Додаткові 7–8 м³ для більшого обсягу.",
+    trailerRec:"За кількістю речей варіант близько 20 м³ може зменшити кількість рейсів.", chooseTrailer:"Обрати 20 м³",
+    trailerFee:"Причіп +10 €/год", attached:"Розрахунок буде додано до заявки як окрема AI-інформація.",
+  },
+  ru: {
+    tabs:["Переезд","Уборка","Перевозка"], movers:"Количество грузчиков", one:"1 грузчик", two:"2 грузчика",
+    size:"Площадь жилья", load:"Количество вещей", light:"Мало вещей", normalLoad:"Обычно", full:"Много вещей",
+    sizeHint:"Площадь влияет на расчёт лишь умеренно. Количество вещей, этаж и тяжёлые предметы важнее.",
+    floor:"Этаж", distance:"Расстояние", elevator:"Лифт", packing:"Помощь с упаковкой", afterClean:"Уборка после переезда",
+    heavy:"Тяжёлые вещи", heavyHint:"например диван, стиральная машина, тяжёлый стол", windows:"Окна", cleanType:"Тип уборки",
+    regular:"Обычная", moveout:"После переезда", deep:"Генеральная", weight:"Примерный вес", delivery:"Доставка",
+    normal:"Обычная", express:"Экспресс", estimate:"Предварительная оценка", duration:"Примерное время", continue:"К бронированию",
+    breakdown:"Из чего складывается оценка", work:"Работа", driving:"Пробег", extra:"Дополнительно", minimum:"Минимальная оплата",
+    moveSmall:"Небольшой переезд", moveMedium:"Средний переезд", moveLarge:"Большой переезд", recommendation:"Рекомендация",
+    recTwo:"Рекомендуем 2 грузчиков", recOne:"Скорее всего достаточно 1 грузчика", recHeavy:"Тяжёлый груз лучше подтвердить до заказа",
+    recCleaning:"Расчёт учитывает площадь, тип уборки и окна", recTransport:"Crafter подходит для этой перевозки",
+    whyTwo:"Два грузчика работают быстрее и часто делают весь заказ эффективнее.",
+    minMove:"Минимум 2 часа. Первые 10 км включены, дальше 0,85 €/км.", minClean:"32,90 €/ч · минимум 2 часа · базовые средства включены.",
+    minTransport:"Минимум Crafter — 79 €. Первые 10 км включены.", compare:"Сравнение", withOne:"С 1 грузчиком", withTwo:"С 2 грузчиками",
+    saveTime:"Примерная экономия времени", finalNote:"Это предварительная оценка. Итоговую цену подтверждаем до начала работы.",
+    vehicle:"Машина", vehicleHint:"Выберите нужный грузовой объём. Высокий Crafter входит в базовую цену.",
+    van:"Высокий Crafter", vanVolume:"13–15 м³", vanPrice:"включён", vanDesc:"Длинный высокий кузов для большинства переездов.",
+    trailer:"Crafter + прицеп", trailerVolume:"около 20 м³", trailerPrice:"+10 €/ч", trailerDesc:"Дополнительные 7–8 м³ для большего количества вещей.",
+    trailerRec:"По объёму вещей вариант около 20 м³ может сократить количество рейсов.", chooseTrailer:"Выбрать 20 м³",
+    trailerFee:"Прицеп +10 €/ч", attached:"Расчёт будет прикреплён к форме как отдельная AI-информация.",
+  },
+} as const;
+
+function localeNow(): Locale {
+  const lang = document.documentElement.lang;
+  return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
+}
+function money(value:number){ return Math.round(value); }
+function clamp(value:number,min:number,max:number){ return Math.min(max,Math.max(min,value)); }
+function setNativeValue(element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string) {
+  const proto = element instanceof HTMLSelectElement ? HTMLSelectElement.prototype : element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(proto,"value")?.set?.call(element,value);
+  element.dispatchEvent(new Event("input",{bubbles:true}));
+  element.dispatchEvent(new Event("change",{bubbles:true}));
+}
+
+type StepperProps={value:number;min:number;max:number;step:number;unit?:string;onChange:(value:number)=>void;ariaLabel:string;};
+function NumericStepper({value,min,max,step,unit="",onChange,ariaLabel}:StepperProps){
+  const change=(next:number)=>onChange(clamp(Math.round(next),min,max));
+  return <div className="bc5-stepper">
+    <button type="button" aria-label={`${ariaLabel} -`} disabled={value<=min} onClick={()=>change(value-step)}><Minus/></button>
+    <div className="bc5-stepper-value"><input type="number" inputMode="numeric" min={min} max={max} value={value} aria-label={ariaLabel} onChange={event=>change(Number(event.target.value)||min)}/>{unit&&<span>{unit}</span>}</div>
+    <button type="button" aria-label={`${ariaLabel} +`} disabled={value>=max} onClick={()=>change(value+step)}><Plus/></button>
+  </div>;
+}
+
+export default function BusinessCalculatorV5(){
+  const [target,setTarget]=useState<HTMLElement|null>(null);
+  const [locale,setLocale]=useState<Locale>("fi");
+  const [mode,setMode]=useState<Mode>("moving");
+  const [vehicle,setVehicle]=useState<Vehicle>("van");
+  const [movers,setMovers]=useState<1|2>(2);
+  const [size,setSize]=useState(15);
+  const [load,setLoad]=useState<LoadLevel>("normal");
+  const [floor,setFloor]=useState(0);
+  const [distance,setDistance]=useState(0);
+  const [elevator,setElevator]=useState(true);
+  const [packing,setPacking]=useState(false);
+  const [afterClean,setAfterClean]=useState(false);
+  const [heavyItems,setHeavyItems]=useState(false);
+  const [cleanSize,setCleanSize]=useState(20);
+  const [windows,setWindows]=useState(0);
+  const [cleanType,setCleanType]=useState<CleanType>("regular");
+  const [transportDistance,setTransportDistance]=useState(0);
+  const [weight,setWeight]=useState(0);
+  const [express,setExpress]=useState(false);
+
+  useEffect(()=>{
+    setTarget(document.querySelector<HTMLElement>(".calculator-section"));
+    setLocale(localeNow());
+    const observer=new MutationObserver(()=>setLocale(localeNow()));
+    observer.observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
+    return()=>observer.disconnect();
+  },[]);
+
+  const t=ui[locale];
+  const trailerAdd=vehicle==="trailer"?10:0;
+
+  const calculateMove=(count:1|2)=>{
+    const hourly=(count===1?59:75)+trailerAdd;
+    const extraM2=Math.max(0,size-20);
+    const first=Math.min(extraM2,30);
+    const second=Math.max(0,Math.min(extraM2-30,40));
+    const third=Math.max(0,extraM2-70);
+    const sizeHours=count===1?first*.012+second*.018+third*.025:first*.008+second*.012+third*.017;
+    const baseHours=count===1?1.55:1.70;
+    const loadHours=count===1?({light:0,normal:.45,full:1.10} as const)[load]:({light:0,normal:.30,full:.70} as const)[load];
+    const stairs=floor<=0?0:elevator?floor*(count===1?.04:.025):floor*(count===1?.16:.10);
+    const driveHours=Math.max(0,distance-10)/50;
+    const packHours=packing?(count===1?1.1:.7):0;
+    const heavyHours=heavyItems?(count===1?.6:.35):0;
+    const hours=Math.max(2,baseHours+sizeHours+loadHours+stairs+driveHours+packHours+heavyHours);
+    const km=Math.max(0,distance-10)*.85;
+    const cleanHours=afterClean?Math.max(2,size/22):0;
+    const clean=cleanHours*32.9;
+    return {hours,hourly,work:hours*hourly,km,clean,price:money(hours*hourly+km+clean)};
+  };
+
+  const moveOne=useMemo(()=>calculateMove(1),[size,load,floor,distance,elevator,packing,afterClean,heavyItems,vehicle]);
+  const moveTwo=useMemo(()=>calculateMove(2),[size,load,floor,distance,elevator,packing,afterClean,heavyItems,vehicle]);
+  const selectedMove=movers===1?moveOne:moveTwo;
+  const recommendTwo=heavyItems || (load==="full"&&size>=45) || size>=85 || (!elevator&&floor>=2&&size>=35) || moveOne.hours-moveTwo.hours>=.75 || moveOne.price>=moveTwo.price;
+  const recommendTrailer=vehicle==="van" && ((load==="full"&&size>=45)||size>=70);
+  const moveScore=size+(load==="light"?0:load==="normal"?25:55);
+  const sizeBand=moveScore<55?"small":moveScore<115?"medium":"large";
+
+  const cleaning=useMemo(()=>{const divisor=cleanType==="deep"?16:cleanType==="moveout"?19:24;const perWindow=cleanType==="deep"?.22:cleanType==="moveout"?.18:.14;const hours=Math.max(2,cleanSize/divisor+windows*perWindow);return {hours,price:money(hours*32.9)};},[cleanSize,windows,cleanType]);
+  const transport=useMemo(()=>{
+    const driveHours=Math.max(0,transportDistance-10)/50;
+    const handling=Math.max(0,weight-50)/320;
+    const hours=Math.max(1,1+driveHours+handling);
+    const km=Math.max(0,transportDistance-10)*.85;
+    const heavy=weight>120;
+    const heavyCharge=heavy?30+(weight-120)*.06:0;
+    const hourly=49+trailerAdd;
+    const base=Math.max(79,hours*hourly+km+heavyCharge);
+    const price=money(base*(express?1.25:1));
+    return {hours,km,heavy,price,hourly,work:Math.max(hourly,hours*hourly),extra:heavyCharge+(express?base*.25:0)};
+  },[transportDistance,weight,express,vehicle]);
+
+  const result=mode==="moving"?{price:selectedMove.price,hours:selectedMove.hours}:mode==="cleaning"?cleaning:transport;
+  const duration=result.hours<=2.001?`${result.hours.toFixed(1)} h`:`${result.hours.toFixed(1)}–${(result.hours+.5).toFixed(1)} h`;
+
+  useEffect(()=>{
+    const snapshot={
+      version:7,source:"business-calculator-v7-integrated",mode,locale,quotedPrice:result.price,quotedDuration:duration,
+      vehicle:mode==="cleaning"?undefined:(vehicle==="trailer"?"crafter-trailer":"crafter"),
+      vehicleVolumeM3:mode==="cleaning"?undefined:(vehicle==="trailer"?"~20":"13-15"),
+      trailerVolumeM3:vehicle==="trailer"?"7-8":undefined,
+      trailerHourlySurcharge:mode!=="cleaning"&&vehicle==="trailer"?10:0,
+      moving:mode==="moving"?{movers,hourlyRate:selectedMove.hourly,sizeM2:size,loadLevel:load,floor,distanceKm:distance,elevator,packing,afterClean,heavyItems,recommendedMovers:recommendTwo?2:1,recommendedTrailer:recommendTrailer,workPrice:money(selectedMove.work),kmCharge:money(selectedMove.km),cleaningPrice:money(selectedMove.clean)}:undefined,
+      cleaning:mode==="cleaning"?{sizeM2:cleanSize,windows,cleanType,hourlyRate:32.9}:undefined,
+      transport:mode==="transport"?{distanceKm:transportDistance,weightKg:weight,express,hourlyRate:transport.hourly,kmCharge:money(transport.km),heavy:transport.heavy}:undefined,
+      updatedAt:new Date().toISOString(),
+    };
+    sessionStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot));
+    window.dispatchEvent(new CustomEvent("muuttobotti:calculator-snapshot",{detail:snapshot}));
+  },[mode,locale,result.price,duration,vehicle,movers,size,load,floor,distance,elevator,packing,afterClean,heavyItems,recommendTwo,recommendTrailer,selectedMove,cleanSize,windows,cleanType,transportDistance,weight,express,transport]);
+
+  const continueBooking=()=>{
+    const service=document.querySelector<HTMLSelectElement>('select[name="service"]');
+    if(service)setNativeValue(service,mode);
+    sessionStorage.setItem(ATTACHED_KEY,"1");
+    window.dispatchEvent(new CustomEvent("muuttobotti:calculator-attach"));
+    document.getElementById("booking")?.scrollIntoView({behavior:"smooth"});
+  };
+
+  if(!target)return null;
+  const bandLabel=sizeBand==="small"?t.moveSmall:sizeBand==="medium"?t.moveMedium:t.moveLarge;
+  const saved=Math.max(0,moveOne.hours-moveTwo.hours);
+  const loadLabels:{key:LoadLevel,label:string}[]=[{key:"light",label:t.light},{key:"normal",label:t.normalLoad},{key:"full",label:t.full}];
+
+  const vehiclePicker=<div className="bc7-vehicle bc3-full">
+    <div className="bc7-vehicle-head"><div><span className="bc5-label">{t.vehicle}</span><small>{t.vehicleHint}</small></div></div>
+    <div className="bc7-vehicle-options">
+      <button type="button" className={vehicle==="van"?"active":""} onClick={()=>setVehicle("van")}>
+        <span className="bc7-vehicle-icon"><Truck/></span><span className="bc7-vehicle-copy"><b>{t.van}</b><strong>{t.vanVolume}</strong><small>{t.vanDesc}</small></span><em>{t.vanPrice}</em>
+      </button>
+      <button type="button" className={vehicle==="trailer"?"active":""} onClick={()=>setVehicle("trailer")}>
+        <span className="bc7-vehicle-icon combo"><PackageCheck/></span><span className="bc7-vehicle-copy"><b>{t.trailer}</b><strong>{t.trailerVolume}</strong><small>{t.trailerDesc}</small></span><em>{t.trailerPrice}</em>
+      </button>
+    </div>
+    {recommendTrailer&&<div className="bc7-trailer-rec"><PackageCheck/><span>{t.trailerRec}</span><button type="button" onClick={()=>setVehicle("trailer")}>{t.chooseTrailer}</button></div>}
+  </div>;
+
+  return createPortal(<div className="bc3-card bc4-card bc5-card bc7-card" data-mode={mode}>
+    <div className="bc3-tabs">{(["moving","cleaning","transport"] as Mode[]).map((item,i)=><button key={item} className={mode===item?"active":""} onClick={()=>setMode(item)}>{item==="moving"?<Boxes/>:item==="cleaning"?<Sparkles/>:<Truck/>}<span>{t.tabs[i]}</span></button>)}</div>
+
+    {mode==="moving"&&<div className="bc3-body"><div className="bc3-move-band"><div><Gauge/><span>{bandLabel}</span></div><div className={`bc3-scale ${sizeBand}`}><i/><i/><i/></div></div><div className="bc3-grid bc5-grid">
+      <div className="bc3-full bc5-control"><span className="bc5-label">{t.movers}</span><div className="bc3-movers"><button className={movers===1?"active":""} onClick={()=>setMovers(1)}><UserRound/><div><b>{t.one}</b><small>{59+trailerAdd} €/h</small></div></button><button className={movers===2?"active":""} onClick={()=>setMovers(2)}><UsersRound/><div><b>{t.two}</b><small>{75+trailerAdd} €/h</small></div></button></div></div>
+      {vehiclePicker}
+      <div className="bc5-control"><span className="bc5-label">{t.size}</span><NumericStepper value={size} min={15} max={220} step={5} unit="m²" onChange={setSize} ariaLabel={t.size}/></div>
+      <div className="bc5-control"><span className="bc5-label">{t.floor}</span><NumericStepper value={floor} min={0} max={12} step={1} onChange={setFloor} ariaLabel={t.floor}/></div>
+      <div className="bc3-full bc4-volume"><span>{t.load}</span><div>{loadLabels.map(item=><button key={item.key} className={load===item.key?"active":""} onClick={()=>setLoad(item.key)}>{item.label}</button>)}</div><small>{t.sizeHint}</small></div>
+      <div className="bc3-full bc5-control"><span className="bc5-label">{t.distance}</span><NumericStepper value={distance} min={0} max={500} step={5} unit="km" onChange={setDistance} ariaLabel={t.distance}/></div>
+      <div className="bc3-switches bc3-full"><button className={elevator?"on":""} onClick={()=>setElevator(!elevator)}><CheckCircle2/>{t.elevator}</button><button className={packing?"on":""} onClick={()=>setPacking(!packing)}><Boxes/>{t.packing}</button><button className={afterClean?"on":""} onClick={()=>setAfterClean(!afterClean)}><Sparkles/>{t.afterClean}</button><button className={heavyItems?"on warning":""} onClick={()=>setHeavyItems(!heavyItems)}><PackageOpen/><span>{t.heavy}<small>{t.heavyHint}</small></span></button></div>
+    </div><div className={`bc3-recommendation ${recommendTwo?"recommend-two":""}`}><div className="bc3-rec-icon">{recommendTwo?<UsersRound/>:<Check/>}</div><div><span>{t.recommendation}</span><strong>{recommendTwo?t.recTwo:t.recOne}</strong>{recommendTwo&&<p>{t.whyTwo}</p>}</div>{recommendTwo&&movers===1&&<button onClick={()=>setMovers(2)}>{t.two}<ArrowRight/></button>}</div><div className="bc3-compare"><span>{t.compare}</span><div><small>{t.withOne}</small><b>{money(moveOne.price)} € · {moveOne.hours.toFixed(1)} h</b></div><div><small>{t.withTwo}</small><b>{money(moveTwo.price)} € · {moveTwo.hours.toFixed(1)} h</b></div><div className="bc3-time-save"><Clock3/><small>{t.saveTime}</small><b>{saved.toFixed(1)} h</b></div></div><div className="bc3-rule">{t.minMove}</div></div>}
+
+    {mode==="cleaning"&&<div className="bc3-body"><div className="bc3-grid bc5-grid"><div className="bc5-control"><span className="bc5-label">{t.size}</span><NumericStepper value={cleanSize} min={20} max={300} step={5} unit="m²" onChange={setCleanSize} ariaLabel={t.size}/></div><div className="bc5-control"><span className="bc5-label">{t.windows}</span><NumericStepper value={windows} min={0} max={30} step={1} onChange={setWindows} ariaLabel={t.windows}/></div><label className="bc3-full"><span>{t.cleanType}</span><select value={cleanType} onChange={e=>setCleanType(e.target.value as CleanType)}><option value="regular">{t.regular}</option><option value="moveout">{t.moveout}</option><option value="deep">{t.deep}</option></select></label></div><div className="bc3-recommendation"><div className="bc3-rec-icon"><Sparkles/></div><div><span>{t.recommendation}</span><strong>{t.recCleaning}</strong></div></div><div className="bc3-rule">{t.minClean}</div></div>}
+
+    {mode==="transport"&&<div className="bc3-body"><div className="bc3-grid bc5-grid">{vehiclePicker}<div className="bc5-control"><span className="bc5-label">{t.distance}</span><NumericStepper value={transportDistance} min={0} max={600} step={5} unit="km" onChange={setTransportDistance} ariaLabel={t.distance}/></div><div className="bc5-control"><span className="bc5-label">{t.weight}</span><NumericStepper value={weight} min={0} max={1200} step={25} unit="kg" onChange={setWeight} ariaLabel={t.weight}/></div><label className="bc3-full"><span>{t.delivery}</span><select value={express?"express":"normal"} onChange={e=>setExpress(e.target.value==="express")}><option value="normal">{t.normal}</option><option value="express">{t.express}</option></select></label></div><div className={`bc3-recommendation ${transport.heavy?"recommend-two":""}`}><div className="bc3-rec-icon">{transport.heavy?<AlertTriangle/>:<Truck/>}</div><div><span>{t.recommendation}</span><strong>{transport.heavy?t.recHeavy:t.recTransport}</strong></div></div><div className="bc3-rule">{t.minTransport}</div></div>}
+
+    <div className="bc3-summary"><div className="bc3-price"><span>{t.estimate}</span><strong>{result.price} €</strong></div><div><span>{t.duration}</span><b>{duration}</b></div><div className="bc3-breakdown"><span>{t.breakdown}</span>{mode==="moving"&&<><small>{t.work}: {money(selectedMove.work)} €</small>{selectedMove.km>0&&<small>{t.driving}: {money(selectedMove.km)} €</small>}{selectedMove.clean>0&&<small>{t.extra}: {money(selectedMove.clean)} €</small>}{vehicle==="trailer"&&<small>{t.trailerFee}</small>}</>}{mode==="cleaning"&&<small>{t.minimum}: 2 h · 32,90 €/h</small>}{mode==="transport"&&<><small>{t.work}: {money(transport.work)} €</small>{transport.km>0&&<small>{t.driving}: {money(transport.km)} €</small>}{vehicle==="trailer"&&<small>{t.trailerFee}</small>}</>}</div><button onClick={continueBooking}>{t.continue}<ArrowRight/></button><p>{t.attached} {t.finalNote}</p></div>
+  </div>,target);
+}
