@@ -9,6 +9,7 @@ type Snapshot = Record<string, any>;
 
 const SNAPSHOT_KEY = "muuttobotti-calculator-snapshot";
 const ATTACHED_KEY = "muuttobotti-booking-calculator-attached";
+const ATTACHED_SNAPSHOT_KEY = "muuttobotti-booking-calculator-snapshot";
 
 const copy = {
   fi:{title:"Muuttobotti AI · laskelman tiedot",body:"Nämä tiedot liitetään varaukseen erillisenä lisätietona. Voit poistaa ne ennen lähettämistä.",remove:"Poista laskelman tiedot",price:"Arvio",duration:"Kesto",vehicle:"Ajoneuvo",movers:"Muuttajat",home:"Asunto",route:"Matka",load:"Tavaramäärä",weight:"Paino",cleaning:"Siivous",van:"Korkea Crafter · 13–15 m³",trailer:"Crafter + 7–8 m³ perävaunu · noin 20 m³ · +10 €/h",attached:"Liitetty varaukseen"},
@@ -22,16 +23,23 @@ function localeNow(): Locale {
   return lang==="en"||lang==="uk"||lang==="ru"?lang:"fi";
 }
 
-function readSnapshot(): Snapshot|null {
-  try {
-    const raw=sessionStorage.getItem(SNAPSHOT_KEY);
-    return raw?JSON.parse(raw):null;
-  } catch { return null; }
+function parseSnapshot(raw:string|null):Snapshot|null {
+  if(!raw)return null;
+  try{return JSON.parse(raw);}catch{return null;}
+}
+
+function readLiveSnapshot(): Snapshot|null {
+  return parseSnapshot(sessionStorage.getItem(SNAPSHOT_KEY));
+}
+
+function readAttachedSnapshot(): Snapshot|null {
+  return parseSnapshot(sessionStorage.getItem(ATTACHED_SNAPSHOT_KEY));
 }
 
 function clearAttachment() {
   sessionStorage.removeItem(SNAPSHOT_KEY);
   sessionStorage.removeItem(ATTACHED_KEY);
+  sessionStorage.removeItem(ATTACHED_SNAPSHOT_KEY);
 }
 
 export default function BookingCalculatorAttachment(){
@@ -54,19 +62,35 @@ export default function BookingCalculatorAttachment(){
     };
     mount();
     setLocale(localeNow());
-    if(sessionStorage.getItem(ATTACHED_KEY)==="1")setSnapshot(readSnapshot());
+    if(sessionStorage.getItem(ATTACHED_KEY)==="1"){
+      const stored=readAttachedSnapshot()??readLiveSnapshot();
+      if(stored){
+        sessionStorage.setItem(ATTACHED_SNAPSHOT_KEY,JSON.stringify(stored));
+        setSnapshot(stored);
+      }
+    }
 
-    const onAttach=()=>setSnapshot(readSnapshot());
-    const onSnapshot=()=>{if(sessionStorage.getItem(ATTACHED_KEY)==="1")setSnapshot(readSnapshot());};
+    const onAttach=()=>{
+      const current=readLiveSnapshot();
+      if(!current)return;
+      sessionStorage.setItem(ATTACHED_KEY,"1");
+      sessionStorage.setItem(ATTACHED_SNAPSHOT_KEY,JSON.stringify(current));
+      setSnapshot(current);
+    };
     const onSubmitGate=(event:Event)=>{
       const form=event.target as HTMLFormElement|null;
       if(!form?.classList?.contains("booking-form"))return;
-      if(sessionStorage.getItem(ATTACHED_KEY)!=="1")sessionStorage.removeItem(SNAPSHOT_KEY);
+      if(sessionStorage.getItem(ATTACHED_KEY)!=="1"){
+        sessionStorage.removeItem(SNAPSHOT_KEY);
+        return;
+      }
+      const frozen=sessionStorage.getItem(ATTACHED_SNAPSHOT_KEY);
+      if(frozen)sessionStorage.setItem(SNAPSHOT_KEY,frozen);
     };
     const onServiceChange=(event:Event)=>{
       const select=event.target as HTMLSelectElement|null;
       if(select?.name!=="service"||sessionStorage.getItem(ATTACHED_KEY)!=="1")return;
-      const current=readSnapshot();
+      const current=readAttachedSnapshot();
       if(current?.mode&&current.mode!==select.value){
         clearAttachment();
         setSnapshot(null);
@@ -74,7 +98,6 @@ export default function BookingCalculatorAttachment(){
     };
 
     window.addEventListener("muuttobotti:calculator-attach",onAttach);
-    window.addEventListener("muuttobotti:calculator-snapshot",onSnapshot);
     document.addEventListener("submit",onSubmitGate,true);
     document.addEventListener("change",onServiceChange,true);
     const observer=new MutationObserver(()=>setLocale(localeNow()));
@@ -82,7 +105,6 @@ export default function BookingCalculatorAttachment(){
     return()=>{
       observer.disconnect();
       window.removeEventListener("muuttobotti:calculator-attach",onAttach);
-      window.removeEventListener("muuttobotti:calculator-snapshot",onSnapshot);
       document.removeEventListener("submit",onSubmitGate,true);
       document.removeEventListener("change",onServiceChange,true);
     };
