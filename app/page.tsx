@@ -3,6 +3,7 @@ import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
 import BusinessCalculatorV4 from "./BusinessCalculatorV4";
 import BookingRuntimeController from "./BookingRuntimeController";
+import BookingAvailabilityPicker from "./BookingAvailabilityPicker";
 import VisualMotionEnhancer from "./VisualMotionEnhancer";
 import HeroUXV6 from "./HeroUXV6";
 import CalculatorBridgeV6 from "./CalculatorBridgeV6";
@@ -18,6 +19,7 @@ import "./mobile-readability-v61.css";
 import "./calculator-v4.css";
 import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
+import "./booking-availability.css";
 
 export default function Home() {
   const faqSchema = {
@@ -42,6 +44,7 @@ export default function Home() {
       <FaqPortal />
       <LocalizedSurfaceFixes />
       <BusinessCalculatorV4 />
+      <BookingAvailabilityPicker />
       <BookingRuntimeController />
       <VisualMotionEnhancer />
       <HeroUXV6 />
