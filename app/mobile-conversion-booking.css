@@ -1,56 +1,85 @@
-/* Four-action mobile conversion bar: call, WhatsApp, calculator, booking. */
+/* Compact four-action mobile conversion bar: call, WhatsApp, calculator, booking. */
 
 @media (max-width: 760px) {
   .mobile-conversion-bar {
-    grid-template-columns: .72fr .94fr 1.18fr .88fr;
-    gap: 4px;
-    padding: 5px;
+    display: flex !important;
+    align-items: stretch;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: max(7px, env(safe-area-inset-bottom)) !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    border-radius: 16px !important;
+    min-height: 0 !important;
   }
 
   .mobile-conversion-bar a,
   .mobile-conversion-bar button {
+    min-width: 0 !important;
+    min-height: 48px !important;
+    height: 48px;
+    padding: 0 5px !important;
+    gap: 4px !important;
+    border-radius: 12px !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+  }
+
+  .mobile-conversion-bar a:nth-child(1) { flex: .72 1 0; }
+  .mobile-conversion-bar a:nth-child(2) { flex: .98 1 0; }
+  .mobile-conversion-bar .mobile-calc-action { flex: 1.28 1 0; }
+  .mobile-conversion-bar .mobile-book-action { flex: .78 1 0; }
+
+  .mobile-conversion-bar span {
     min-width: 0;
-    padding: 0 8px;
-    font-size: 9.5px;
-    white-space: nowrap;
-  }
-
-  .mobile-conversion-bar .mobile-calc-action {
-    background: #c8ff65;
-    color: #092229;
-  }
-
-  .mobile-conversion-bar .mobile-book-action {
-    background: rgba(255, 255, 255, .94);
-    color: #092229;
-    box-shadow: inset 0 0 0 1px rgba(200, 255, 101, .34);
-  }
-
-  .mobile-conversion-bar .mobile-book-action svg {
-    color: #5d8d25;
-  }
-}
-
-@media (max-width: 430px) {
-  .mobile-conversion-bar {
-    left: 7px;
-    right: 7px;
-    gap: 3px;
-    padding: 4px;
-    border-radius: 16px;
-  }
-
-  .mobile-conversion-bar a,
-  .mobile-conversion-bar button {
-    min-height: 49px;
-    padding: 0 5px;
-    gap: 4px;
-    font-size: 8.7px;
-    border-radius: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .mobile-conversion-bar svg {
-    width: 15px;
-    min-width: 15px;
+    width: 15px !important;
+    min-width: 15px !important;
+    height: 15px !important;
+  }
+
+  .mobile-conversion-bar .mobile-calc-action {
+    background: #c8ff65 !important;
+    color: #092229 !important;
+  }
+
+  .mobile-conversion-bar .mobile-book-action {
+    background: rgba(255, 255, 255, .10) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-conversion-bar .mobile-book-action svg {
+    color: #c8ff65 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-conversion-bar {
+    left: 6px !important;
+    right: 6px !important;
+    gap: 3px !important;
+    padding: 3px !important;
+  }
+
+  .mobile-conversion-bar a,
+  .mobile-conversion-bar button {
+    min-height: 46px !important;
+    height: 46px;
+    padding: 0 4px !important;
+    gap: 3px !important;
+    font-size: 8.2px !important;
+  }
+
+  .mobile-conversion-bar svg {
+    width: 14px !important;
+    min-width: 14px !important;
+    height: 14px !important;
   }
 }
