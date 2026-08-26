@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Bot, CheckCircle2, PackageCheck, Sparkles, Truck, UsersRound, X } from "lucide-react";
 
@@ -65,9 +65,9 @@ export default function BookingCalculatorAttachment(){
   },[]);
 
   const rows=useMemo(()=>{
-    if(!snapshot)return [] as {icon:React.ReactNode;label:string;value:string}[];
+    if(!snapshot)return [] as {icon:ReactNode;label:string;value:string}[];
     const t=copy[locale];
-    const output:{icon:React.ReactNode;label:string;value:string}[]=[];
+    const output:{icon:ReactNode;label:string;value:string}[]=[];
     output.push({icon:<Sparkles/>,label:t.price,value:`${snapshot.quotedPrice ?? "–"} €`});
     output.push({icon:<CheckCircle2/>,label:t.duration,value:String(snapshot.quotedDuration ?? "–")});
     if(snapshot.mode!=="cleaning"){
