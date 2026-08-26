@@ -75,7 +75,6 @@ function parseHours(duration: unknown) {
 export default function CalculatorBridgeV6(){
   useEffect(()=>{
     let withTrailer = sessionStorage.getItem(VEHICLE_KEY) === "trailer";
-    let applying = false;
 
     const select=(index:number)=>{
       const tabs=document.querySelectorAll<HTMLButtonElement>(".bc3-tabs button");
@@ -110,7 +109,12 @@ export default function CalculatorBridgeV6(){
         grid.appendChild(picker);
       }
 
-      const t = copy[localeNow()];
+      const locale = localeNow();
+      const signature = `${locale}:${withTrailer ? "trailer" : "van"}`;
+      if (picker.dataset.signature === signature) return;
+      picker.dataset.signature = signature;
+      const t = copy[locale];
+
       picker.innerHTML = `
         <span class="bc6-vehicle-title">${t.title}</span>
         <div class="bc6-vehicle-options">
@@ -123,49 +127,44 @@ export default function CalculatorBridgeV6(){
             <span><b>${t.trailer}</b><strong>${t.trailerVolume}</strong><small>${t.trailerNote}</small></span>
           </button>
         </div>`;
-
-      picker.querySelectorAll<HTMLButtonElement>("[data-vehicle]").forEach(button => {
-        button.addEventListener("click", () => {
-          withTrailer = button.dataset.vehicle === "trailer";
-          sessionStorage.setItem(VEHICLE_KEY, withTrailer ? "trailer" : "van");
-          updateVehiclePicker();
-          applyTrailerPrice();
-        });
-      });
     };
 
     const applyTrailerPrice = () => {
-      if (applying) return;
-      applying = true;
-      try {
-        const card = document.querySelector<HTMLElement>(".bc3-card");
-        const snapshot = getSnapshot();
-        if (!card || !snapshot) return;
-        const mode = card.dataset.mode;
-        if (mode === "cleaning" || snapshot.mode !== mode) return;
+      const card = document.querySelector<HTMLElement>(".bc3-card");
+      const snapshot = getSnapshot();
+      if (!card || !snapshot) return;
+      const mode = card.dataset.mode;
+      if (mode === "cleaning" || snapshot.mode !== mode) return;
 
-        const basePrice = Number(snapshot.quotedPrice || 0);
-        const hours = parseHours(snapshot.quotedDuration);
-        const surcharge = withTrailer ? Math.round(hours * 10) : 0;
-        const finalPrice = basePrice + surcharge;
-        const t = copy[localeNow()];
+      const basePrice = Number(snapshot.quotedPrice || 0);
+      const hours = parseHours(snapshot.quotedDuration);
+      const surcharge = withTrailer ? Math.round(hours * 10) : 0;
+      const finalPrice = basePrice + surcharge;
+      const t = copy[localeNow()];
 
-        const price = card.querySelector<HTMLElement>(".bc3-price strong");
-        if (price && basePrice > 0) price.textContent = `${finalPrice} €`;
+      const price = card.querySelector<HTMLElement>(".bc3-price strong");
+      const nextPrice = `${finalPrice} €`;
+      if (price && basePrice > 0 && price.textContent?.trim() !== nextPrice) price.textContent = nextPrice;
 
-        const breakdown = card.querySelector<HTMLElement>(".bc3-breakdown");
-        let surchargeLine = breakdown?.querySelector<HTMLElement>(".bc6-trailer-surcharge");
-        if (withTrailer && breakdown) {
-          if (!surchargeLine) {
-            surchargeLine = document.createElement("small");
-            surchargeLine.className = "bc6-trailer-surcharge";
-            breakdown.appendChild(surchargeLine);
-          }
-          surchargeLine.textContent = `${t.surcharge}: ${surcharge} €`;
-        } else {
-          surchargeLine?.remove();
+      const breakdown = card.querySelector<HTMLElement>(".bc3-breakdown");
+      let surchargeLine = breakdown?.querySelector<HTMLElement>(".bc6-trailer-surcharge");
+      if (withTrailer && breakdown) {
+        if (!surchargeLine) {
+          surchargeLine = document.createElement("small");
+          surchargeLine.className = "bc6-trailer-surcharge";
+          breakdown.appendChild(surchargeLine);
         }
+        const nextLine = `${t.surcharge}: ${surcharge} €`;
+        if (surchargeLine.textContent !== nextLine) surchargeLine.textContent = nextLine;
+      } else {
+        surchargeLine?.remove();
+      }
 
+      if (
+        snapshot.vehicle !== (withTrailer ? "crafter-trailer" : "crafter") ||
+        snapshot.finalQuotedPrice !== finalPrice ||
+        snapshot.trailerHourlySurcharge !== (withTrailer ? 10 : 0)
+      ) {
         const enhanced = {
           ...snapshot,
           vehicle: withTrailer ? "crafter-trailer" : "crafter",
@@ -175,8 +174,6 @@ export default function CalculatorBridgeV6(){
           finalQuotedPrice: finalPrice,
         };
         sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(enhanced));
-      } finally {
-        applying = false;
       }
     };
 
@@ -207,6 +204,7 @@ export default function CalculatorBridgeV6(){
       if (vehicleButton) {
         withTrailer = vehicleButton.dataset.vehicle === "trailer";
         sessionStorage.setItem(VEHICLE_KEY, withTrailer ? "trailer" : "van");
+        window.setTimeout(sync, 0);
       }
 
       const continueButton = target?.closest(".bc3-summary > button");
@@ -218,8 +216,7 @@ export default function CalculatorBridgeV6(){
           const t = copy[localeNow()];
           const vehicleText = withTrailer ? t.bookingTrailer : t.bookingVan;
           const adjustedText = withTrailer && snapshot?.finalQuotedPrice ? ` ${t.adjusted}: ${snapshot.finalQuotedPrice} €.` : "";
-          const cleaned = notes.value.replace(/\s*(Ajoneuvo|Vehicle|Автомобіль|Машина):[^.]+(?:\.[^.]*)?\.?$/u, "");
-          const next = `${cleaned.trim()} ${vehicleText}${adjustedText}`.trim();
+          const next = `${notes.value.trim()} ${vehicleText}${adjustedText}`.trim();
           const descriptor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
           descriptor?.set?.call(notes, next);
           notes.dispatchEvent(new Event("input", { bubbles: true }));
@@ -228,15 +225,12 @@ export default function CalculatorBridgeV6(){
       }
     };
 
-    const observer = new MutationObserver(() => window.requestAnimationFrame(sync));
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     document.addEventListener("click",onClick,true);
     const interval = window.setInterval(sync, 300);
     sync();
 
     return()=>{
       document.removeEventListener("click",onClick,true);
-      observer.disconnect();
       window.clearInterval(interval);
     };
   },[]);
