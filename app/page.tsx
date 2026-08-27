@@ -3,6 +3,7 @@ import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
 import LocaleNavigationPolish from "./LocaleNavigationPolish";
 import BusinessCalculatorV5 from "./BusinessCalculatorV5";
+import CalculatorPricingPolish from "./CalculatorPricingPolish";
 import BookingCalculatorAttachment from "./BookingCalculatorAttachment";
 import BookingRuntimeController from "./BookingRuntimeController";
 import BookingAvailabilityPicker from "./BookingAvailabilityPicker";
@@ -49,6 +50,7 @@ export default function Home() {
       <LocalizedSurfaceFixes />
       <LocaleNavigationPolish />
       <BusinessCalculatorV5 />
+      <CalculatorPricingPolish />
       <BookingCalculatorAttachment />
       <BookingAvailabilityPicker />
       <BookingRuntimeController />
