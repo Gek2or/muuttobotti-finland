@@ -1,0 +1,57 @@
+name: Muuttobotti Mobile Web Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - 'package.json'
+      - 'scripts/build-mobile-web.sh'
+      - 'app/app-preview/**'
+      - '.github/workflows/mobile-web-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  expo-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install root dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm install --no-audit --no-fund
+      - name: Typecheck shared app
+        working-directory: mobile
+        run: npm run typecheck
+      - name: Export shared app for web
+        working-directory: mobile
+        env:
+          CI: '1'
+        run: npm run export:web
+      - name: Verify standalone web output
+        shell: bash
+        run: |
+          test -f mobile/dist/index.html
+          test -d mobile/dist/_expo
+      - name: Build integrated Cloudflare client artifact
+        env:
+          CI: '1'
+          CLOUDFLARE_EXTERNAL_DEPLOY: '1'
+        run: |
+          npm run build:mobile-web
+          npm run build
+      - name: Verify shared app is embedded in Cloudflare client output
+        shell: bash
+        run: |
+          test -f dist/client/app-preview/index.html
+          test -d dist/client/app-preview/_expo
+          find dist/client/app-preview -maxdepth 2 -type f | head -40
