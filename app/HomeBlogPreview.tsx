@@ -75,6 +75,10 @@ function normalizeLocale(value: string | null | undefined): Locale {
   return code === "en" || code === "uk" || code === "ru" ? code : "fi";
 }
 
+function blogHref(locale: Locale) {
+  return locale === "fi" ? "/blog" : `/blog?lang=${locale}`;
+}
+
 export default function HomeBlogPreview() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [locale, setLocale] = useState<Locale>("fi");
@@ -129,6 +133,7 @@ export default function HomeBlogPreview() {
 
   const t = useMemo(() => copy[locale], [locale]);
   const icons = [CalendarDays, CheckCircle2, Navigation];
+  const href = blogHref(locale);
 
   if (!target) return null;
 
@@ -141,7 +146,7 @@ export default function HomeBlogPreview() {
         </div>
         <div className="home-blog-intro">
           <p>{t.text}</p>
-          <a href="/blog">
+          <a href={href}>
             {t.cta}
             <ArrowRight size={18} />
           </a>
@@ -153,7 +158,7 @@ export default function HomeBlogPreview() {
           {!shouldLoadBlog && <div className="home-blog-skeleton" aria-hidden="true" />}
         </div>
         <div className="home-blog-preview-fade" aria-hidden="true" />
-        <a className="home-blog-preview-cta" href="/blog">
+        <a className="home-blog-preview-cta" href={href}>
           {t.cta}
           <ArrowRight size={18} />
         </a>
