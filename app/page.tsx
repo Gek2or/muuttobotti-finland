@@ -1,6 +1,7 @@
 import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
+import LocaleNavigationPolish from "./LocaleNavigationPolish";
 import BusinessCalculatorV5 from "./BusinessCalculatorV5";
 import BookingCalculatorAttachment from "./BookingCalculatorAttachment";
 import BookingRuntimeController from "./BookingRuntimeController";
@@ -46,6 +47,7 @@ export default function Home() {
       <HomeBlogPreview />
       <FaqPortal />
       <LocalizedSurfaceFixes />
+      <LocaleNavigationPolish />
       <BusinessCalculatorV5 />
       <BookingCalculatorAttachment />
       <BookingAvailabilityPicker />
