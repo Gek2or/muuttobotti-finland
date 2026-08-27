@@ -1,0 +1,39 @@
+name: Muuttobotti Mobile Web Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-web-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  expo-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm install --no-audit --no-fund
+      - name: Typecheck shared app
+        working-directory: mobile
+        run: npm run typecheck
+      - name: Export shared app for web
+        working-directory: mobile
+        env:
+          CI: '1'
+        run: npm run export:web
+      - name: Verify web output
+        shell: bash
+        run: |
+          test -f mobile/dist/index.html
+          test -d mobile/dist/_expo
+          find mobile/dist -maxdepth 2 -type f | head -40
