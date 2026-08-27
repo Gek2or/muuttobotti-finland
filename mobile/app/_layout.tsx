@@ -1,33 +1,79 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Linking } from 'react-native';
 import { LanguageProvider } from '../src/i18n';
 import { secureStorage } from '../src/storage';
 import { colors } from '../src/theme';
 
+async function openBookingTarget(idValue: unknown, keyValue?: unknown) {
+  const id = String(idValue || '').trim().toUpperCase();
+  const key = String(keyValue || '').trim().toLowerCase();
+  if (!id) return;
+  if (key) {
+    await secureStorage.setClientCredentials(id, key);
+    router.push({ pathname: '/(client)/track', params: { id, key } });
+    return;
+  }
+  const session = await secureStorage.getClientSession();
+  if (session.token) router.push({ pathname: '/account-order', params: { id } });
+  else router.replace('/');
+}
+
+async function openAppUrl(rawUrl: string | null) {
+  if (!rawUrl) return;
+  try {
+    const url = new URL(rawUrl);
+    const hostOrPath = `${url.host}${url.pathname}`.toLowerCase();
+    if (!hostOrPath.includes('track') && !hostOrPath.includes('booking')) return;
+    const id = url.searchParams.get('id') || url.searchParams.get('bookingId');
+    const key = url.searchParams.get('key') || url.searchParams.get('accessKey');
+    await openBookingTarget(id, key);
+  } catch {
+    // Ignore malformed external links and keep the current screen intact.
+  }
+}
+
 export default function RootLayout() {
+  const segments = useSegments();
+
+  useEffect(() => {
+    const guardProtectedRoute = async () => {
+      const route = String(segments[0] || '');
+      if (route === 'admin') {
+        const token = await secureStorage.getAdminToken();
+        if (!token) router.replace('/');
+        return;
+      }
+      if (route === 'account-order') {
+        const session = await secureStorage.getClientSession();
+        if (!session.token) router.replace('/');
+      }
+    };
+    void guardProtectedRoute();
+  }, [segments]);
+
   useEffect(() => {
     const openFromNotification = async (data: Record<string, unknown> | undefined) => {
       if (!data) return;
-      const id = String(data.bookingId || data.id || '').trim().toUpperCase();
-      const key = String(data.accessKey || data.key || '').trim().toLowerCase();
-      if (!id) return;
-      if (key) {
-        await secureStorage.setClientCredentials(id, key);
-        router.push({ pathname: '/(client)/track', params: { id, key } });
-        return;
-      }
-      const session = await secureStorage.getClientSession();
-      if (session.token) router.push({ pathname: '/account-order', params: { id } });
+      await openBookingTarget(data.bookingId || data.id, data.accessKey || data.key);
     };
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+
+    const notificationSubscription = Notifications.addNotificationResponseReceivedListener(response => {
       void openFromNotification(response.notification.request.content.data as Record<string, unknown> | undefined);
     });
     void Notifications.getLastNotificationResponseAsync().then(response => {
       if (response) return openFromNotification(response.notification.request.content.data as Record<string, unknown> | undefined);
     });
-    return () => subscription.remove();
+
+    const linkSubscription = Linking.addEventListener('url', event => { void openAppUrl(event.url); });
+    void Linking.getInitialURL().then(openAppUrl);
+
+    return () => {
+      notificationSubscription.remove();
+      linkSubscription.remove();
+    };
   }, []);
 
   return <LanguageProvider>
