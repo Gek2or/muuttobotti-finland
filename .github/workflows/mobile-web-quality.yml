@@ -42,10 +42,13 @@ jobs:
         run: |
           test -f mobile/dist/index.html
           test -d mobile/dist/_expo
-      - name: Build integrated Cloudflare artifact
+      - name: Build integrated Cloudflare client artifact
         env:
           CI: '1'
-        run: npm run build:cloudflare
+          CLOUDFLARE_EXTERNAL_DEPLOY: '1'
+        run: |
+          npm run build:mobile-web
+          npm run build
       - name: Verify shared app is embedded in Cloudflare client output
         shell: bash
         run: |
