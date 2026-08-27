@@ -2,18 +2,30 @@
 
 import { useEffect } from "react";
 
-const labels: Record<string, string> = {
+type Locale = "fi" | "en" | "uk" | "ru";
+
+const labels: Record<Locale, string> = {
   fi: "Blogi",
   en: "Blog",
   uk: "Блог",
   ru: "Блог",
 };
 
+function currentLocale(): Locale {
+  const lang = document.documentElement.lang;
+  return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
+}
+
+function blogHref(locale: Locale) {
+  return locale === "fi" ? "/blog" : `/blog?lang=${locale}`;
+}
+
 export default function BlogNavigationEnhancer() {
   useEffect(() => {
     const syncBlogLinks = () => {
-      const lang = document.documentElement.lang || "fi";
-      const label = labels[lang] ?? labels.fi;
+      const locale = currentLocale();
+      const label = labels[locale];
+      const href = blogHref(locale);
 
       document.querySelectorAll<HTMLElement>(".desktop-nav, .mobile-nav").forEach((nav) => {
         let button = nav.querySelector<HTMLButtonElement>("button[data-blog-nav='true']");
@@ -21,39 +33,32 @@ export default function BlogNavigationEnhancer() {
           button = document.createElement("button");
           button.type = "button";
           button.dataset.blogNav = "true";
-          button.addEventListener("click", () => {
-            window.location.href = "/blog";
-          });
           nav.appendChild(button);
         }
 
+        button.onclick = () => { window.location.href = href; };
         if (button.textContent !== label) button.textContent = label;
         if (button.getAttribute("aria-label") !== label) button.setAttribute("aria-label", label);
       });
 
-      const companyColumn = Array.from(document.querySelectorAll<HTMLElement>("footer > div")).find(
-        (column) => column.querySelector("strong")?.textContent?.trim() === "Company",
-      );
-
+      const footerColumns = document.querySelectorAll<HTMLElement>("footer > div");
+      const companyColumn = footerColumns[3] ?? null;
       if (companyColumn) {
         let link = companyColumn.querySelector<HTMLAnchorElement>("a[data-blog-footer='true']");
         if (!link) {
           link = document.createElement("a");
-          link.href = "/blog";
           link.dataset.blogFooter = "true";
           const firstLink = companyColumn.querySelector("a");
           if (firstLink) companyColumn.insertBefore(link, firstLink);
           else companyColumn.appendChild(link);
         }
+        link.href = href;
         if (link.textContent !== label) link.textContent = label;
       }
     };
 
     syncBlogLinks();
 
-    // The mobile navigation is mounted only after the hamburger button is
-    // clicked. Re-sync once React has rendered it, without observing the full
-    // DOM (which previously caused a mutation loop and froze mobile browsers).
     const handleMenuClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element) || !target.closest(".menu-button")) return;
@@ -62,7 +67,6 @@ export default function BlogNavigationEnhancer() {
 
     document.addEventListener("click", handleMenuClick);
 
-    // Keep labels in sync when the site language changes.
     const observer = new MutationObserver((mutations) => {
       if (mutations.some((mutation) => mutation.type === "attributes" && mutation.attributeName === "lang")) {
         syncBlogLinks();
