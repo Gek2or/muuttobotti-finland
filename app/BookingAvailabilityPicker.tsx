@@ -16,10 +16,10 @@ type AvailabilityPayload = {
 };
 
 const copy = {
-  fi: { date: "Valitse päivä", time: "Valitse aloitusaika", unavailable: "Varattu", partial: "Osittain varattu", selected: "Valittu", noTimes: "Tälle päivälle ei ole vapaita aikoja.", loading: "Tarkistetaan vapaita aikoja…", hint: "Harmaat päivät ja ajat eivät ole varattavissa." },
-  en: { date: "Choose a date", time: "Choose a start time", unavailable: "Booked", partial: "Partly booked", selected: "Selected", noTimes: "No available times on this date.", loading: "Checking availability…", hint: "Grey dates and times cannot be booked." },
-  uk: { date: "Оберіть дату", time: "Оберіть час початку", unavailable: "Зайнято", partial: "Частково зайнято", selected: "Обрано", noTimes: "На цю дату вільного часу немає.", loading: "Перевіряємо вільний час…", hint: "Сірі дати й час недоступні для бронювання." },
-  ru: { date: "Выберите дату", time: "Выберите время начала", unavailable: "Занято", partial: "Частично занято", selected: "Выбрано", noTimes: "На эту дату свободного времени нет.", loading: "Проверяем свободное время…", hint: "Серые даты и время нельзя выбрать." },
+  fi: { date: "Valitse päivä", time: "Valitse aloitusaika", unavailable: "Varattu", partial: "Osittain varattu", selected: "Valittu", noTimes: "Tälle päivälle ei ole vapaita aikoja.", loading: "Tarkistetaan vapaita aikoja…", hint: "Harmaat päivät ja ajat eivät ole varattavissa.", previous:"Edellinen kuukausi", next:"Seuraava kuukausi", available:"Vapaa" },
+  en: { date: "Choose a date", time: "Choose a start time", unavailable: "Booked", partial: "Partly booked", selected: "Selected", noTimes: "No available times on this date.", loading: "Checking availability…", hint: "Grey dates and times cannot be booked.", previous:"Previous month", next:"Next month", available:"Available" },
+  uk: { date: "Оберіть дату", time: "Оберіть час початку", unavailable: "Зайнято", partial: "Частково зайнято", selected: "Обрано", noTimes: "На цю дату вільного часу немає.", loading: "Перевіряємо вільний час…", hint: "Сірі дати й час недоступні для бронювання.", previous:"Попередній місяць", next:"Наступний місяць", available:"Вільно" },
+  ru: { date: "Выберите дату", time: "Выберите время начала", unavailable: "Занято", partial: "Частично занято", selected: "Выбрано", noTimes: "На эту дату свободного времени нет.", loading: "Проверяем свободное время…", hint: "Серые даты и время нельзя выбрать.", previous:"Предыдущий месяц", next:"Следующий месяц", available:"Свободно" },
 } as const;
 
 function localeCode(): Locale {
@@ -93,6 +93,8 @@ export default function BookingAvailabilityPicker() {
         row.classList.add("booking-availability-enhanced");
         date.setAttribute("aria-hidden", "true");
         time.setAttribute("aria-hidden", "true");
+        date.tabIndex = -1;
+        time.tabIndex = -1;
       })
       .catch(() => {
         // Native date/time inputs remain visible as a safe fallback.
@@ -101,6 +103,10 @@ export default function BookingAvailabilityPicker() {
     return () => {
       languageObserver.disconnect();
       row.classList.remove("booking-availability-enhanced");
+      date.removeAttribute("aria-hidden");
+      time.removeAttribute("aria-hidden");
+      date.removeAttribute("tabindex");
+      time.removeAttribute("tabindex");
     };
   }, []);
 
@@ -170,16 +176,18 @@ export default function BookingAvailabilityPicker() {
   const maxMonth = new Date(now.getFullYear(), now.getMonth() + 5, 1);
   const canNext = viewMonth < maxMonth;
 
+  const dateLabel = (date:string) => new Intl.DateTimeFormat(intlLocale, { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(new Date(`${date}T12:00:00`));
+
   return createPortal(
     <div className="booking-availability-picker">
       <div className="availability-title"><CalendarDays /><div><strong>{t.date}</strong><small>{t.hint}</small></div></div>
       <div className="availability-calendar">
         <div className="availability-month-head">
-          <button type="button" onClick={() => canPrevious && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))} disabled={!canPrevious} aria-label="Previous month"><ChevronLeft /></button>
-          <strong>{monthTitle}</strong>
-          <button type="button" onClick={() => canNext && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))} disabled={!canNext} aria-label="Next month"><ChevronRight /></button>
+          <button type="button" onClick={() => canPrevious && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))} disabled={!canPrevious} aria-label={t.previous}><ChevronLeft /></button>
+          <strong aria-live="polite">{monthTitle}</strong>
+          <button type="button" onClick={() => canNext && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))} disabled={!canNext} aria-label={t.next}><ChevronRight /></button>
         </div>
-        <div className="availability-weekdays">{weekdays.map(day => <span key={day}>{day}</span>)}</div>
+        <div className="availability-weekdays" aria-hidden="true">{weekdays.map(day => <span key={day}>{day}</span>)}</div>
         <div className="availability-days">
           {monthCells.map((cell, index) => cell ? <button
             type="button"
@@ -187,7 +195,9 @@ export default function BookingAvailabilityPicker() {
             className={`${selectedDate === cell.date ? "selected" : ""} ${dayDisabled(cell.date) ? "blocked" : ""} ${dayPartial(cell.date) ? "partial" : ""}`}
             disabled={dayDisabled(cell.date)}
             onClick={() => chooseDate(cell.date)}
-            title={dayDisabled(cell.date) ? t.unavailable : dayPartial(cell.date) ? t.partial : ""}
+            title={dayDisabled(cell.date) ? t.unavailable : dayPartial(cell.date) ? t.partial : t.available}
+            aria-label={`${dateLabel(cell.date)} · ${dayDisabled(cell.date) ? t.unavailable : dayPartial(cell.date) ? t.partial : t.available}`}
+            aria-pressed={selectedDate === cell.date}
           ><span>{cell.day}</span>{dayPartial(cell.date) && <i />}</button> : <span className="availability-empty" key={`empty-${index}`} />)}
         </div>
       </div>
@@ -197,7 +207,7 @@ export default function BookingAvailabilityPicker() {
         {!selectedDate ? <p>{t.date}</p> : freeTimes.length === 0 ? <p><LockKeyhole />{t.noTimes}</p> : <div className="availability-time-grid">
           {slots.map(time => {
             const blocked = isTimeBlocked(selectedDate, time);
-            return <button type="button" key={time} disabled={blocked} className={selectedTime === time ? "selected" : ""} onClick={() => chooseTime(time)}>{time}</button>;
+            return <button type="button" key={time} disabled={blocked} className={selectedTime === time ? "selected" : ""} onClick={() => chooseTime(time)} aria-pressed={selectedTime === time}>{time}</button>;
           })}
         </div>}
       </div>
