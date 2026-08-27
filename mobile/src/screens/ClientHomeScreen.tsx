@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Animated, Easing, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Booking, getBooking, getClientAccount } from '../api';
+import AiCalmCenter from '../components/AiCalmCenter';
 import { useLanguage } from '../i18n';
 import { secureStorage } from '../storage';
 import { colors, radius, shadow } from '../theme';
@@ -99,7 +100,7 @@ export default function ClientHomeScreen() {
         ] }]} />
         <Animated.View style={[styles.glowB, { opacity: glow.interpolate({ inputRange:[0,1], outputRange:[0.06,0.17] }) }]} />
         <Animated.View style={{ opacity: enter, transform:[{ translateY: enter.interpolate({ inputRange:[0,1], outputRange:[16,0] }) }] }}>
-          <View style={styles.liveRow}><View style={styles.liveDot}/><Text style={styles.kicker}>MUUTTOBOTTI LIVE · V2.0</Text></View>
+          <View style={styles.liveRow}><View style={styles.liveDot}/><Text style={styles.kicker}>MUUTTOBOTTI LIVE · V2.2</Text></View>
           <Text style={styles.title}>{tr('homeTitle')}</Text>
           <Text style={styles.copy}>{tr('homeCopy')}</Text>
           <View style={styles.rateRow}><Rate label="1 mover" value="59 €/h"/><Rate label="2 + Crafter" value="75 €/h"/><Rate label="Cleaning" value="32,90 €/h"/></View>
@@ -122,6 +123,8 @@ export default function ClientHomeScreen() {
             <View style={styles.openRow}><Text style={styles.openText}>{t.open}</Text><Text style={styles.arrow}>→</Text></View>
           </TouchableOpacity>
         )}
+
+        {booking && <AiCalmCenter booking={booking} locale={locale} accountOrder={accountOrder} credentials={credentials}/>} 
 
         <View style={styles.grid}>{cards.map((card, index) => (
           <TouchableOpacity key={card.title} style={[styles.card, card.accent && styles.cardAccent]} onPress={() => router.push(card.route)}>
