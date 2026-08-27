@@ -6,6 +6,15 @@
     "orientation": "portrait",
     "scheme": "muuttobotti",
     "userInterfaceStyle": "automatic",
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "name": "Muuttobotti",
+      "shortName": "Muuttobotti"
+    },
+    "experiments": {
+      "baseUrl": "/app-preview"
+    },
     "androidStatusBar": {
       "backgroundColor": "#06191F",
       "barStyle": "light-content",
