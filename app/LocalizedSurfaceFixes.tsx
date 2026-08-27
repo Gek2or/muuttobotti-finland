@@ -7,9 +7,10 @@ type Locale = "fi" | "en" | "uk" | "ru";
 type SurfaceCopy = {
   cleaning: [string, string];
   tracking: {
+    kicker: string;
     preview: string;
     privateBooking: string;
-    example: string;
+    sample: string;
     booked: string;
     inProgress: string;
     completed: string;
@@ -35,15 +36,27 @@ type SurfaceCopy = {
   trackingLink: string;
   reviewScore: string;
   ratingNumber: string;
+  fullName: string;
+  notesPlaceholder: string;
+  aria: {
+    home: string;
+    navigation: string;
+    theme: string;
+    language: string;
+    menu: string;
+    serviceArea: string;
+    whatsapp: string;
+  };
 };
 
 const copy: Record<Locale, SurfaceCopy> = {
   fi: {
     cleaning: ["Ammattivälineet ja -aineet", "Laatutakuu"],
     tracking: {
+      kicker: "Varausseuranta",
       preview: "Seurannan esikatselu",
       privateBooking: "Yksityinen seurantalinkki",
-      example: "Esimerkki",
+      sample: "Esikatselu",
       booked: "Varattu",
       inProgress: "Käynnissä",
       completed: "Valmis",
@@ -69,13 +82,17 @@ const copy: Record<Locale, SurfaceCopy> = {
     trackingLink: "Seuranta",
     reviewScore: "4,9 / 5",
     ratingNumber: "4,9",
+    fullName: "Nimi ja sukunimi",
+    notesPlaceholder: "Esim. sohva, pesukone, 20 laatikkoa, raskaat esineet…",
+    aria: { home: "Muuttobotti etusivu", navigation: "Päänavigaatio", theme: "Vaihda väriteemaa", language: "Valitse kieli", menu: "Avaa valikko", serviceArea: "Muuttobotti palvelualue", whatsapp: "Avaa WhatsApp" },
   },
   en: {
     cleaning: ["Professional supplies", "Quality guarantee"],
     tracking: {
+      kicker: "Booking tracking",
       preview: "Tracking preview",
-      privateBooking: "Private booking link",
-      example: "Example",
+      privateBooking: "Private tracking link",
+      sample: "Preview",
       booked: "Booked",
       inProgress: "In progress",
       completed: "Completed",
@@ -101,13 +118,17 @@ const copy: Record<Locale, SurfaceCopy> = {
     trackingLink: "Tracking",
     reviewScore: "4.9 / 5",
     ratingNumber: "4.9",
+    fullName: "Full name",
+    notesPlaceholder: "E.g. sofa, washing machine, 20 boxes, heavy items…",
+    aria: { home: "Muuttobotti home", navigation: "Primary navigation", theme: "Change color theme", language: "Choose language", menu: "Open menu", serviceArea: "Muuttobotti service area", whatsapp: "Open WhatsApp" },
   },
   uk: {
     cleaning: ["Професійні засоби та інвентар", "Гарантія якості"],
     tracking: {
+      kicker: "Відстеження бронювання",
       preview: "Попередній перегляд відстеження",
       privateBooking: "Приватне посилання на бронювання",
-      example: "Приклад",
+      sample: "Перегляд",
       booked: "Заброньовано",
       inProgress: "Виконується",
       completed: "Завершено",
@@ -133,13 +154,17 @@ const copy: Record<Locale, SurfaceCopy> = {
     trackingLink: "Відстеження",
     reviewScore: "4,9 / 5",
     ratingNumber: "4,9",
+    fullName: "Ім’я та прізвище",
+    notesPlaceholder: "Напр. диван, пральна машина, 20 коробок, важкі речі…",
+    aria: { home: "Головна Muuttobotti", navigation: "Головна навігація", theme: "Змінити тему", language: "Обрати мову", menu: "Відкрити меню", serviceArea: "Зона обслуговування Muuttobotti", whatsapp: "Відкрити WhatsApp" },
   },
   ru: {
     cleaning: ["Профессиональные средства и инвентарь", "Гарантия качества"],
     tracking: {
+      kicker: "Отслеживание бронирования",
       preview: "Предпросмотр отслеживания",
       privateBooking: "Приватная ссылка на бронирование",
-      example: "Пример",
+      sample: "Предпросмотр",
       booked: "Забронировано",
       inProgress: "В процессе",
       completed: "Завершено",
@@ -165,6 +190,9 @@ const copy: Record<Locale, SurfaceCopy> = {
     trackingLink: "Отслеживание",
     reviewScore: "4,9 / 5",
     ratingNumber: "4,9",
+    fullName: "Имя и фамилия",
+    notesPlaceholder: "Напр. диван, стиральная машина, 20 коробок, тяжёлые вещи…",
+    aria: { home: "Главная Muuttobotti", navigation: "Главная навигация", theme: "Изменить тему", language: "Выбрать язык", menu: "Открыть меню", serviceArea: "Зона обслуживания Muuttobotti", whatsapp: "Открыть WhatsApp" },
   },
 };
 
@@ -178,12 +206,10 @@ function replaceDirectText(node: HTMLElement, value: string) {
   const textNode = Array.from(node.childNodes).find(
     (child) => child.nodeType === Node.TEXT_NODE && child.textContent?.trim(),
   );
-
   if (textNode) {
     if (textNode.textContent?.trim() !== value) textNode.textContent = value;
     return;
   }
-
   node.appendChild(document.createTextNode(value));
 }
 
@@ -200,14 +226,22 @@ function setTexts(selector: string, values: readonly string[]) {
   });
 }
 
+function setAttr(selector: string, name: string, value: string, index = 0) {
+  const node = document.querySelectorAll<HTMLElement>(selector)[index];
+  if (node && node.getAttribute(name) !== value) node.setAttribute(name, value);
+}
+
 function applyTranslations() {
-  const t = copy[currentLocale()];
+  const locale = currentLocale();
+  const t = copy[locale];
 
   setTexts(".feature-list span", t.cleaning);
 
+  setText(".art-tracking .portal-heading .kicker", t.tracking.kicker);
   setText(".art-tracking .dash-top small", t.tracking.preview);
   setText(".art-tracking .dash-top h3", t.tracking.privateBooking);
-  setText(".art-tracking .track-head b", t.tracking.example);
+  setText(".art-tracking .track-head span", "MB-XXXXXX");
+  setText(".art-tracking .track-head b", t.tracking.sample);
   setTexts(".art-tracking .tracking-labels span", [t.tracking.booked, t.tracking.inProgress, t.tracking.completed]);
 
   const cardLabels = [t.tracking.privateLink, t.tracking.date, t.tracking.team];
@@ -219,6 +253,16 @@ function applyTranslations() {
   setText(".upload-field small", t.fileHint);
   setText(".form-error", t.formError);
 
+  const name = document.querySelector<HTMLInputElement>('.booking-form input[name="name"]');
+  if (name) name.placeholder = t.fullName;
+  const phone = document.querySelector<HTMLInputElement>('.booking-form input[name="phone"]');
+  if (phone) {
+    phone.type = "tel";
+    phone.inputMode = "tel";
+  }
+  const notes = document.querySelector<HTMLTextAreaElement>('.booking-form textarea[name="notes"]');
+  if (notes && !notes.value) notes.placeholder = t.notesPlaceholder;
+
   setText(".contact-copy > .kicker", t.area);
   setText(".contact-copy .hours strong", t.hoursLabel);
   setText(".contact-copy .hours span", t.hoursText);
@@ -229,36 +273,55 @@ function applyTranslations() {
 
   setTexts("footer > div:nth-of-type(2) > strong, footer > div:nth-of-type(3) > strong, footer > div:nth-of-type(4) > strong", t.footerHeadings);
   setTexts("footer > div:nth-of-type(2) > a", t.serviceLinks);
-  setTexts("footer > div:nth-of-type(4) > a", t.companyLinks);
+  setTexts("footer > div:nth-of-type(4) > a:not([data-blog-footer='true'])", t.companyLinks);
   setText("footer .footer-bottom span", "© 2026 Muuttobotti · Autochemix Oy", 0);
   setText("footer .footer-bottom span", t.tagline, 1);
 
   setText(".booking-reference span", t.bookingLabel);
   setText(".success-actions a", t.trackingLink);
+
+  setTexts(".lang-menu button", ["FI", "EN", "UA", "RU"]);
+  if (locale === "uk") setText(".lang-button", "UA");
+  else setText(".lang-button", locale.toUpperCase());
+
+  setAttr(".brand", "aria-label", t.aria.home, 0);
+  setAttr(".desktop-nav", "aria-label", t.aria.navigation);
+  setAttr(".theme-button", "aria-label", t.aria.theme);
+  setAttr(".lang-button", "aria-label", t.aria.language);
+  setAttr(".menu-button", "aria-label", t.aria.menu);
+  setAttr(".map-card iframe", "title", t.aria.serviceArea);
+  setAttr(".whatsapp-float", "aria-label", t.aria.whatsapp);
 }
 
 export default function LocalizedSurfaceFixes() {
   useEffect(() => {
-    let frame = 0;
-    const schedule = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => applyTranslations());
+    const timers: number[] = [];
+    const applyWithFollowups = () => {
+      applyTranslations();
+      timers.push(window.setTimeout(applyTranslations, 80));
+      timers.push(window.setTimeout(applyTranslations, 350));
+      timers.push(window.setTimeout(applyTranslations, 1200));
     };
 
-    applyTranslations();
+    applyWithFollowups();
 
-    const observer = new MutationObserver(schedule);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["lang"],
-      childList: true,
-      characterData: true,
-      subtree: true,
+    const languageObserver = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.attributeName === "lang")) applyWithFollowups();
     });
+    languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+
+    const handleMenu = (event: MouseEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".menu-button, .lang-button")) {
+        timers.push(window.setTimeout(applyTranslations, 0));
+      }
+    };
+    document.addEventListener("click", handleMenu);
 
     return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
+      languageObserver.disconnect();
+      document.removeEventListener("click", handleMenu);
+      timers.forEach((timer) => window.clearTimeout(timer));
     };
   }, []);
 
