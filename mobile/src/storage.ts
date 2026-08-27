@@ -28,6 +28,12 @@ const webStorage = {
 
 const storage = Platform.OS === 'web' ? webStorage : SecureStore;
 
+function redirectWebToLogin() {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.location.replace('/app-preview/');
+  }
+}
+
 function isSavedCredential(value: unknown): value is SavedBookingCredential {
   if (!value || typeof value !== 'object') return false;
   const item = value as Partial<SavedBookingCredential>;
@@ -65,7 +71,10 @@ async function readPendingEstimate(): Promise<PendingEstimate | null> {
 export const secureStorage = {
   getAdminToken: () => storage.getItemAsync(ADMIN_TOKEN),
   setAdminToken: (token: string) => storage.setItemAsync(ADMIN_TOKEN, token),
-  clearAdminToken: () => storage.deleteItemAsync(ADMIN_TOKEN),
+  clearAdminToken: async () => {
+    await storage.deleteItemAsync(ADMIN_TOKEN);
+    redirectWebToLogin();
+  },
   getClientCredentials: async () => ({
     id: (await storage.getItemAsync(CLIENT_ID)) || '',
     key: (await storage.getItemAsync(CLIENT_KEY)) || '',
