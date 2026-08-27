@@ -7,10 +7,10 @@ import { ArrowRight, CalendarDays, MessageCircle, Phone, Sparkles, Truck, UserRo
 type Locale = "fi" | "en" | "uk" | "ru";
 
 const copy = {
-  fi: { one:"1 muuttaja", two:"2 muuttajaa + Crafter", clean:"Siivous", from:"alkaen", calculate:"Laske hinta", book:"Varaa", call:"Soita", whatsapp:"WhatsApp", smart:"Selkeä arvio ennen varausta" },
-  en: { one:"1 mover", two:"2 movers + Crafter", clean:"Cleaning", from:"from", calculate:"Calculate", book:"Book", call:"Call", whatsapp:"WhatsApp", smart:"Clear estimate before booking" },
-  uk: { one:"1 вантажник", two:"2 вантажники + Crafter", clean:"Прибирання", from:"від", calculate:"Розрахувати", book:"Замовити", call:"Дзвінок", whatsapp:"WhatsApp", smart:"Зрозумілий розрахунок до бронювання" },
-  ru: { one:"1 грузчик", two:"2 грузчика + Crafter", clean:"Уборка", from:"от", calculate:"Рассчитать", book:"Заказать", call:"Позвонить", whatsapp:"WhatsApp", smart:"Понятный расчёт до бронирования" },
+  fi: { one:"1 muuttaja", two:"2 muuttajaa + Crafter", clean:"Siivous", from:"alkaen", calculate:"Laske hinta", book:"Varaa", call:"Soita", whatsapp:"WhatsApp", smart:"Selkeä arvio ennen varausta", quick:"Pikatoiminnot" },
+  en: { one:"1 mover", two:"2 movers + Crafter", clean:"Cleaning", from:"from", calculate:"Calculate", book:"Book", call:"Call", whatsapp:"WhatsApp", smart:"Clear estimate before booking", quick:"Quick actions" },
+  uk: { one:"1 вантажник", two:"2 вантажники + Crafter", clean:"Прибирання", from:"від", calculate:"Розрахувати", book:"Замовити", call:"Дзвінок", whatsapp:"WhatsApp", smart:"Зрозумілий розрахунок до бронювання", quick:"Швидкі дії" },
+  ru: { one:"1 грузчик", two:"2 грузчика + Crafter", clean:"Уборка", from:"от", calculate:"Рассчитать", book:"Заказать", call:"Позвонить", whatsapp:"WhatsApp", smart:"Понятный расчёт до бронирования", quick:"Быстрые действия" },
 } as const;
 
 function getLocale(): Locale {
@@ -44,16 +44,16 @@ export default function HeroUXV6(){
     {copyTarget&&createPortal(<div className="hero-v6-offers">
       <div className="hero-v6-smart"><Sparkles/><span>{t.smart}</span></div>
       <div className="hero-v6-price-grid">
-        <button onClick={scrollCalc}><UserRound/><span><small>{t.one}</small><b>{t.from} 59 €/h</b></span><ArrowRight/></button>
-        <button onClick={scrollCalc}><UsersRound/><span><small>{t.two}</small><b>{t.from} 75 €/h</b></span><ArrowRight/></button>
-        <button onClick={scrollCalc}><Sparkles/><span><small>{t.clean}</small><b>{t.from} 32,90 €/h</b></span><ArrowRight/></button>
+        <button type="button" onClick={scrollCalc}><UserRound/><span><small>{t.one}</small><b>{t.from} 59 €/h</b></span><ArrowRight/></button>
+        <button type="button" onClick={scrollCalc}><UsersRound/><span><small>{t.two}</small><b>{t.from} 75 €/h</b></span><ArrowRight/></button>
+        <button type="button" onClick={scrollCalc}><Sparkles/><span><small>{t.clean}</small><b>{t.from} 32,90 €/h</b></span><ArrowRight/></button>
       </div>
     </div>,copyTarget)}
-    {createPortal(<nav className="mobile-conversion-bar" aria-label="Quick actions">
-      <a href="tel:+3584578767567"><Phone/><span>{t.call}</span></a>
-      <a href="https://wa.me/3584578767567"><MessageCircle/><span>{t.whatsapp}</span></a>
-      <button className="mobile-calc-action" onClick={scrollCalc}><Truck/><span>{t.calculate}</span></button>
-      <button className="mobile-book-action" onClick={scrollBooking}><CalendarDays/><span>{t.book}</span></button>
+    {createPortal(<nav className="mobile-conversion-bar" aria-label={t.quick}>
+      <a href="tel:+3584578767567" aria-label={t.call}><Phone/><span>{t.call}</span></a>
+      <a href="https://wa.me/3584578767567" target="_blank" rel="noreferrer" aria-label={t.whatsapp}><MessageCircle/><span>{t.whatsapp}</span></a>
+      <button type="button" className="mobile-calc-action" onClick={scrollCalc}><Truck/><span>{t.calculate}</span></button>
+      <button type="button" className="mobile-book-action" onClick={scrollBooking}><CalendarDays/><span>{t.book}</span></button>
     </nav>,document.body)}
   </>;
 }
