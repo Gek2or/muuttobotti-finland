@@ -30,22 +30,18 @@ export async function registerForNotifications() {
 
   try {
     const expo = await Notifications.getExpoPushTokenAsync();
-    if (expo?.data) {
+    if (expo?.data && /^(ExponentPushToken|ExpoPushToken)\[.+\]$/.test(expo.data)) {
       await secureStorage.setPushToken(expo.data);
       return { ok: true as const, token: expo.data, type: 'expo' as const };
     }
   } catch {
-    // Standalone local builds may not have an EAS project id. Native token is still useful locally.
+    // A standalone build without an Expo/EAS project ID cannot use Expo's remote push gateway.
   }
 
-  try {
-    const token = await Notifications.getDevicePushTokenAsync();
-    const value = typeof token.data === 'string' ? token.data : JSON.stringify(token.data);
-    await secureStorage.setPushToken(value);
-    return { ok: true as const, token: value, type: token.type };
-  } catch {
-    return { ok: false as const, reason: 'TOKEN_UNAVAILABLE' };
-  }
+  // The backend currently sends remote push through Expo Push API. Do not persist
+  // a raw APNs/FCM token as if remote push were configured.
+  await secureStorage.clearPushToken();
+  return { ok: false as const, reason: 'REMOTE_PUSH_NOT_CONFIGURED' };
 }
 
 export async function scheduleLocalBookingNotice(title:string,body:string,data:Record<string,unknown>={}) {
