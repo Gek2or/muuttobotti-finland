@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import DocumentLocaleSync from "./DocumentLocaleSync";
 import "./globals.css";
 import "./overrides.css";
 import "./seo-pages.css";
@@ -104,8 +105,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   };
 
   return (
-    <html lang="fi">
+    <html lang="fi" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <DocumentLocaleSync />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         {children}
       </body>
