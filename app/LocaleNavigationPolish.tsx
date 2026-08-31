@@ -5,6 +5,8 @@ import { useEffect } from "react";
 type Locale = "fi" | "en" | "uk" | "ru";
 
 function currentLocale(): Locale {
+  const requested = new URLSearchParams(window.location.search).get("lang");
+  if (requested === "en" || requested === "uk" || requested === "ru") return requested;
   const lang = document.documentElement.lang;
   return lang === "en" || lang === "uk" || lang === "ru" ? lang : "fi";
 }
