@@ -2,8 +2,7 @@ import MuuttobottiArtV3 from "./MuuttobottiArtV3";
 import FaqPortal from "./FaqPortal";
 import LocalizedSurfaceFixes from "./LocalizedSurfaceFixes";
 import LocaleNavigationPolish from "./LocaleNavigationPolish";
-import BusinessCalculatorV5 from "./BusinessCalculatorV5";
-import CalculatorPricingPolish from "./CalculatorPricingPolish";
+import BusinessCalculatorV6 from "./BusinessCalculatorV6";
 import BookingCalculatorAttachment from "./BookingCalculatorAttachment";
 import BookingRuntimeController from "./BookingRuntimeController";
 import BookingAvailabilityPicker from "./BookingAvailabilityPicker";
@@ -21,6 +20,7 @@ import "./mobile-header-polish.css";
 import "./mobile-readability-v61.css";
 import "./calculator-v4.css";
 import "./calculator-v5-integrated.css";
+import "./calculator-v8-premium.css";
 import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
 import "./booking-availability.css";
@@ -49,8 +49,7 @@ export default function Home() {
       <FaqPortal />
       <LocalizedSurfaceFixes />
       <LocaleNavigationPolish />
-      <BusinessCalculatorV5 />
-      <CalculatorPricingPolish />
+      <BusinessCalculatorV6 />
       <BookingCalculatorAttachment />
       <BookingAvailabilityPicker />
       <BookingRuntimeController />
