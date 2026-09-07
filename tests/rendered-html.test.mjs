@@ -7,13 +7,17 @@ const canonicalLink =
 const manifestLink =
   /<link(?=[^>]*\brel=["']manifest["'])(?=[^>]*\bhref=["']https:\/\/muuttobotti\.fi\/manifest\.webmanifest["'])[^>]*>/i;
 
-test("renders production release metadata", async () => {
+async function loadWorker() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${Math.random()}`);
   const { default: worker } = await import(workerUrl.href);
+  return worker;
+}
 
+async function render(path = "/") {
+  const worker = await loadWorker();
   const response = await worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${path}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -28,13 +32,37 @@ test("renders production release metadata", async () => {
   );
 
   assert.equal(response.status, 200);
-  assert.match(
-    response.headers.get("content-type") ?? "",
-    /^text\/html\b/i,
-  );
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  return response.text();
+}
 
-  const html = await response.text();
+test("renders production release metadata", async () => {
+  const html = await render("/");
   assert.match(html, productionTitle);
   assert.match(html, canonicalLink);
   assert.match(html, manifestLink);
+});
+
+test("server-renders the requested homepage locale", async () => {
+  const en = await render("/?lang=en");
+  assert.match(en, /Consider it done\./);
+  assert.match(en, /One trusted team\. Every service\./);
+  assert.doesNotMatch(en, /Kaikki hoituu\./);
+
+  const uk = await render("/?lang=uk");
+  assert.match(uk, /Усе буде зроблено\./);
+  assert.match(uk, /Одна команда\. Усі послуги\./);
+  assert.doesNotMatch(uk, /Kaikki hoituu\./);
+
+  const ru = await render("/?lang=ru");
+  assert.match(ru, /Всё будет сделано\./);
+  assert.match(ru, /Одна команда\. Все услуги\./);
+  assert.doesNotMatch(ru, /Kaikki hoituu\./);
+});
+
+test("does not server-render legacy calculator controls", async () => {
+  const html = await render("/?lang=en");
+  assert.match(html, /id=["']calculator["']/i);
+  assert.doesNotMatch(html, /type=["']range["']/i);
+  assert.doesNotMatch(html, /legacy-calculator-disabled/i);
 });
