@@ -119,7 +119,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <MuuttobottiArtV3 />
+      <MuuttobottiArtV3 initialLocale={locale} />
       <BlogNavigationEnhancer />
       <HomeBlogPreview />
       <FaqPortal />
