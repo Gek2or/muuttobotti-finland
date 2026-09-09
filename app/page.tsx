@@ -22,6 +22,7 @@ import "./mobile-readability-v61.css";
 import "./calculator-v4.css";
 import "./calculator-v5-integrated.css";
 import "./calculator-v8-premium.css";
+import "./calculator-layout-fix.css";
 import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
 import "./booking-availability.css";

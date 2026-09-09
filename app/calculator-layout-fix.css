@@ -1,0 +1,5 @@
+/* Keep the client-mounted V6 calculator centered across the full calculator section. */
+.calculator-section > .bc8-card {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
