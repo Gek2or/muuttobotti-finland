@@ -1,0 +1,82 @@
+/* Desktop-only layout correction for the portal-based V8 calculator. */
+@media (min-width:1051px){
+  .calculator-section{
+    display:block!important;
+    grid-template-columns:none!important;
+    gap:0!important;
+    padding:96px clamp(32px,5vw,84px)!important;
+    overflow:visible;
+  }
+
+  .calculator-section>.bc8-card{
+    width:min(100%,1180px);
+    margin:0 auto;
+    padding:14px;
+    border-radius:30px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 340px;
+    grid-template-areas:
+      "tabs tabs"
+      "body summary";
+    gap:14px 16px;
+    align-items:start;
+    box-shadow:0 34px 100px rgba(0,0,0,.28);
+  }
+
+  .bc8-card>.bc8-tabs{grid-area:tabs;margin:0;}
+  .bc8-card>.bc8-body{grid-area:body;margin:0;min-width:0;gap:12px;}
+  .bc8-card>.bc8-summary{
+    grid-area:summary;
+    margin:0;
+    position:sticky;
+    top:96px;
+    min-width:0;
+    padding:22px;
+    border-radius:22px;
+  }
+
+  .bc8-tabs{padding:6px;border-radius:18px;}
+  .bc8-tabs button{min-height:54px;font-size:13px;}
+
+  .bc8-section{padding:18px;border-radius:18px;box-shadow:0 8px 24px rgba(7,27,34,.035);}
+  .bc8-section-head{margin-bottom:14px;}
+  .bc8-section-head>span{width:32px;height:32px;}
+
+  .bc8-team-grid,.bc8-vehicle-grid{gap:12px;}
+  .bc8-team-grid>button{min-height:84px;padding:14px 15px;}
+  .bc8-vehicle-grid>button{min-height:104px;padding:15px;align-items:center;}
+  .bc8-choice-copy small{max-width:290px;}
+
+  .bc8-fields{gap:14px 16px;}
+  .bc8-stepper{grid-template-columns:48px minmax(100px,1fr) 48px;}
+  .bc8-stepper>button,.bc8-stepper input{min-height:50px;}
+  .bc8-stepper input{font-size:20px;}
+
+  .bc8-switches{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .bc8-switches button{justify-content:flex-start;text-align:left;min-height:54px;padding:10px 12px;}
+
+  .bc8-recommendation{padding:15px 16px;border-radius:16px;}
+  .bc8-recommendation strong{font-size:14px;line-height:1.35;}
+
+  .bc8-compare{grid-template-columns:1fr 1fr;gap:9px;}
+  .bc8-compare-title{grid-column:1/-1;padding:0 2px 2px;}
+  .bc8-compare-title span{writing-mode:initial;transform:none;}
+  .bc8-compare>button{padding:12px 13px;min-height:76px;}
+
+  .bc8-summary-top{grid-template-columns:1fr;gap:14px;}
+  .bc8-summary-top>div:last-child{padding-top:12px;border-top:1px solid rgba(75,107,50,.14);}
+  .bc8-summary-top strong{font-size:48px;}
+  .bc8-summary-top b{font-size:23px;}
+  .bc8-breakdown{margin-top:18px;padding-top:16px;}
+  .bc8-breakdown>div{gap:8px;}
+  .bc8-breakdown small{font-size:12px;}
+  .bc8-continue{min-height:60px;margin-top:18px;border-radius:14px;}
+  .bc8-summary>p{margin-top:12px;}
+}
+
+@media (min-width:1051px) and (max-width:1220px){
+  .calculator-section{padding-left:28px!important;padding-right:28px!important;}
+  .calculator-section>.bc8-card{grid-template-columns:minmax(0,1fr) 310px;}
+  .bc8-vehicle-grid>button{grid-template-columns:auto 1fr;}
+  .bc8-vehicle-grid em{grid-column:2;justify-self:start;}
+}
