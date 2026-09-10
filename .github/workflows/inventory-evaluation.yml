@@ -1,0 +1,42 @@
+name: Inventory extraction evaluation
+on:
+  pull_request:
+    paths:
+      - 'lib/inventory/**'
+      - 'evals/inventory/**'
+      - 'scripts/eval-inventory.mjs'
+      - 'tests/inventory.test.mjs'
+      - 'mobile/src/screens/ClientCalculatorScreen.tsx'
+      - '.github/workflows/inventory-evaluation.yml'
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Run 32 billable provider requests using repository secrets'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Contract tests (no API key)
+        run: node --test tests/inventory.test.mjs
+      - name: Frozen baseline
+        run: node scripts/eval-inventory.mjs
+      - name: Real model evaluation (manual opt-in only)
+        if: github.event_name == 'workflow_dispatch' && inputs.live
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_INVENTORY_MODEL: ${{ vars.OPENAI_INVENTORY_MODEL }}
+        run: node scripts/eval-inventory.mjs --live
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: inventory-evaluation
+          path: evals/inventory/results/
