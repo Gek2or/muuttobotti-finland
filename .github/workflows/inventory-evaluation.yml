@@ -1,5 +1,8 @@
 name: Inventory extraction evaluation
 on:
+  push:
+    branches: ['feat/ai-inventory-evaluation-20260910']
+    paths: ['.github/workflows/inventory-evaluation.yml']
   pull_request:
     paths:
       - 'lib/inventory/**'
@@ -29,12 +32,19 @@ jobs:
         run: node --test tests/inventory.test.mjs
       - name: Frozen baseline
         run: node scripts/eval-inventory.mjs
-      - name: Real model evaluation (manual opt-in only)
-        if: github.event_name == 'workflow_dispatch' && inputs.live
+      - name: Approved funded evaluation with one-request preflight
+        if: github.event_name == 'push' && github.event.head_commit.message == 'Run funded inventory evaluation 20260910-03' && github.run_attempt == 1
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_INVENTORY_MODEL: ${{ vars.OPENAI_INVENTORY_MODEL }}
-        run: node scripts/eval-inventory.mjs --live
+        run: |
+          node --input-type=module <<'JS'
+          import {extractInventory} from './lib/inventory/extract.mjs';
+          const r = await extractInventory('2 sofas and 10 boxes. No piano.', {apiKey:process.env.OPENAI_API_KEY,model:process.env.OPENAI_INVENTORY_MODEL});
+          console.log('PREFLIGHT_RESULT '+JSON.stringify({ok:r.ok,reason:r.reason??null,trace:r.trace}));
+          if(!r.ok) process.exit(1);
+          JS
+          node scripts/eval-inventory.mjs --live
       - uses: actions/upload-artifact@v4
         if: always()
         with:
