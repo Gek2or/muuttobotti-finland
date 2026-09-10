@@ -620,13 +620,14 @@ export default function BusinessCalculatorV6() {
         ))}
       </div>
 
-      {mode === "moving" && <HomeInventoryAssistant locale={locale} onApply={value => {
-        setReviewedInventory(value); setLoad(value.load); setVehicle(value.vehicle);
-        setHeavyItems(value.heavy); if (value.heavy) setMovers(2);
-      }} />}
-
       {mode === "moving" && (
         <div className="bc8-body">
+          <div className="bc8-full" style={{ gridColumn: "1 / -1", minWidth: 0 }}>
+            <HomeInventoryAssistant locale={locale} onApply={value => {
+              setReviewedInventory(value); setLoad(value.load); setVehicle(value.vehicle);
+              setHeavyItems(value.heavy); if (value.heavy) setMovers(2);
+            }} />
+          </div>
           <section className="bc8-section bc8-full">
             <div className="bc8-section-head"><span>01</span><div><small>{t.team}</small></div></div>
             <div className="bc8-team-grid">
