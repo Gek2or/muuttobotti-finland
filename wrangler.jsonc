@@ -9,5 +9,12 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "muuttobotti-db",
+      "database_id": "89027a74-62e9-4f73-9fec-11daf0c6d0c3"
+    }
+  ]
 }

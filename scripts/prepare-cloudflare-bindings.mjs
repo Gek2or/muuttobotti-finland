@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const configPath = resolve('wrangler.jsonc');
+const config = JSON.parse(readFileSync(configPath, 'utf8'));
 const databaseName = process.env.CLOUDFLARE_D1_DATABASE_NAME || 'muuttobotti-db';
 const bindingName = 'DB';
 
@@ -35,7 +36,9 @@ function resolveDatabaseId() {
   return findDatabaseId(parseJsonOutput(runWrangler(['d1', 'list', '--json'])));
 }
 
-let databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID?.trim() || resolveDatabaseId();
+let databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID?.trim()
+  || config.d1_databases?.find(binding => binding.binding === bindingName && binding.database_name === databaseName)?.database_id
+  || resolveDatabaseId();
 
 if (!databaseId) {
   console.log(`Cloudflare D1 database "${databaseName}" was not found. Creating it now...`);
@@ -48,7 +51,6 @@ if (!databaseId) {
   process.exit(1);
 }
 
-const config = JSON.parse(readFileSync(configPath, 'utf8'));
 config.d1_databases = [{
   binding: bindingName,
   database_name: databaseName,

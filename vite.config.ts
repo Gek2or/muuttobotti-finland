@@ -1,6 +1,7 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
+import { readFileSync } from "node:fs";
 import { sites } from "./build/sites-vite-plugin";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -9,7 +10,9 @@ const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
 const { d1, r2 } = hostingConfig;
 const isExternalCloudflareDeploy =
   process.env.CLOUDFLARE_EXTERNAL_DEPLOY === "1";
-const externalD1DatabaseId = process.env.CLOUDFLARE_D1_DATABASE_ID;
+const deploymentConfig = JSON.parse(readFileSync(new URL("./wrangler.jsonc", import.meta.url), "utf8"));
+const productionD1 = deploymentConfig.d1_databases?.find((binding: { binding: string }) => binding.binding === "DB");
+const externalD1DatabaseId = process.env.CLOUDFLARE_D1_DATABASE_ID || productionD1?.database_id;
 const externalR2BucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
@@ -26,7 +29,7 @@ const localBindingConfig = {
             ? "muuttobotti-db"
             : "site-creator-d1",
           database_id:
-            externalD1DatabaseId ?? SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+            isExternalCloudflareDeploy ? externalD1DatabaseId : SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
         },
       ]
     : [],
