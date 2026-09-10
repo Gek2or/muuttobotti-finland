@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import HomeInventoryAssistant, { type ReviewedInventory } from "./HomeInventoryAssistant";
 import {
   AlertTriangle,
   ArrowRight,
@@ -364,6 +365,7 @@ export default function BusinessCalculatorV6() {
   const [transportDistance, setTransportDistance] = useState(10);
   const [weight, setWeight] = useState(50);
   const [express, setExpress] = useState(false);
+  const [reviewedInventory, setReviewedInventory] = useState<ReviewedInventory | null>(null);
 
   useEffect(() => {
     setTarget(document.querySelector<HTMLElement>(".calculator-section"));
@@ -534,6 +536,7 @@ export default function BusinessCalculatorV6() {
         heavy: transport.heavyCharge > 0,
         trailerCharge: money(transport.trailerCharge),
       } : undefined,
+      reviewedInventory: mode === "moving" ? reviewedInventory : undefined,
       updatedAt: new Date().toISOString(),
     };
     sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshot));
@@ -563,6 +566,7 @@ export default function BusinessCalculatorV6() {
     weight,
     express,
     transport,
+    reviewedInventory,
     trailerHourly,
   ]);
 
@@ -615,6 +619,11 @@ export default function BusinessCalculatorV6() {
           </button>
         ))}
       </div>
+
+      {mode === "moving" && <HomeInventoryAssistant locale={locale} onApply={value => {
+        setReviewedInventory(value); setLoad(value.load); setVehicle(value.vehicle);
+        setHeavyItems(value.heavy); if (value.heavy) setMovers(2);
+      }} />}
 
       {mode === "moving" && (
         <div className="bc8-body">
