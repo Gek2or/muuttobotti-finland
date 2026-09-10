@@ -1,4 +1,4 @@
-# Muuttobotti inventory extraction pilot
+# Muuttobotti — AI inventory extraction case study
 
 Built on main `87d69f147f5d65de0bff43d8987dc9014e12e410`, matched to the owner's Cloudflare deployment history. No customer calculator changes, automatic quotation, booking writes or deployment are included.
 
@@ -13,9 +13,19 @@ Built on main `87d69f147f5d65de0bff43d8987dc9014e12e410`, matched to the owner's
 
 ## Observed results
 
-28 local contract/handler tests passed. The complete web production build passed, including the new API route. No live API request has been made: the key was unavailable.
+28 local contract/handler tests passed. The complete web production build passed, including the new API route. A real provider run was attempted on 10 September 2026 using `gpt-4.1-mini-2025-04-14`: all 32 requests returned HTTP 429, with no validated model output. GitHub secret and model variable are configured. Model quality is still unmeasured.
 
 The baseline diagnostic category+quantity map matches 11/32 labelled examples. Heavy-review decisions match 27/32 (zero missed heavy cases; five false positives). These are deliberately challenging development examples, not a representative estimate of business performance. Baseline UI did not expose an inventory: the diagnostic trace exposes its one-match-per-category assumption. Do not describe 11/32 as general AI accuracy or evidence the new model is better.
+
+## First live attempt — 10 September 2026
+
+- [Evaluation run](https://github.com/Gek2or/muuttobotti-finland/actions/runs/34462830872): 32 attempts, 32 HTTP 429 failures, zero validated outputs. Contract tests and baseline passed; the live step correctly failed and retained its report.
+- [One-request diagnostic](https://github.com/Gek2or/muuttobotti-finland/actions/runs/34463052476): HTTP 429 again. Its allowlist returned `other_provider_error`, so it did not establish whether the cause was depleted quota, billing, or request limits.
+- Raw results are preserved in `evals/inventory/results/live.json` and `live.md` in PR #59. Source commit: `1bb93324664c096ade84a5fcc9d84f65ca4921ef`. Dataset SHA-256: `e86fbf079002e3547a5774feba7466f83e9c3523959b3805c9a8a0a28e0480ea`.
+- The report's `sourceDirty:true` follows regeneration of tracked baseline reports before the live step; no extraction-code changes were made during the run.
+- Zero all-attempt exact matches represents a failed service run, **not 0% semantic model accuracy**. Zero recorded tokens means usage was absent from failed responses, not a verified billing amount.
+- One-time branch triggers were removed. Live execution is again manual opt-in only; no recurring API runs are enabled.
+- Next prerequisite: inspect API project billing/credits and rate/spend limits, resolve the HTTP 429 cause, then rerun. No improved extraction quality or business savings can yet be claimed.
 
 ## Run locally
 
@@ -56,4 +66,16 @@ Show baseline handling of `2 sofas and 6 chairs`, `No piano. Move 10 boxes`, and
 
 ## Documentation
 
-The provider format and refusal handling follow [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs). Model behavior and account availability still need a live run.
+The provider format and refusal handling follow [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs). Model behavior remains unmeasured because the live attempt was blocked by HTTP 429. See also [OpenAI error codes](https://developers.openai.com/api/docs/guides/error-codes).
+
+## Delivery and provenance
+
+Implementation: [Draft PR #59](https://github.com/Gek2or/muuttobotti-finland/pull/59), branch `feat/ai-inventory-evaluation-20260910`, based on main `87d69f147f5d65de0bff43d8987dc9014e12e410`. The owner's screenshot linked this main change history to Cloudflare Worker version `37cf23ec`; that Worker version is not itself a Git SHA. No merge or deployment was performed.
+
+The previous 22-test report concerned a different historical Sites source and is superseded by this implementation. The current milestone has 28 passing contract tests on the correct main baseline. A successful real-model comparison remains blocked by HTTP 429, and this document must not be presented as evidence of deployed model quality or measured time savings.
+
+## Short application description
+
+“Muuttobotti provides a real moving-business context for an AI-assisted engineering project. I used AI-assisted development to add structured inventory extraction with quoted evidence, explicit unknowns and human review, alongside a frozen rule-based baseline. The implementation has 28 passing contract tests and a reproducible 32-case multilingual evaluation set. The first live run exposed an API availability blocker (HTTP 429); model quality and business impact remain to be measured.”
+
+Use this wording only after reviewing the implementation yourself. Clearly distinguish your operational requirements and decisions from AI-assisted coding work.
