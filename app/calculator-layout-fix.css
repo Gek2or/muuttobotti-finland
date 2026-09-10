@@ -3,3 +3,197 @@
   grid-column: 1 / -1;
   justify-self: center;
 }
+
+/*
+ * Desktop calculator workspace
+ *
+ * The calculator keeps its touch-friendly vertical flow on tablets and phones.
+ * On a wide screen it becomes a compact working surface: controls on the left,
+ * a persistent estimate on the right, and related choices arranged side by side.
+ */
+@media (min-width: 1180px) {
+  .calculator-section {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding-top: clamp(72px, 6vw, 96px);
+    padding-bottom: clamp(72px, 6vw, 96px);
+  }
+
+  .calculator-section > .bc8-card {
+    width: min(100%, 1280px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .bc8-card > .bc8-tabs {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .bc8-card > .bc8-body {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-content: start;
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .bc8-card > .bc8-summary {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-top: 0;
+    padding: 22px;
+  }
+
+  .bc8-summary-top {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .bc8-summary-top strong {
+    font-size: 50px;
+  }
+
+  .bc8-summary-top b {
+    font-size: 27px;
+  }
+
+  .bc8-breakdown {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+
+  .bc8-continue {
+    margin-top: auto;
+  }
+
+  .bc8-summary > p {
+    margin-top: 12px;
+  }
+
+  /* Moving: team and vehicle share the first row, details use the full work area. */
+  .bc8-card[data-mode="moving"] .bc8-body > section:nth-of-type(1) {
+    grid-column: 1;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > section:nth-of-type(2) {
+    grid-column: 2;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > section:nth-of-type(3) {
+    grid-column: 1 / -1;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > .bc8-recommendation {
+    grid-column: 1;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > .bc8-recommendation > button {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > .bc8-compare {
+    grid-column: 2;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-body > .bc8-rule {
+    grid-column: 1 / -1;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-team-grid,
+  .bc8-card[data-mode="moving"] .bc8-vehicle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-team-grid > button,
+  .bc8-card[data-mode="moving"] .bc8-vehicle-grid > button {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 92px;
+    padding: 12px;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-team-grid > button > em,
+  .bc8-card[data-mode="moving"] .bc8-vehicle-grid > button > em {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    max-width: calc(100% - 16px);
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-team-grid > button > span,
+  .bc8-card[data-mode="moving"] .bc8-vehicle-grid .bc8-choice-copy {
+    padding-top: 13px;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-choice-copy small {
+    display: none;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-choice-copy strong {
+    font-size: 18px;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-fields > label.bc8-full {
+    grid-column: auto;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-load,
+  .bc8-card[data-mode="moving"] .bc8-switches {
+    grid-column: 1 / -1;
+  }
+
+  .bc8-card[data-mode="moving"] .bc8-switches {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* Cleaning remains one compact row of controls beside the live estimate. */
+  .bc8-card[data-mode="cleaning"] .bc8-body > .bc8-section,
+  .bc8-card[data-mode="cleaning"] .bc8-body > .bc8-rule {
+    grid-column: 1 / -1;
+  }
+
+  .bc8-card[data-mode="cleaning"] .bc8-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bc8-card[data-mode="cleaning"] .bc8-fields > label.bc8-full {
+    grid-column: auto;
+  }
+
+  /* Transport: vehicle choice and shipment details sit next to each other. */
+  .bc8-card[data-mode="transport"] .bc8-body > section:nth-of-type(1) {
+    grid-column: 1;
+  }
+
+  .bc8-card[data-mode="transport"] .bc8-body > section:nth-of-type(2) {
+    grid-column: 2;
+  }
+
+  .bc8-card[data-mode="transport"] .bc8-body > .bc8-recommendation,
+  .bc8-card[data-mode="transport"] .bc8-body > .bc8-rule {
+    grid-column: 1 / -1;
+  }
+
+  .bc8-card[data-mode="transport"] .bc8-vehicle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bc8-card[data-mode="transport"] .bc8-choice-copy small {
+    display: none;
+  }
+}
