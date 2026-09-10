@@ -6,6 +6,7 @@ import { stripTypeScriptTypes } from 'node:module';
 import { analyseMove } from '../evals/inventory/baseline.mjs';
 import { extractInventory, validateInventory, reviewReasons } from '../lib/inventory/extract.mjs';
 import { handleInventory } from '../lib/inventory/handler.mjs';
+import { handlePublicInventory } from '../lib/inventory/public-handler.mjs';
 import { quantitiesFromInventory,scorePrediction } from '../evals/inventory/metrics.mjs';
 
 const text='2 sofas and 10 boxes. No piano.';
@@ -84,4 +85,26 @@ test('API passes only description and server configuration; no booking mutations
   let calls=0;
   const r=await handleInventory(request(),{authorize:async()=>true,env:{AI_INVENTORY_ENABLED:'true',OPENAI_API_KEY:'synthetic',OPENAI_INVENTORY_MODEL:'test-model'},extract:async(t,c)=>{calls++;assert.equal(t,text);assert.equal(c.model,'test-model');return {ok:true,inventory};}});
   assert.equal(r.status,200);assert.equal(calls,1);assert.equal(r.headers.get('cache-control'),'no-store');
+});
+
+function rateDb() {
+  let count=0;
+  return {prepare(sql){return {bind(){return this;},async run(){return {success:true};},async first(){
+    if(!sql.includes('RETURNING request_count')) throw Error('unexpected first');
+    count+=1; return {request_count:count};
+  }}}};
+}
+const publicRequest=(extra={})=>new Request('https://example.test/api/inventory',{method:'POST',headers:{'content-type':'application/json',origin:'https://example.test','cf-connecting-ip':'192.0.2.10',...extra},body:JSON.stringify({text})});
+const publicEnv=db=>({AI_INVENTORY_ENABLED:'true',AI_INVENTORY_PUBLIC_ENABLED:'true',AI_RATE_LIMIT_SALT:'synthetic',OPENAI_API_KEY:'synthetic',OPENAI_INVENTORY_MODEL:'test-model',DB:db});
+test('public API requires explicit flag, same origin, Cloudflare IP and limiter configuration',async()=>{
+  assert.equal((await handlePublicInventory(publicRequest(),{env:{}})).status,503);
+  assert.equal((await handlePublicInventory(publicRequest({origin:'https://evil.test'}),{env:publicEnv(rateDb())})).status,403);
+  assert.equal((await handlePublicInventory(publicRequest({'cf-connecting-ip':''}),{env:publicEnv(rateDb())})).status,503);
+});
+test('public API allows five calls per client and blocks the sixth before provider invocation',async()=>{
+  const db=rateDb(); let providerCalls=0;
+  const extract=async()=>{providerCalls+=1;return {ok:true,inventory};};
+  for(let i=0;i<5;i++) assert.equal((await handlePublicInventory(publicRequest(),{env:publicEnv(db),extract})).status,200);
+  const limited=await handlePublicInventory(publicRequest(),{env:publicEnv(db),extract});
+  assert.equal(limited.status,429); assert.ok(Number(limited.headers.get('retry-after'))>0); assert.equal(providerCalls,5);
 });
