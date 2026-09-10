@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Bath, Boxes, Building2, CalendarDays, Check, CheckCircle2, ChevronDown,
-  Clock3, Hammer, Home, Languages, Mail, MapPin, Menu, MessageCircle, Moon, Navigation,
+  Clock3, Hammer, Home, Languages, Mail, Menu, MessageCircle, Moon, Navigation,
   PackageCheck, Phone, Recycle, Send, ShieldCheck, Sparkles, Star, Sun, Truck,
   UploadCloud, UserRound, UsersRound, X,
 } from "lucide-react";
@@ -14,7 +14,6 @@ type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
 
 const GOOGLE_RATING = "4.9";
-const GOOGLE_REVIEW_COUNT = 34;
 const GOOGLE_REVIEWS_URL = "https://www.google.com/maps/search/?api=1&query=Muuttobotti%20Tuusula&query_place_id=ChIJK5UtO73-Da8RXMUHra9EpZg";
 
 const copy = {
@@ -43,6 +42,149 @@ const copy = {
   },
 } as const;
 
+const trackingCopy = {
+  fi: {
+    kicker: "Muuttobotti-asiakasnäkymä",
+    title: "Oma varaus kulkee mukanasi.",
+    lead: "Saat varauksen jälkeen henkilökohtaisen seurantalinkin. Se toimii selaimessa tietokoneella ja puhelimella — ilman erillistä sovellusta.",
+    features: [
+      ["Tietokoneella ja puhelimella", "Avaa sama ajantasainen näkymä millä tahansa laitteella."],
+      ["Yksityinen ja suojattu", "Varaustiedot eivät näy julkisesti, vaan henkilökohtaisen linkin kautta."],
+      ["Kaikki yhdessä paikassa", "Näet reitin, ajan, tiimin, työn tilan ja yhteydenoton."],
+    ],
+    badges: ["Ei asennusta", "Päivittyy automaattisesti"],
+    cta: "Varaa ja seuraa verkossa",
+    preview: "Asiakasnäkymä",
+    privateLink: "Henkilökohtainen seurantalinkki",
+    booking: "MB-EXAMPLE",
+    route: "Helsinki → Espoo",
+    status: "Työ käynnissä",
+    booked: "Varattu",
+    inProgress: "Matkalla",
+    completed: "Valmis",
+    next: "Seuraavaksi",
+    arrival: "Tiimi saapuu klo 10.00",
+    secure: "Yksityinen linkki",
+    secureValue: "Suojattu",
+    date: "Päivä",
+    dateValue: "12.9.2026",
+    team: "Tiimi",
+    teamValue: "2 muuttajaa",
+    vehicle: "Ajoneuvo",
+    vehicleValue: "Crafter 13–15 m³",
+    total: "Vahvistettu arvio",
+    price: "177 €",
+    contact: "Lähetä viesti",
+    mobile: "Sama tieto puhelimessa",
+    updated: "Päivitetty juuri nyt",
+  },
+  en: {
+    kicker: "Muuttobotti customer view",
+    title: "Your booking goes wherever you do.",
+    lead: "After booking, you receive a personal tracking link. It works in the browser on both desktop and mobile — with nothing to install.",
+    features: [
+      ["Desktop and mobile", "Open the same up-to-date view on any device."],
+      ["Private and protected", "Booking details are not public and open only through your personal link."],
+      ["Everything in one place", "See the route, time, team, job status and contact options."],
+    ],
+    badges: ["No installation", "Updates automatically"],
+    cta: "Book and track online",
+    preview: "Customer view",
+    privateLink: "Personal tracking link",
+    booking: "MB-EXAMPLE",
+    route: "Helsinki → Espoo",
+    status: "Job in progress",
+    booked: "Booked",
+    inProgress: "On the way",
+    completed: "Completed",
+    next: "Up next",
+    arrival: "Team arrives at 10:00",
+    secure: "Private link",
+    secureValue: "Protected",
+    date: "Date",
+    dateValue: "12 Sep 2026",
+    team: "Team",
+    teamValue: "2 movers",
+    vehicle: "Vehicle",
+    vehicleValue: "Crafter 13–15 m³",
+    total: "Confirmed estimate",
+    price: "€177",
+    contact: "Send a message",
+    mobile: "The same view on mobile",
+    updated: "Updated just now",
+  },
+  uk: {
+    kicker: "Кабінет клієнта Muuttobotti",
+    title: "Ваше замовлення завжди поруч.",
+    lead: "Після бронювання ви отримаєте персональне посилання для відстеження. Воно працює в браузері на комп’ютері й телефоні — без встановлення застосунку.",
+    features: [
+      ["На комп’ютері й телефоні", "Відкривайте один актуальний кабінет на будь-якому пристрої."],
+      ["Приватно та захищено", "Дані замовлення не є публічними й доступні лише за персональним посиланням."],
+      ["Усе в одному місці", "Маршрут, час, команда, статус роботи та зв’язок в одному екрані."],
+    ],
+    badges: ["Без встановлення", "Оновлюється автоматично"],
+    cta: "Забронювати й відстежувати",
+    preview: "Кабінет клієнта",
+    privateLink: "Персональне посилання",
+    booking: "MB-EXAMPLE",
+    route: "Гельсінкі → Еспоо",
+    status: "Робота виконується",
+    booked: "Заброньовано",
+    inProgress: "У дорозі",
+    completed: "Готово",
+    next: "Далі",
+    arrival: "Команда прибуде о 10:00",
+    secure: "Приватне посилання",
+    secureValue: "Захищено",
+    date: "Дата",
+    dateValue: "12.09.2026",
+    team: "Команда",
+    teamValue: "2 вантажники",
+    vehicle: "Автомобіль",
+    vehicleValue: "Crafter 13–15 м³",
+    total: "Підтверджена оцінка",
+    price: "177 €",
+    contact: "Написати повідомлення",
+    mobile: "Ті самі дані в телефоні",
+    updated: "Щойно оновлено",
+  },
+  ru: {
+    kicker: "Кабинет клиента Muuttobotti",
+    title: "Ваш заказ всегда под рукой.",
+    lead: "После бронирования вы получите персональную ссылку для отслеживания. Она работает в браузере на компьютере и телефоне — без установки приложения.",
+    features: [
+      ["На компьютере и телефоне", "Открывайте один актуальный кабинет на любом устройстве."],
+      ["Приватно и безопасно", "Данные заказа не видны публично и доступны только по персональной ссылке."],
+      ["Всё в одном месте", "Маршрут, время, команда, статус работы и связь на одном экране."],
+    ],
+    badges: ["Без установки", "Обновляется автоматически"],
+    cta: "Забронировать и отслеживать",
+    preview: "Кабинет клиента",
+    privateLink: "Персональная ссылка",
+    booking: "MB-EXAMPLE",
+    route: "Хельсинки → Эспоо",
+    status: "Работа выполняется",
+    booked: "Забронировано",
+    inProgress: "В пути",
+    completed: "Готово",
+    next: "Следующий этап",
+    arrival: "Команда прибудет в 10:00",
+    secure: "Приватная ссылка",
+    secureValue: "Защищено",
+    date: "Дата",
+    dateValue: "12.09.2026",
+    team: "Команда",
+    teamValue: "2 грузчика",
+    vehicle: "Автомобиль",
+    vehicleValue: "Crafter 13–15 м³",
+    total: "Подтверждённая оценка",
+    price: "177 €",
+    contact: "Написать сообщение",
+    mobile: "Те же данные в телефоне",
+    updated: "Только что обновлено",
+  },
+} as const;
+
 const services = [
   { icon: Boxes, key: "moving", price: "59 € / h", fi: ["Muuttopalvelu", "Koti- ja yritysmuutot, pakkaus ja kalusteiden purku."], en: ["Moving", "Home and office moves, packing and furniture disassembly."], uk: ["Переїзди", "Переїзди дому й офісу, пакування та розбирання меблів."], ru: ["Переезды", "Переезды дома и офиса, упаковка и разборка мебели."] },
   { icon: Truck, key: "transport", price: "49 € / h", fi: ["Kuljetukset", "Huonekalut, kodinkoneet, noudot ja pikakuljetukset."], en: ["Transport", "Furniture, appliances, pickups and express delivery."], uk: ["Перевезення", "Меблі, техніка, забори та експрес-доставка."], ru: ["Перевозки", "Мебель, техника, заборы и экспресс-доставка."] },
@@ -62,6 +204,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi" }: { initialLoca
   const [movers, setMovers] = useState<1 | 2>(2); const [elevator, setElevator] = useState(true); const [packing, setPacking] = useState(false); const [afterClean, setAfterClean] = useState(false); const [cleanType, setCleanType] = useState("regular"); const [express, setExpress] = useState(false);
   const [bookingService, setBookingService] = useState("moving"); const [bookingNotes, setBookingNotes] = useState(""); const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle"); const [bookingResult, setBookingResult] = useState<{bookingId:string; trackingPath:string}|null>(null); const [cookie, setCookie] = useState<boolean | null>(null);
   const t = copy[locale];
+  const tracking = trackingCopy[locale];
 
   useEffect(() => { const saved = localStorage.getItem("muuttobotti-cookie"); if (saved) setCookie(true); }, []);
   useEffect(() => { document.documentElement.lang = locale === "uk" ? "uk" : locale; }, [locale]);
@@ -100,7 +243,73 @@ export default function MuuttobottiArtV3({ initialLocale = "fi" }: { initialLoca
 
     <section className="process-section" id="process"><div className="center-heading"><span className="kicker">{t.processKicker}</span><h2>{t.processTitle}</h2></div><div className="steps-grid">{t.steps.map(([title,desc],i)=><article key={title}><span>0{i+1}</span><div className="step-icon">{i===0?<CalendarDays/>:i===1?<CheckCircle2/>:<Navigation/>}</div><h3>{title}</h3><p>{desc}</p></article>)}</div></section>
 
-    <section className="portal-section art-tracking"><div className="portal-heading"><span className="kicker light">{t.trackKicker}</span><h2>{t.trackTitle}</h2></div><div className="dashboard-mockup"><aside><div className="mini-brand"><PackageCheck/>M</div><span className="active"><Home/></span><span><CalendarDays/></span><span><MessageCircle/></span></aside><div className="dashboard-main"><div className="dash-top"><div><small>Tracking preview</small><h3>Private booking link</h3></div><div className="dash-avatar">MB</div></div><div className="booking-track"><div className="track-head"><div><span>MB-EXAMPLE</span><h4>Helsinki → Espoo</h4></div><b>Example</b></div><div className="tracking-line"><span className="done"><Check/></span><i/><span className="done"><Truck/></span><i/><span><Home/></span></div><div className="tracking-labels"><span>Booked</span><span>In progress</span><span>Completed</span></div><div className="dash-cards"><div><ShieldCheck/><span>Private link</span><strong>Secure</strong></div><div><CalendarDays/><span>Date</span><strong>Confirmed</strong></div><div><UsersRound/><span>Team</span><strong>Assigned</strong></div></div></div></div></div></section>
+    <section className="portal-section art-tracking">
+      <div className="portal-heading">
+        <span className="kicker light">{tracking.kicker}</span>
+        <h2>{tracking.title}</h2>
+        <p className="portal-lead">{tracking.lead}</p>
+        <div className="portal-features">
+          {tracking.features.map(([title, description], index) => (
+            <div key={title}>
+              <span className="portal-feature-icon">
+                {index === 0 ? <CalendarDays/> : index === 1 ? <ShieldCheck/> : <MessageCircle/>}
+              </span>
+              <div><strong>{title}</strong><p>{description}</p></div>
+            </div>
+          ))}
+        </div>
+        <div className="portal-assurances">
+          {tracking.badges.map((badge) => <span key={badge}><Check/>{badge}</span>)}
+        </div>
+        <button className="portal-cta" type="button" onClick={() => scrollTo("booking")}>{tracking.cta}<ArrowRight/></button>
+      </div>
+
+      <div className="portal-product-stage" aria-hidden="true">
+        <div className="dashboard-mockup">
+          <aside>
+            <div className="mini-brand"><PackageCheck/>M</div>
+            <span className="active"><Home/></span>
+            <span><CalendarDays/></span>
+            <span><MessageCircle/></span>
+          </aside>
+          <div className="dashboard-main">
+            <div className="dash-top">
+              <div><small>{tracking.preview}</small><h3>{tracking.privateLink}</h3></div>
+              <div className="dash-avatar">MB</div>
+            </div>
+            <div className="booking-track">
+              <div className="track-head"><div><span>{tracking.booking}</span><h4>{tracking.route}</h4></div><b>{tracking.status}</b></div>
+              <div className="tracking-line"><span className="done"><Check/></span><i/><span className="done current"><Truck/></span><i/><span><Home/></span></div>
+              <div className="tracking-labels"><span>{tracking.booked}</span><span>{tracking.inProgress}</span><span>{tracking.completed}</span></div>
+              <div className="tracking-next"><span><Clock3/></span><div><small>{tracking.next}</small><strong>{tracking.arrival}</strong></div><em>{tracking.updated}</em></div>
+              <div className="dash-cards">
+                <div><ShieldCheck/><span>{tracking.secure}</span><strong>{tracking.secureValue}</strong></div>
+                <div><CalendarDays/><span>{tracking.date}</span><strong>{tracking.dateValue}</strong></div>
+                <div><UsersRound/><span>{tracking.team}</span><strong>{tracking.teamValue}</strong></div>
+              </div>
+              <div className="tracking-action-row">
+                <div><Truck/><span>{tracking.vehicle}<strong>{tracking.vehicleValue}</strong></span></div>
+                <div className="tracking-price"><span>{tracking.total}</span><strong>{tracking.price}</strong></div>
+                <span className="tracking-message"><MessageCircle/>{tracking.contact}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="phone-mockup">
+          <span className="phone-speaker"/>
+          <div className="phone-screen">
+            <div className="phone-top"><div className="phone-brand"><PackageCheck/></div><div><strong>{tracking.mobile}</strong><small>{tracking.updated}</small></div><ShieldCheck/></div>
+            <div className="phone-booking"><small>{tracking.booking}</small><strong>{tracking.route}</strong><em>{tracking.status}</em></div>
+            <div className="phone-progress"><span className="done"><Check/></span><i/><span className="done"><Truck/></span><i/><span><Home/></span></div>
+            <div className="phone-next"><Clock3/><span><small>{tracking.next}</small><strong>{tracking.arrival}</strong></span></div>
+            <div className="phone-meta"><span>{tracking.date}<strong>{tracking.dateValue}</strong></span><span>{tracking.team}<strong>{tracking.teamValue}</strong></span></div>
+            <div className="phone-total"><span>{tracking.total}</span><strong>{tracking.price}</strong></div>
+            <div className="phone-message"><MessageCircle/>{tracking.contact}</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section className="reviews-section" id="reviews"><div className="section-heading"><div><span className="kicker">{t.reviewsKicker}</span><h2>{t.reviewsTitle}</h2></div><div className="google-rating"><span className="google-g">G</span><strong>{GOOGLE_RATING}</strong><div><span>★★★★★</span><small>{t.reviewCount}</small></div></div></div><div className="verified-review-panel"><div><strong>{GOOGLE_RATING} / 5</strong><span>{t.reviewCount}</span></div><a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">{t.reviewLink}<ArrowRight/></a></div></section>
 
