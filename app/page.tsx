@@ -27,6 +27,7 @@ import "./home-blog-preview.css";
 import "./mobile-conversion-booking.css";
 import "./booking-availability.css";
 import "./booking-calculator-attachment.css";
+import "./product-experience-v9.css";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
