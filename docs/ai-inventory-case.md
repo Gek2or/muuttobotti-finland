@@ -59,6 +59,12 @@ Send JSON `{"text":"2 sofas and 10 boxes. No piano."}` to `POST /api/admin/inven
 
 Success returns `engine: openai`, items with category/label/quantity/status/evidence, uncertainties, review reasons, requested/returned model, usage and latency. Failure returns `engine: unavailable` and a reason; it never fabricates an inventory or passes off the baseline as an LLM answer.
 
+## Customer calculator integration
+
+The web calculator calls `POST /api/inventory` only after the customer presses the analysis button. It shows that the description is sent to an AI service, displays the extracted items and uncertainties, and requires the customer to apply the result before calculator fields change. The model extracts inventory only. Muuttobotti's deterministic category-volume table selects the planning volume, crew/load recommendation and vehicle; existing pricing remains deterministic.
+
+Public access is disabled unless both `AI_INVENTORY_ENABLED=true` and `AI_INVENTORY_PUBLIC_ENABLED=true` are configured. It also requires the D1 `DB` binding, server secret `OPENAI_API_KEY`, model variable `OPENAI_INVENTORY_MODEL`, and a random server secret `AI_RATE_LIMIT_SALT`. Same-origin requests are enforced. A hashed Cloudflare client IP is limited to five analysis attempts per UTC hour; raw IP addresses and customer descriptions are not written to the rate-limit table. Provider failures remain explicit and the manual calculator stays usable.
+
 ## Meaning and boundaries
 
 - `included`: explicitly to move; `excluded`: explicitly not to move; `uncertain`: undecided/conflicting.
