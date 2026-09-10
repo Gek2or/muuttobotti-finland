@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-10T09:53:20.147Z",
-  "sourceCommit": "1bb93324664c096ade84a5fcc9d84f65ca4921ef",
+  "generatedAt": "2026-09-10T11:19:03.364Z",
+  "sourceCommit": "34ebbc9e6b74b30da325f6972dc6d9a4ba60ac14",
   "sourceDirty": true,
   "baselineCommit": "87d69f147f5d65de0bff43d8987dc9014e12e410",
   "datasetVersion": "synthetic-v1",
@@ -21,22 +21,22 @@
   },
   "model": {
     "attempted": 32,
-    "validated": 0,
-    "failed": 32,
-    "exactRateAllAttempts": 0,
+    "validated": 32,
+    "failed": 0,
+    "exactRateAllAttempts": 0.96875,
     "validatedSubset": {
-      "cases": 0,
-      "exact": 0,
-      "exactRate": null,
-      "categoryPrecision": null,
-      "categoryRecall": null,
-      "quantityCorrect": 0,
-      "quantityTotal": 0,
-      "heavyCorrect": 0,
+      "cases": 32,
+      "exact": 31,
+      "exactRate": 0.96875,
+      "categoryPrecision": 1,
+      "categoryRecall": 0.9761904761904762,
+      "quantityCorrect": 41,
+      "quantityTotal": 42,
+      "heavyCorrect": 32,
       "heavyMiss": 0
     },
-    "inputTokens": 0,
-    "outputTokens": 0
+    "inputTokens": 13359,
+    "outputTokens": 1824
   },
   "rows": [
     {
@@ -75,19 +75,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "sofa",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 sofa"
+            },
+            {
+              "category": "box",
+              "label": "boxes",
+              "quantity": 20,
+              "status": "included",
+              "evidence": "20 boxes"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 7467,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1988,
+          "usage": {
+            "inputTokens": 413,
+            "outputTokens": 57,
+            "totalTokens": 470
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-02",
@@ -125,19 +159,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "sofas",
+              "quantity": 2,
+              "status": "included",
+              "evidence": "2 sofas"
+            },
+            {
+              "category": "chair",
+              "label": "chairs",
+              "quantity": 6,
+              "status": "included",
+              "evidence": "6 chairs"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5346,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1546,
+          "usage": {
+            "inputTokens": 413,
+            "outputTokens": 57,
+            "totalTokens": 470
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-03",
@@ -174,19 +242,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "box",
+              "label": "boxes",
+              "quantity": 10,
+              "status": "included",
+              "evidence": "Move 10 boxes"
+            },
+            {
+              "category": "piano",
+              "label": "piano",
+              "quantity": null,
+              "status": "excluded",
+              "evidence": "No piano"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6875,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1814,
+          "usage": {
+            "inputTokens": 414,
+            "outputTokens": 59,
+            "totalTokens": 473
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-04",
@@ -226,19 +328,54 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "dishwasher",
+              "label": "dishwasher",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 dishwasher"
+            },
+            {
+              "category": "armchair",
+              "label": "armchair",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 armchair"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "heavy_item_access_check"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6774,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1482,
+          "usage": {
+            "inputTokens": 414,
+            "outputTokens": 60,
+            "totalTokens": 474
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-05",
@@ -275,19 +412,60 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "chair",
+              "label": "chairs",
+              "quantity": null,
+              "status": "included",
+              "evidence": "Some chairs"
+            },
+            {
+              "category": "piano",
+              "label": "piano",
+              "quantity": 1,
+              "status": "uncertain",
+              "evidence": "perhaps the piano, not decided"
+            }
+          ],
+          "uncertainties": [
+            "Quantity of chairs is unspecified.",
+            "Decision about piano is undecided."
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "quantity_unknown",
+          "item_uncertain",
+          "specialist_item",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5603,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 2051,
+          "usage": {
+            "inputTokens": 416,
+            "outputTokens": 76,
+            "totalTokens": 492
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-06",
@@ -319,19 +497,42 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [],
+          "uncertainties": [
+            "No items or belongings mentioned in the text to create a moving inventory."
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "no_confirmed_inventory",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5397,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1116,
+          "usage": {
+            "inputTokens": 417,
+            "outputTokens": 25,
+            "totalTokens": 442
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 0,
+        "quantityTotal": 0,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-01",
@@ -369,19 +570,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "sohva",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 sohva"
+            },
+            {
+              "category": "box",
+              "label": "laatikkoa",
+              "quantity": 20,
+              "status": "included",
+              "evidence": "20 laatikkoa"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4617,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1703,
+          "usage": {
+            "inputTokens": 416,
+            "outputTokens": 63,
+            "totalTokens": 479
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-02",
@@ -419,19 +654,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "sohvaa",
+              "quantity": 2,
+              "status": "included",
+              "evidence": "2 sohvaa"
+            },
+            {
+              "category": "chair",
+              "label": "tuolia",
+              "quantity": 6,
+              "status": "included",
+              "evidence": "6 tuolia"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6405,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1343,
+          "usage": {
+            "inputTokens": 415,
+            "outputTokens": 61,
+            "totalTokens": 476
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-03",
@@ -468,19 +737,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "piano",
+              "label": "Pianoa",
+              "quantity": null,
+              "status": "excluded",
+              "evidence": "Pianoa ei muuteta."
+            },
+            {
+              "category": "box",
+              "label": "laatikkoa",
+              "quantity": 10,
+              "status": "included",
+              "evidence": "Vain 10 laatikkoa."
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6396,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1735,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 71,
+            "totalTokens": 492
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-04",
@@ -520,19 +823,54 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "dishwasher",
+              "label": "astianpesukone",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 astianpesukone"
+            },
+            {
+              "category": "armchair",
+              "label": "nojatuoli",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 nojatuoli"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "heavy_item_access_check"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6307,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1524,
+          "usage": {
+            "inputTokens": 419,
+            "outputTokens": 68,
+            "totalTokens": 487
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-05",
@@ -569,19 +907,59 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "chair",
+              "label": "tuoli",
+              "quantity": null,
+              "status": "included",
+              "evidence": "Muutama tuoli"
+            },
+            {
+              "category": "piano",
+              "label": "piano",
+              "quantity": 1,
+              "status": "uncertain",
+              "evidence": "ehkä piano"
+            }
+          ],
+          "uncertainties": [
+            "ehkä piano, ei vielä päätetty"
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "quantity_unknown",
+          "item_uncertain",
+          "specialist_item",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4985,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 2438,
+          "usage": {
+            "inputTokens": 420,
+            "outputTokens": 72,
+            "totalTokens": 492
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-06",
@@ -613,19 +991,42 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [],
+          "uncertainties": [
+            "Ei mainintaa tavaroista tai irtaimistosta tekstissä."
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "no_confirmed_inventory",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6330,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1484,
+          "usage": {
+            "inputTokens": 417,
+            "outputTokens": 26,
+            "totalTokens": 443
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 0,
+        "quantityTotal": 0,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-01",
@@ -663,19 +1064,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "диван",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 диван"
+            },
+            {
+              "category": "box",
+              "label": "коробок",
+              "quantity": 20,
+              "status": "included",
+              "evidence": "20 коробок"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4770,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1711,
+          "usage": {
+            "inputTokens": 415,
+            "outputTokens": 61,
+            "totalTokens": 476
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-02",
@@ -713,19 +1148,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "дивана",
+              "quantity": 2,
+              "status": "included",
+              "evidence": "2 дивана"
+            },
+            {
+              "category": "chair",
+              "label": "стульев",
+              "quantity": 6,
+              "status": "included",
+              "evidence": "6 стульев"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5247,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1355,
+          "usage": {
+            "inputTokens": 416,
+            "outputTokens": 62,
+            "totalTokens": 478
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-03",
@@ -762,19 +1231,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "piano",
+              "label": "пианино",
+              "quantity": null,
+              "status": "excluded",
+              "evidence": "Пианино не перевозим"
+            },
+            {
+              "category": "box",
+              "label": "коробок",
+              "quantity": 10,
+              "status": "included",
+              "evidence": "Только 10 коробок"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5743,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1758,
+          "usage": {
+            "inputTokens": 420,
+            "outputTokens": 69,
+            "totalTokens": 489
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-04",
@@ -812,19 +1315,54 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "dishwasher",
+              "label": "посудомоечная машина",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 посудомоечная машина"
+            },
+            {
+              "category": "armchair",
+              "label": "кресло",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 кресло"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "heavy_item_access_check"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4808,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1661,
+          "usage": {
+            "inputTokens": 420,
+            "outputTokens": 72,
+            "totalTokens": 492
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-05",
@@ -861,19 +1399,59 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "chair",
+              "label": "стульев",
+              "quantity": null,
+              "status": "included",
+              "evidence": "Несколько стульев"
+            },
+            {
+              "category": "piano",
+              "label": "пианино",
+              "quantity": null,
+              "status": "uncertain",
+              "evidence": "возможно пианино, ещё не решили"
+            }
+          ],
+          "uncertainties": [
+            "не решили по пианино"
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "quantity_unknown",
+          "item_uncertain",
+          "specialist_item",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4625,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1624,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 78,
+            "totalTokens": 499
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-06",
@@ -905,19 +1483,42 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [],
+          "uncertainties": [
+            "В тексте нет информации о движимом имуществе для переезда"
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "no_confirmed_inventory",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6861,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1938,
+          "usage": {
+            "inputTokens": 420,
+            "outputTokens": 26,
+            "totalTokens": 446
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 0,
+        "quantityTotal": 0,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-01",
@@ -955,19 +1556,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "диван",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 диван"
+            },
+            {
+              "category": "box",
+              "label": "коробок",
+              "quantity": 20,
+              "status": "included",
+              "evidence": "20 коробок"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5422,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1067,
+          "usage": {
+            "inputTokens": 415,
+            "outputTokens": 61,
+            "totalTokens": 476
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-02",
@@ -1005,19 +1640,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "дивани",
+              "quantity": 2,
+              "status": "included",
+              "evidence": "2 дивани"
+            },
+            {
+              "category": "chair",
+              "label": "стільців",
+              "quantity": 6,
+              "status": "included",
+              "evidence": "6 стільців"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5692,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1219,
+          "usage": {
+            "inputTokens": 416,
+            "outputTokens": 62,
+            "totalTokens": 478
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-03",
@@ -1054,19 +1723,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "piano",
+              "label": "піаніно",
+              "quantity": null,
+              "status": "excluded",
+              "evidence": "Піаніно не перевозимо"
+            },
+            {
+              "category": "box",
+              "label": "коробок",
+              "quantity": 10,
+              "status": "included",
+              "evidence": "Лише 10 коробок"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4866,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1138,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 69,
+            "totalTokens": 490
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-04",
@@ -1103,19 +1806,54 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "dishwasher",
+              "label": "посудомийна машина",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 посудомийна машина"
+            },
+            {
+              "category": "armchair",
+              "label": "крісло",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 крісло"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "heavy_item_access_check"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5544,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1339,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 73,
+            "totalTokens": 494
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-05",
@@ -1152,19 +1890,59 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "chair",
+              "label": "стільців",
+              "quantity": null,
+              "status": "included",
+              "evidence": "Кілька стільців"
+            },
+            {
+              "category": "piano",
+              "label": "піаніно",
+              "quantity": 1,
+              "status": "uncertain",
+              "evidence": "можливо піаніно, ще не вирішили"
+            }
+          ],
+          "uncertainties": [
+            "піаніно"
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "quantity_unknown",
+          "item_uncertain",
+          "specialist_item",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5556,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 3016,
+          "usage": {
+            "inputTokens": 425,
+            "outputTokens": 78,
+            "totalTokens": 503
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-06",
@@ -1196,19 +1974,42 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [],
+          "uncertainties": [
+            "В тексті не зазначено конкретні речі для перевезення."
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "no_confirmed_inventory",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6104,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1219,
+          "usage": {
+            "inputTokens": 425,
+            "outputTokens": 26,
+            "totalTokens": 451
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 0,
+        "quantityTotal": 0,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-07",
@@ -1245,19 +2046,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "Three sofas",
+              "quantity": 3,
+              "status": "included",
+              "evidence": "Three sofas"
+            },
+            {
+              "category": "box",
+              "label": "twelve boxes",
+              "quantity": 12,
+              "status": "included",
+              "evidence": "twelve boxes"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5693,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1065,
+          "usage": {
+            "inputTokens": 412,
+            "outputTokens": 60,
+            "totalTokens": 472
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-08",
@@ -1294,19 +2129,46 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "box",
+              "label": "boxes",
+              "quantity": 2,
+              "status": "included",
+              "evidence": "2 boxes"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4722,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 3217,
+          "usage": {
+            "inputTokens": 422,
+            "outputTokens": 33,
+            "totalTokens": 455
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-07",
@@ -1344,19 +2206,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "sofa",
+              "label": "дивана",
+              "quantity": 3,
+              "status": "included",
+              "evidence": "Не 2, а 3 дивана"
+            },
+            {
+              "category": "box",
+              "label": "коробки",
+              "quantity": 4,
+              "status": "included",
+              "evidence": "4 коробки"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 4965,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1285,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 67,
+            "totalTokens": 488
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 2,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 2,
+        "quantityTotal": 2,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-07",
@@ -1393,19 +2289,53 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "bed",
+              "label": "Sänky",
+              "quantity": null,
+              "status": "excluded",
+              "evidence": "Sänky jää asuntoon"
+            },
+            {
+              "category": "box",
+              "label": "laatikkoa",
+              "quantity": 8,
+              "status": "included",
+              "evidence": "muutetaan 8 laatikkoa"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5304,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1883,
+          "usage": {
+            "inputTokens": 421,
+            "outputTokens": 69,
+            "totalTokens": 490
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "uk-07",
@@ -1439,19 +2369,52 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "wardrobe",
+              "label": "шафи",
+              "quantity": null,
+              "status": "uncertain",
+              "evidence": "2-3 шафи, точну кількість уточню."
+            }
+          ],
+          "uncertainties": [
+            "точну кількість уточню"
+          ]
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "no_confirmed_inventory",
+          "quantity_unknown",
+          "item_uncertain",
+          "clarification_required"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 6662,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1343,
+          "usage": {
+            "inputTokens": 423,
+            "outputTokens": 54,
+            "totalTokens": 477
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": false,
+        "truePositive": 0,
+        "falsePositive": 0,
+        "falseNegative": 1,
+        "quantityCorrect": 0,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "en-09",
@@ -1485,19 +2448,47 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "other",
+              "label": "telescope",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 telescope."
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "uncatalogued_item"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5383,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 1055,
+          "usage": {
+            "inputTokens": 409,
+            "outputTokens": 35,
+            "totalTokens": 444
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "ru-08",
@@ -1533,19 +2524,47 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "safe",
+              "label": "сейф",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 сейф"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "specialist_item"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5126,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 947,
+          "usage": {
+            "inputTokens": 410,
+            "outputTokens": 36,
+            "totalTokens": 446
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     },
     {
       "id": "fi-08",
@@ -1581,19 +2600,47 @@
         "heavyMiss": false
       },
       "model": {
-        "ok": false,
-        "engine": "unavailable",
-        "reason": "rate_limited",
+        "ok": true,
+        "engine": "openai",
+        "inventory": {
+          "items": [
+            {
+              "category": "washing_machine",
+              "label": "pesukone",
+              "quantity": 1,
+              "status": "included",
+              "evidence": "1 pesukone"
+            }
+          ],
+          "uncertainties": []
+        },
+        "reviewReasons": [
+          "human_inventory_confirmation",
+          "heavy_item_access_check"
+        ],
         "trace": {
           "promptVersion": "inventory-v1-2026-09-10",
           "requestedModel": "gpt-4.1-mini-2025-04-14",
-          "returnedModel": null,
-          "latencyMs": 5231,
-          "usage": null,
-          "providerStatus": 429
+          "returnedModel": "gpt-4.1-mini-2025-04-14",
+          "latencyMs": 911,
+          "usage": {
+            "inputTokens": 411,
+            "outputTokens": 38,
+            "totalTokens": 449
+          },
+          "providerStatus": 200
         }
       },
-      "modelScore": null
+      "modelScore": {
+        "exact": true,
+        "truePositive": 1,
+        "falsePositive": 0,
+        "falseNegative": 0,
+        "quantityCorrect": 1,
+        "quantityTotal": 1,
+        "heavyCorrect": true,
+        "heavyMiss": false
+      }
     }
   ]
 }
