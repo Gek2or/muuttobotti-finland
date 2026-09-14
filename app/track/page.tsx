@@ -20,6 +20,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return { title: t.title, description: t.description, robots: { index: false, follow: false } };
 }
 
-export default function TrackingPage() {
-  return <TrackingClient />;
+export default async function TrackingPage({ searchParams }: { searchParams: Promise<{ lang?: string | string[] }> }) {
+  const query = await searchParams;
+  return <TrackingClient initialLocale={locale(query.lang)} />;
 }

@@ -119,7 +119,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   };
 
   return (
-    <>
+    <div className="home-locale-root" lang={locale === "uk" ? "uk" : locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <MuuttobottiArtV3 initialLocale={locale} />
       <BlogNavigationEnhancer />
@@ -134,6 +134,6 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       <VisualMotionEnhancer />
       <HeroUXV6 />
       <CalculatorBridgeV6 />
-    </>
+    </div>
   );
 }

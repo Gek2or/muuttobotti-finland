@@ -50,8 +50,8 @@ function homeHref(locale: Locale) {
   return locale === "fi" ? "/" : `/?lang=${locale}`;
 }
 
-export default function TrackingClient() {
-  const [locale, setLocale] = useState<Locale>("fi");
+export default function TrackingClient({ initialLocale = "fi" }: { initialLocale?: Locale }) {
+  const [locale, setLocale] = useState<Locale>(initialLocale);
   const [id, setId] = useState("");
   const [key, setKey] = useState("");
   const [booking, setBooking] = useState<Booking | null>(null);
@@ -76,9 +76,9 @@ export default function TrackingClient() {
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    const initialLocale = normalizeLocale(query.get("lang"));
-    setLocale(initialLocale);
-    document.documentElement.lang = initialLocale;
+    const requestedLocale = normalizeLocale(query.get("lang"));
+    if (requestedLocale !== initialLocale) setLocale(requestedLocale);
+    document.documentElement.lang = requestedLocale;
 
     const params = new URLSearchParams(window.location.hash.slice(1));
     const hashId = params.get("id") ?? "";
@@ -87,7 +87,7 @@ export default function TrackingClient() {
     return () => { if (timer) window.clearTimeout(timer); };
     // Private credentials are intentionally read once from the URL fragment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialLocale]);
 
   const chooseLocale = (next: Locale) => {
     setLocale(next);
@@ -121,7 +121,7 @@ export default function TrackingClient() {
   return <main className="tracking-page">
     <header className="tracking-header">
       <Link className="tracking-brand" href={homeHref(locale)} aria-label={t.back}><span><PackageCheck/></span>muutto<b>botti</b></Link>
-      <div className="tracking-languages" aria-label="Language">{(Object.keys(languages) as Locale[]).map(language => <button type="button" className={language === locale ? "active" : ""} onClick={() => chooseLocale(language)} key={language} aria-pressed={language === locale}>{languages[language]}</button>)}</div>
+      <div className="tracking-languages" aria-label={locale === "fi" ? "Kieli" : locale === "en" ? "Language" : locale === "uk" ? "Мова" : "Язык"}>{(Object.keys(languages) as Locale[]).map(language => <button type="button" className={language === locale ? "active" : ""} onClick={() => chooseLocale(language)} key={language} aria-pressed={language === locale}>{languages[language]}</button>)}</div>
       <Link className="tracking-back" href={homeHref(locale)}><ArrowLeft/>{t.back}</Link>
     </header>
 

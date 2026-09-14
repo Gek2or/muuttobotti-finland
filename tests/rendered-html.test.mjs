@@ -14,9 +14,9 @@ async function loadWorker() {
   return worker;
 }
 
-async function render(path = "/") {
+async function request(path = "/") {
   const worker = await loadWorker();
-  const response = await worker.fetch(
+  return worker.fetch(
     new Request(`http://localhost${path}`, {
       headers: { accept: "text/html" },
     }),
@@ -30,7 +30,10 @@ async function render(path = "/") {
       passThroughOnException() {},
     },
   );
+}
 
+async function render(path = "/") {
+  const response = await request(path);
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   return response.text();
@@ -58,6 +61,37 @@ test("server-renders the requested homepage locale", async () => {
   assert.match(ru, /Всё будет сделано\./);
   assert.match(ru, /Одна команда\. Все услуги\./);
   assert.doesNotMatch(ru, /Kaikki hoituu\./);
+});
+
+test("server-renders tracking in the requested locale", async () => {
+  const en = await render("/track?lang=en");
+  assert.match(en, /Track your booking\./);
+  assert.match(en, /Booking number/);
+  assert.doesNotMatch(en, /Seuraa varaustasi\./);
+
+  const uk = await render("/track?lang=uk");
+  assert.match(uk, /Відстежуйте бронювання\./);
+  assert.match(uk, /Номер бронювання/);
+  assert.doesNotMatch(uk, /Seuraa varaustasi\./);
+
+  const ru = await render("/track?lang=ru");
+  assert.match(ru, /Отслеживайте заказ\./);
+  assert.match(ru, /Номер бронирования/);
+  assert.doesNotMatch(ru, /Seuraa varaustasi\./);
+});
+
+test("server-renders localized blog and legal pages", async () => {
+  const blog = await render("/blog?lang=ru");
+  assert.match(blog, /Продуманный переезд начинается с хорошего плана\./);
+  assert.match(blog, /Рассчитать цену/);
+
+  const privacy = await render("/privacy?lang=en");
+  assert.match(privacy, /Privacy notice/);
+  assert.match(privacy, /How booking and technical data are handled/);
+
+  const terms = await render("/terms?lang=uk");
+  assert.match(terms, /Умови послуг і cookie/);
+  assert.match(terms, /Що варто знати перед замовленням/);
 });
 
 test("does not server-render legacy calculator controls", async () => {
