@@ -19,8 +19,12 @@ function home(locale: Locale, hash = "") {
   return `/${query(locale)}${hash}`;
 }
 
+function normalizeInternalPath(path: string) {
+  return path === "/moving-jarvenpää" ? "/moving-jarvenpaa" : path;
+}
+
 function localPage(path: string, locale: Locale) {
-  return `${path}${query(locale)}`;
+  return `${normalizeInternalPath(path)}${query(locale)}`;
 }
 
 function syncLinks() {
