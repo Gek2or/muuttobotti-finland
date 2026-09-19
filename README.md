@@ -1,6 +1,8 @@
 # Muuttobotti
 
-**[Open the live service](https://muuttobotti.fi/)** · [View the source code](https://github.com/Gek2or/muuttobotti-finland)
+**[Open the live service](https://muuttobotti.fi/)** · [Open the calculator](https://muuttobotti.fi/#calculator) · [View the source code](https://github.com/Gek2or/muuttobotti-finland)
+
+![Muuttobotti live service](https://muuttobotti.fi/muuttobotti-hero.png)
 
 A multilingual moving-service website for customers in Finland, built around the questions that actually affect a booking: what does it cost, what is included, when is help available, and what happens next?
 
