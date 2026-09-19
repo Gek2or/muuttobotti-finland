@@ -71,7 +71,7 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
   const url = localizedUrl(locale);
 
   return {
-    title: current.title,
+    title: { absolute: current.title },
     description: current.description,
     alternates: {
       canonical: url,
@@ -121,7 +121,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   return (
     <div className="home-locale-root" lang={locale === "uk" ? "uk" : locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <MuuttobottiArtV3 initialLocale={locale} />
+      <MuuttobottiArtV3
+        initialLocale={locale}
+        localeTitles={{ fi: seo.fi.title, en: seo.en.title, uk: seo.uk.title, ru: seo.ru.title }}
+      />
       <BlogNavigationEnhancer />
       <HomeBlogPreview />
       <FaqPortal />

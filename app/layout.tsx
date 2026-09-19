@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import DocumentLocaleSync from "./DocumentLocaleSync";
+import "../.vinext/fonts/geist-8ac0455e797f/style.css";
+import "../.vinext/fonts/geist-mono-00e989178794/style.css";
 import "./globals.css";
 import "./overrides.css";
 import "./seo-pages.css";
@@ -9,9 +10,6 @@ import "./art-v3.css";
 import "./ui-polish-v4.css";
 import "./ui-polish-v4-compat.css";
 import "./booking-fix.css";
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://muuttobotti.fi"),
@@ -106,7 +104,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="fi" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased">
         <DocumentLocaleSync />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         {children}

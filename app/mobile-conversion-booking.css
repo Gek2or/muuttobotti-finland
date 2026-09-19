@@ -1,6 +1,10 @@
 /* Compact four-action mobile conversion bar: call, WhatsApp, calculator, booking. */
 
 @media (max-width: 760px) {
+  .site-shell .cookie-banner {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
   .mobile-conversion-bar {
     display: flex !important;
     align-items: stretch;

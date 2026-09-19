@@ -194,7 +194,7 @@ const services = [
   { icon: Recycle, key: "junk", price: "49 €", fi: ["Kierrätys & poisvienti", "Nouto, lajittelu ja kuljetus kierrätysasemalle."], en: ["Junk removal", "Pickup, sorting and recycling-station transport."], uk: ["Вивіз речей", "Забір, сортування та доставка на переробку."], ru: ["Вывоз вещей", "Забор, сортировка и доставка на переработку."] },
 ] as const;
 
-export default function MuuttobottiArtV3({ initialLocale = "fi" }: { initialLocale?: Locale }) {
+export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }: { initialLocale?: Locale; localeTitles: Record<Locale, string> }) {
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [langOpen, setLangOpen] = useState(false);
@@ -207,7 +207,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi" }: { initialLoca
   const tracking = trackingCopy[locale];
 
   useEffect(() => { const saved = localStorage.getItem("muuttobotti-cookie"); if (saved) setCookie(true); }, []);
-  useEffect(() => { document.documentElement.lang = locale === "uk" ? "uk" : locale; }, [locale]);
+  useEffect(() => { document.documentElement.lang = locale === "uk" ? "uk" : locale; document.title = localeTitles[locale]; }, [locale, localeTitles]);
 
   const estimate = useMemo(() => {
     if (calcMode === "moving") { const workload = 1.4 + size / 28 + Math.max(0, floor - (elevator ? 2 : 0)) * .22 + (packing ? 1.5 : 0); const hours = Math.max(2, movers === 1 ? workload * 1.45 : workload); return {price: Math.round(hours * (movers === 1 ? 59 : 75) + distance * .65 + (afterClean ? size * 1.1 : 0)), hours: `${hours.toFixed(1)}–${(hours + .8).toFixed(1)} h`}; }

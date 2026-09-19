@@ -1,4 +1,6 @@
 /* Muuttobotti UI polish v4 — preserves brand, art direction and structure */
+:root{--font-geist-sans:"Geist";--font-geist-mono:"Geist Mono"}
+
 .site-shell{
   --ui-ink:#071b22;
   --ui-ink-soft:#12353c;

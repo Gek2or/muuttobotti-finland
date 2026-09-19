@@ -1,7 +1,6 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
-import { readFileSync } from "node:fs";
 import { sites } from "./build/sites-vite-plugin";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -10,9 +9,6 @@ const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
 const { d1, r2 } = hostingConfig;
 const isExternalCloudflareDeploy =
   process.env.CLOUDFLARE_EXTERNAL_DEPLOY === "1";
-const deploymentConfig = JSON.parse(readFileSync(new URL("./wrangler.jsonc", import.meta.url), "utf8"));
-const productionD1 = deploymentConfig.d1_databases?.find((binding: { binding: string }) => binding.binding === "DB");
-const externalD1DatabaseId = process.env.CLOUDFLARE_D1_DATABASE_ID || productionD1?.database_id;
 const externalR2BucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
@@ -21,15 +17,12 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
-  d1_databases: d1 && (!isExternalCloudflareDeploy || externalD1DatabaseId)
+  d1_databases: d1 && !isExternalCloudflareDeploy
     ? [
         {
           binding: d1,
-          database_name: isExternalCloudflareDeploy
-            ? "muuttobotti-db"
-            : "site-creator-d1",
-          database_id:
-            isExternalCloudflareDeploy ? externalD1DatabaseId : SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: "site-creator-d1",
+          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
         },
       ]
     : [],
