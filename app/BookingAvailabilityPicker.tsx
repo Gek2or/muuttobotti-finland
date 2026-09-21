@@ -80,11 +80,16 @@ export default function BookingAvailabilityPicker() {
     setTimeInput(time);
     setLocale(localeCode());
 
+    const previousMin = date.min;
+    const previousMax = date.max;
+    const from = todayLocal();
+    const to = addDays(from, 180);
+    date.min = from;
+    date.max = to;
+
     const languageObserver = new MutationObserver(() => setLocale(localeCode()));
     languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
 
-    const from = todayLocal();
-    const to = addDays(from, 180);
     void fetch(`/api/availability?from=${from}&to=${to}`, { cache: "no-store", headers: { Accept: "application/json" } })
       .then(response => response.ok ? response.json() : Promise.reject(new Error("availability")))
       .then((payload: AvailabilityPayload) => {
@@ -107,6 +112,8 @@ export default function BookingAvailabilityPicker() {
       time.removeAttribute("aria-hidden");
       date.removeAttribute("tabindex");
       time.removeAttribute("tabindex");
+      date.min = previousMin;
+      date.max = previousMax;
     };
   }, []);
 
