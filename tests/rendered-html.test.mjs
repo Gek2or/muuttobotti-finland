@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const productionTitle = /<title>[^<]*Muuttobotti[^<]*<\/title>/i;
@@ -93,6 +94,14 @@ test("server-renders localized homepage utility copy and links", async () => {
   assert.match(ru, /href=["']\/privacy\?lang=ru["']/i);
   assert.match(ru, /href=["']\/moving-jarvenpaa\?lang=ru["']/i);
   assert.doesNotMatch(ru, /Booking number immediately/);
+});
+
+test("calculator bridge targets the current calculator and direct-booking services", () => {
+  const bridge = readFileSync(new URL("../app/CalculatorBridgeV6.tsx", import.meta.url), "utf8");
+  assert.match(bridge, /\.bc8-card \.bc8-tabs button\[role='tab'\]/);
+  assert.doesNotMatch(bridge, /\.bc3-tabs/);
+  assert.match(bridge, /\["windows", "assembly", "junk"\]/);
+  assert.match(bridge, /document\.getElementById\("booking"\)/);
 });
 
 test("server-renders tracking in the requested locale", async () => {
