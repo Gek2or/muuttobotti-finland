@@ -63,6 +63,38 @@ test("server-renders the requested homepage locale", async () => {
   assert.doesNotMatch(ru, /Kaikki hoituu\./);
 });
 
+test("server-renders localized homepage utility copy and links", async () => {
+  const fi = await render("/");
+  assert.match(fi, /Varausnumero heti/);
+  assert.match(fi, /Aukioloajat/);
+  assert.match(fi, /Palvelut/);
+  assert.match(fi, /href=["']\/moving-jarvenpaa["']/i);
+  assert.doesNotMatch(fi, /Booking number immediately/);
+  assert.doesNotMatch(fi, />Services<\/strong>/);
+
+  const en = await render("/?lang=en");
+  assert.match(en, /Booking number immediately/);
+  assert.match(en, /Opening hours/);
+  assert.match(en, /href=["']\/track\?lang=en["']/i);
+  assert.match(en, /href=["']\/moving-jarvenpaa\?lang=en["']/i);
+
+  const uk = await render("/?lang=uk");
+  assert.match(uk, /Номер бронювання одразу/);
+  assert.match(uk, /Години роботи/);
+  assert.match(uk, /Конфіденційність/);
+  assert.match(uk, /href=["']\/track\?lang=uk["']/i);
+  assert.match(uk, /href=["']\/moving-jarvenpaa\?lang=uk["']/i);
+  assert.doesNotMatch(uk, /Booking number immediately/);
+
+  const ru = await render("/?lang=ru");
+  assert.match(ru, /Номер бронирования сразу/);
+  assert.match(ru, /Часы работы/);
+  assert.match(ru, /Конфиденциальность/);
+  assert.match(ru, /href=["']\/privacy\?lang=ru["']/i);
+  assert.match(ru, /href=["']\/moving-jarvenpaa\?lang=ru["']/i);
+  assert.doesNotMatch(ru, /Booking number immediately/);
+});
+
 test("server-renders tracking in the requested locale", async () => {
   const en = await render("/track?lang=en");
   assert.match(en, /Track your booking\./);
