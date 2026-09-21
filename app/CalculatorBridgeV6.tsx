@@ -2,6 +2,16 @@
 
 import { useEffect } from "react";
 
+const directBookingServices = ["windows", "assembly", "junk"] as const;
+
+function setBookingService(value: string) {
+  const select = document.querySelector<HTMLSelectElement>('.booking-form select[name="service"]');
+  if (!select) return;
+  Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set?.call(select, value);
+  select.dispatchEvent(new Event("input", { bubbles: true }));
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
 export default function CalculatorBridgeV6(){
   useEffect(()=>{
     const select=(index:number)=>{
@@ -19,6 +29,13 @@ export default function CalculatorBridgeV6(){
         if(index===0)select(0);
         if(index===1)select(2);
         if(index===2)select(1);
+        if(index>=3&&index<=5){
+          event.preventDefault();
+          event.stopPropagation();
+          setBookingService(directBookingServices[index-3]);
+          document.getElementById("booking")?.scrollIntoView({behavior:"smooth",block:"start"});
+          return;
+        }
       }
 
       const offer=target?.closest(".hero-v6-price-grid button");
