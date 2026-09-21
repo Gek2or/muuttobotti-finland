@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export default function CalculatorBridgeV6(){
   useEffect(()=>{
     const select=(index:number)=>{
-      const tabs=document.querySelectorAll<HTMLButtonElement>(".bc3-tabs button");
+      const tabs=document.querySelectorAll<HTMLButtonElement>(".bc8-card .bc8-tabs button[role='tab']");
       tabs[index]?.click();
     };
 
