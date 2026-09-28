@@ -6,7 +6,7 @@ function dateKeyFromParts(year: number, month: number, day: number) {
 }
 
 function validDateKey(value: string) {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   return date.getUTCFullYear() === year
@@ -51,7 +51,7 @@ function openingMinutes(value: string) {
 }
 
 function timeMinutes(value: string) {
-  if (!/^\\d{2}:\\d{2}$/.test(value)) return null;
+  if (!/^\d{2}:\d{2}$/.test(value)) return null;
   const [hour, minute] = value.split(":").map(Number);
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
   return hour * 60 + minute;
