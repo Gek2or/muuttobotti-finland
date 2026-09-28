@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TrackingClient from "./TrackingClient";
+import TrackingDateGuard from "./TrackingDateGuard";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 const copy = {
@@ -22,5 +23,10 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function TrackingPage({ searchParams }: { searchParams: Promise<{ lang?: string | string[] }> }) {
   const query = await searchParams;
-  return <TrackingClient initialLocale={locale(query.lang)} />;
+  return (
+    <>
+      <TrackingClient initialLocale={locale(query.lang)} />
+      <TrackingDateGuard />
+    </>
+  );
 }
