@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, LockKeyhole } from "lucide-react";
+import { bookingStartSlots, bookingWindowBounds, isBookableStart } from "./booking-window";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type PartialBlock = { date: string; start: string; end: string };
@@ -31,31 +32,10 @@ function isoDate(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function todayLocal() {
-  const now = new Date();
-  return isoDate(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function addDays(value: string, days: number) {
-  const [y, m, d] = value.split("-").map(Number);
-  const date = new Date(y, m - 1, d + days);
-  return isoDate(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
 function minutes(value: string) {
   const [h, m] = value.slice(0, 5).split(":").map(Number);
   return h * 60 + m;
 }
-
-function makeSlots() {
-  const values: string[] = [];
-  for (let minute = 8 * 60; minute <= 22 * 60; minute += 30) {
-    values.push(`${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`);
-  }
-  return values;
-}
-
-const slots = makeSlots();
 
 export default function BookingAvailabilityPicker() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
@@ -65,8 +45,11 @@ export default function BookingAvailabilityPicker() {
   const [data, setData] = useState<AvailabilityPayload | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const now = new Date();
-  const [viewMonth, setViewMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [viewMonth, setViewMonth] = useState(() => {
+    const { today } = bookingWindowBounds();
+    const [year, month] = today.split("-").map(Number);
+    return new Date(year, month - 1, 1);
+  });
 
   useEffect(() => {
     const form = document.querySelector<HTMLFormElement>(".booking-form");
@@ -82,8 +65,7 @@ export default function BookingAvailabilityPicker() {
 
     const previousMin = date.min;
     const previousMax = date.max;
-    const from = todayLocal();
-    const to = addDays(from, 180);
+    const { today: from, maxDate: to } = bookingWindowBounds();
     date.min = from;
     date.max = to;
 
@@ -140,8 +122,9 @@ export default function BookingAvailabilityPicker() {
     return (blocksByDate.get(date) ?? []).some(block => minute >= minutes(block.start) && minute < minutes(block.end));
   };
 
-  const freeSlotsFor = (date: string) => slots.filter(time => !isTimeBlocked(date, time));
-  const dayDisabled = (date: string) => date < todayLocal() || fullDays.has(date) || freeSlotsFor(date).length === 0;
+  const { today, maxDate } = bookingWindowBounds();
+  const freeSlotsFor = (date: string) => bookingStartSlots(date).filter(time => isBookableStart(date, time) && !isTimeBlocked(date, time));
+  const dayDisabled = (date: string) => date < today || date > maxDate || fullDays.has(date) || freeSlotsFor(date).length === 0;
   const dayPartial = (date: string) => !dayDisabled(date) && ((blocksByDate.get(date)?.length ?? 0) > 0 || (bookedByDate.get(date)?.size ?? 0) > 0);
 
   const monthCells = useMemo(() => {
@@ -173,14 +156,16 @@ export default function BookingAvailabilityPicker() {
   };
 
   const chooseTime = (time: string) => {
-    if (!selectedDate || isTimeBlocked(selectedDate, time)) return;
+    if (!selectedDate || !isBookableStart(selectedDate, time) || isTimeBlocked(selectedDate, time)) return;
     setSelectedTime(time);
     timeInput.value = time;
     timeInput.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
-  const canPrevious = viewMonth.getFullYear() > now.getFullYear() || viewMonth.getMonth() > now.getMonth();
-  const maxMonth = new Date(now.getFullYear(), now.getMonth() + 5, 1);
+  const [todayYear, todayMonth] = today.split("-").map(Number);
+  const canPrevious = viewMonth.getFullYear() > todayYear || viewMonth.getMonth() > todayMonth - 1;
+  const [maxYear, maxMonthNumber] = maxDate.split("-").map(Number);
+  const maxMonth = new Date(maxYear, maxMonthNumber - 1, 1);
   const canNext = viewMonth < maxMonth;
 
   const dateLabel = (date:string) => new Intl.DateTimeFormat(intlLocale, { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(new Date(`${date}T12:00:00`));
@@ -212,8 +197,8 @@ export default function BookingAvailabilityPicker() {
       <div className={`availability-times ${selectedDate ? "active" : ""}`}>
         <div className="availability-time-head"><Clock3 /><strong>{t.time}</strong>{selectedDate && <span>{new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short" }).format(new Date(`${selectedDate}T12:00:00`))}</span>}</div>
         {!selectedDate ? <p>{t.date}</p> : freeTimes.length === 0 ? <p><LockKeyhole />{t.noTimes}</p> : <div className="availability-time-grid">
-          {slots.map(time => {
-            const blocked = isTimeBlocked(selectedDate, time);
+          {bookingStartSlots(selectedDate).map(time => {
+            const blocked = !isBookableStart(selectedDate, time) || isTimeBlocked(selectedDate, time);
             return <button type="button" key={time} disabled={blocked} className={selectedTime === time ? "selected" : ""} onClick={() => chooseTime(time)} aria-pressed={selectedTime === time}>{time}</button>;
           })}
         </div>}
