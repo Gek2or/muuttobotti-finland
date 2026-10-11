@@ -1,142 +1,142 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Gift, Package, Timer, Trophy, Truck } from "lucide-react";
+import { ArrowRight, Check, Eye, Gift, Move, RotateCcw, Timer, Trophy } from "lucide-react";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type Phase = "idle" | "playing" | "finished";
-type BoxItem = { id: number; top: number; tone: number; size: number };
 type Promo = { code: string; discount: 5 | 10 | 15; expiresAt: number };
 
-export const PROMO_STORAGE_KEY = "muuttobotti-promo-v1";
+export const PROMO_STORAGE_KEY = "muuttobotti-promo-puzzle-v2";
+
+const solved = Array.from({ length: 9 }, (_, index) => index);
 
 const copy = {
   fi: {
-    kicker: "MUUTTOBOTTI-PELI", title: "Pakkaa fiksusti. Voita alennus.",
-    lead: "Nappaa muuttolaatikot kyytiin 15 sekunnissa. Jokainen pelaaja saa vähintään 5 % alennuksen.",
-    start: "Aloita peli", instruction: "Napauta laatikoita ennen kuin ne ehtivät ohi", loaded: "Kyydissä", seconds: "aikaa",
-    ready: "Pakettiauto on valmis", readyText: "Aloita, kun olet valmis. Peli toimii hiirellä ja puhelimella.",
-    won: "Sinä voitit", promo: "PROMOKOODI", use: "Käytä varauksessa", copied: "Kopioitu",
+    kicker: "MUUTTOBOTTI-PULMA", title: "Kokoa muutto. Avaa etusi.",
+    lead: "Kokoa kuva napauttamalla kahta palaa. Ei raahaamista – pulma toimii sujuvasti myös puhelimella.",
+    start: "Aloita pulma", how: "Napauta kahta palaa vaihtaaksesi niiden paikat", moves: "Siirrot", time: "Aika",
+    preview: "Näytä kuva", previewing: "Muista kuva", ready: "Yhdeksän palaa. Yksi valmis muutto.",
+    readyText: "Nopeus ja tarkkuus ratkaisevat alennuksesi.", won: "Pulma valmis", promo: "PROMOKOODI",
+    use: "Käytä varauksessa", copied: "Kopioitu", again: "Uusi pulma",
     valid: "Voimassa 30 päivää · yksi käyttö · ei voi yhdistää muihin tarjouksiin",
-    levels: ["Osallistu: 5 %", "5 laatikkoa: 10 %", "10 laatikkoa: 15 %"],
+    levels: ["Valmis: 5 %", "Alle 90 s: 10 %", "Alle 45 s + 12 siirtoa: 15 %"], tile: "Pala",
   },
   en: {
-    kicker: "MUUTTOBOTTI GAME", title: "Pack smart. Win a discount.",
-    lead: "Load the moving boxes in 15 seconds. Every player wins at least 5% off.",
-    start: "Start game", instruction: "Tap the boxes before they pass", loaded: "Loaded", seconds: "left",
-    ready: "The van is ready", readyText: "Start when you are ready. Play with a mouse or on your phone.",
-    won: "You won", promo: "PROMO CODE", use: "Use in booking", copied: "Copied",
+    kicker: "MUUTTOBOTTI PUZZLE", title: "Build the move. Unlock your deal.",
+    lead: "Complete the image by tapping two pieces. No dragging – it works smoothly on every phone.",
+    start: "Start puzzle", how: "Tap two pieces to swap their places", moves: "Moves", time: "Time",
+    preview: "Show picture", previewing: "Remember the picture", ready: "Nine pieces. One finished move.",
+    readyText: "Speed and accuracy decide your discount.", won: "Puzzle complete", promo: "PROMO CODE",
+    use: "Use in booking", copied: "Copied", again: "New puzzle",
     valid: "Valid for 30 days · one use · cannot be combined with other offers",
-    levels: ["Play: 5%", "5 boxes: 10%", "10 boxes: 15%"],
+    levels: ["Complete: 5%", "Under 90 sec: 10%", "Under 45 sec + 12 moves: 15%"], tile: "Piece",
   },
   uk: {
-    kicker: "ГРА MUUTTOBOTTI", title: "Пакуйте вправно. Вигравайте знижку.",
-    lead: "Завантажте коробки за 15 секунд. Кожен учасник отримує щонайменше 5% знижки.",
-    start: "Почати гру", instruction: "Натискайте на коробки, поки вони не проїхали", loaded: "Завантажено", seconds: "секунд",
-    ready: "Фургон готовий", readyText: "Починайте, коли будете готові. Гра працює мишкою та на телефоні.",
-    won: "Ви виграли", promo: "ПРОМОКОД", use: "Використати в заявці", copied: "Скопійовано",
+    kicker: "ПАЗЛ MUUTTOBOTTI", title: "Складіть переїзд. Отримайте знижку.",
+    lead: "Складіть зображення, натискаючи дві деталі. Без перетягування — зручно на будь-якому телефоні.",
+    start: "Почати пазл", how: "Натисніть дві деталі, щоб поміняти їх місцями", moves: "Ходи", time: "Час",
+    preview: "Показати картинку", previewing: "Запам’ятайте картинку", ready: "Дев’ять деталей. Один готовий переїзд.",
+    readyText: "Швидкість і точність визначать вашу знижку.", won: "Пазл складено", promo: "ПРОМОКОД",
+    use: "Використати в заявці", copied: "Скопійовано", again: "Новий пазл",
     valid: "Діє 30 днів · одне використання · не поєднується з іншими пропозиціями",
-    levels: ["Участь: 5%", "5 коробок: 10%", "10 коробок: 15%"],
+    levels: ["Готово: 5%", "До 90 с: 10%", "До 45 с + 12 ходів: 15%"], tile: "Деталь",
   },
   ru: {
-    kicker: "ИГРА MUUTTOBOTTI", title: "Грузите ловко. Получайте скидку.",
-    lead: "Загрузите коробки за 15 секунд. Каждый участник получает минимум 5% скидки.",
-    start: "Начать игру", instruction: "Нажимайте на коробки, пока они не проехали", loaded: "Загружено", seconds: "секунд",
-    ready: "Фургон готов", readyText: "Начинайте, когда будете готовы. Игра работает мышкой и на телефоне.",
-    won: "Вы выиграли", promo: "ПРОМОКОД", use: "Использовать в заявке", copied: "Скопировано",
+    kicker: "ПАЗЛ MUUTTOBOTTI", title: "Соберите переезд. Откройте скидку.",
+    lead: "Соберите изображение, нажимая на две детали. Без перетаскивания — удобно на любом телефоне.",
+    start: "Начать пазл", how: "Нажмите две детали, чтобы поменять их местами", moves: "Ходы", time: "Время",
+    preview: "Показать картинку", previewing: "Запомните картинку", ready: "Девять деталей. Один готовый переезд.",
+    readyText: "Скорость и точность определят вашу скидку.", won: "Пазл собран", promo: "ПРОМОКОД",
+    use: "Использовать в заявке", copied: "Скопировано", again: "Новый пазл",
     valid: "Действует 30 дней · одно использование · не суммируется с другими предложениями",
-    levels: ["Участие: 5%", "5 коробок: 10%", "10 коробок: 15%"],
+    levels: ["Готово: 5%", "До 90 сек: 10%", "До 45 сек + 12 ходов: 15%"], tile: "Деталь",
   },
 } as const;
 
 function readPromo(): Promo | null {
   try {
     const value = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as Promo | null;
-    if (!value || value.expiresAt <= Date.now()) return null;
-    return value;
-  } catch {
-    return null;
-  }
+    return value && value.expiresAt > Date.now() ? value : null;
+  } catch { return null; }
 }
 
 function makeCode(discount: 5 | 10 | 15) {
   const random = Array.from(crypto.getRandomValues(new Uint8Array(3)))
-    .map(value => (value % 36).toString(36).toUpperCase())
-    .join("");
-  return `BOTTI${discount}-${random}`;
+    .map(value => (value % 36).toString(36).toUpperCase()).join("");
+  return `PUZZLE${discount}-${random}`;
+}
+
+function shuffledTiles() {
+  let tiles = [...solved];
+  do {
+    tiles = [...solved];
+    for (let i = tiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+  } while (tiles.filter((piece, index) => piece !== index).length < 7);
+  return tiles;
 }
 
 export default function PromoGame({ locale }: { locale: Locale }) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const [timeLeft, setTimeLeft] = useState(15);
-  const [score, setScore] = useState(0);
-  const [boxes, setBoxes] = useState<BoxItem[]>([]);
+  const [tiles, setTiles] = useState(solved);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [moves, setMoves] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [preview, setPreview] = useState(false);
   const [promo, setPromo] = useState<Promo | null>(null);
   const [copied, setCopied] = useState(false);
-  const scoreRef = useRef(0);
-  const nextId = useRef(1);
+  const startedAt = useRef(0);
   const t = copy[locale];
 
   useEffect(() => {
     const existing = readPromo();
-    if (existing) {
-      setPromo(existing);
-      setPhase("finished");
-    }
+    if (existing) { setPromo(existing); setPhase("finished"); }
   }, []);
 
   useEffect(() => {
     if (phase !== "playing") return;
-    const startedAt = Date.now();
-    const clock = window.setInterval(() => {
-      const remaining = Math.max(0, 15 - Math.floor((Date.now() - startedAt) / 1000));
-      setTimeLeft(remaining);
-    }, 200);
-    const spawn = window.setInterval(() => {
-      const item: BoxItem = {
-        id: nextId.current++,
-        top: 12 + Math.random() * 62,
-        tone: Math.floor(Math.random() * 3),
-        size: 46 + Math.floor(Math.random() * 12),
-      };
-      setBoxes(current => [...current.slice(-7), item]);
-      window.setTimeout(() => setBoxes(current => current.filter(box => box.id !== item.id)), 2500);
-    }, 650);
-    const finish = window.setTimeout(() => {
-      const discount: 5 | 10 | 15 = scoreRef.current >= 10 ? 15 : scoreRef.current >= 5 ? 10 : 5;
-      const result: Promo = { code: makeCode(discount), discount, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 };
-      localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(result));
-      setPromo(result);
-      setBoxes([]);
-      setTimeLeft(0);
-      setPhase("finished");
-    }, 15000);
-    return () => {
-      window.clearInterval(clock);
-      window.clearInterval(spawn);
-      window.clearTimeout(finish);
-    };
+    const timer = window.setInterval(() => setSeconds(Math.floor((Date.now() - startedAt.current) / 1000)), 250);
+    return () => window.clearInterval(timer);
   }, [phase]);
 
   const start = () => {
-    scoreRef.current = 0;
-    setScore(0);
-    setBoxes([]);
-    setTimeLeft(15);
-    setCopied(false);
+    setTiles(shuffledTiles());
+    setSelected(null); setMoves(0); setSeconds(0); setPreview(false); setCopied(false);
+    startedAt.current = Date.now();
     setPhase("playing");
   };
 
-  const catchBox = (id: number) => {
-    if (phase !== "playing") return;
-    setBoxes(current => current.filter(box => box.id !== id));
-    scoreRef.current += 1;
-    setScore(scoreRef.current);
+  const finish = (nextMoves: number) => {
+    const elapsed = Math.max(1, Math.floor((Date.now() - startedAt.current) / 1000));
+    const discount: 5 | 10 | 15 = elapsed <= 45 && nextMoves <= 12 ? 15 : elapsed <= 90 ? 10 : 5;
+    const result: Promo = { code: makeCode(discount), discount, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 };
+    localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(result));
+    setSeconds(elapsed); setPromo(result); setPhase("finished");
+  };
+
+  const chooseTile = (position: number) => {
+    if (phase !== "playing" || preview) return;
+    if (selected === null) { setSelected(position); return; }
+    if (selected === position) { setSelected(null); return; }
+    const next = [...tiles];
+    [next[selected], next[position]] = [next[position], next[selected]];
+    const nextMoves = moves + 1;
+    setTiles(next); setMoves(nextMoves); setSelected(null);
+    if (next.every((piece, index) => piece === index)) finish(nextMoves);
+  };
+
+  const showPreview = () => {
+    if (preview || phase !== "playing") return;
+    setSelected(null); setPreview(true);
+    window.setTimeout(() => setPreview(false), 2200);
   };
 
   const usePromo = async () => {
     if (!promo) return;
-    try { await navigator.clipboard.writeText(promo.code); } catch { /* booking still receives it automatically */ }
+    try { await navigator.clipboard.writeText(promo.code); } catch { /* added to booking automatically */ }
     setCopied(true);
     document.getElementById("booking")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -148,44 +148,46 @@ export default function PromoGame({ locale }: { locale: Locale }) {
         <h2 id="promo-game-title">{t.title}</h2>
         <p>{t.lead}</p>
         <div className="promo-levels">
-          {t.levels.map((level, index) => <span key={level} className={promo?.discount === [5, 10, 15][index] ? "active" : ""}><Check />{level}</span>)}
+          {t.levels.map((level, index) => <span key={level} className={promo?.discount === ([5, 10, 15] as const)[index] ? "active" : ""}><Check />{level}</span>)}
         </div>
         <small>{t.valid}</small>
       </div>
 
-      <div className={`promo-game-card is-${phase}`}>
-        <div className="promo-game-top">
-          <span><Package />{t.loaded} <strong>{score}</strong></span>
-          <span><Timer /><strong>{timeLeft}</strong> {t.seconds}</span>
+      <div className={`promo-puzzle-card is-${phase}`}>
+        <div className="promo-puzzle-top">
+          <span><Move /><small>{t.moves}</small><strong>{moves}</strong></span>
+          <span><Timer /><small>{t.time}</small><strong>{seconds}s</strong></span>
+          <button type="button" onClick={showPreview} disabled={phase !== "playing" || preview}><Eye />{preview ? t.previewing : t.preview}</button>
         </div>
-        <div className="promo-playfield" aria-live="polite">
-          <div className="promo-road-lines" aria-hidden="true" />
-          <div className="promo-van" aria-hidden="true"><Truck /><span>MB</span></div>
 
-          {phase === "playing" && boxes.map(box => (
-            <button
-              type="button"
-              className={`promo-box tone-${box.tone}`}
-              style={{ top: `${box.top}%`, width: box.size, height: box.size }}
-              key={box.id}
-              onClick={() => catchBox(box.id)}
-              aria-label={t.instruction}
-            ><Package /></button>
-          ))}
+        <div className="promo-puzzle-stage" aria-live="polite">
+          <div className={`promo-puzzle-grid ${preview ? "is-preview" : ""}`}>
+            {tiles.map((piece, position) => {
+              const row = Math.floor(piece / 3);
+              const column = piece % 3;
+              return <button
+                type="button" key={`${position}-${piece}`} className={`promo-puzzle-tile ${selected === position ? "is-selected" : ""}`}
+                style={{ backgroundPosition: `${column * 50}% ${row * 50}%` }}
+                onClick={() => chooseTile(position)} aria-label={`${t.tile} ${position + 1}`}
+                data-piece={piece} data-position={position}
+              ><span>{position + 1}</span></button>;
+            })}
+          </div>
 
-          {phase === "idle" && <div className="promo-game-overlay">
-            <span className="promo-overlay-icon"><Truck /></span>
-            <h3>{t.ready}</h3><p>{t.readyText}</p>
+          {phase === "idle" && <div className="promo-puzzle-overlay">
+            <span className="promo-overlay-icon"><Move /></span><h3>{t.ready}</h3><p>{t.readyText}</p>
             <button type="button" onClick={start}>{t.start}<ArrowRight /></button>
           </div>}
 
-          {phase === "playing" && <div className="promo-instruction">{t.instruction}</div>}
+          {phase === "playing" && !preview && <div className="promo-puzzle-tip">{t.how}</div>}
 
-          {phase === "finished" && promo && <div className="promo-game-overlay promo-result">
-            <span className="promo-overlay-icon"><Trophy /></span>
-            <p>{t.won}</p><h3>−{promo.discount}%</h3>
+          {phase === "finished" && promo && <div className="promo-puzzle-overlay promo-result">
+            <span className="promo-overlay-icon"><Trophy /></span><p>{t.won}</p><h3>−{promo.discount}%</h3>
             <small>{t.promo}</small><strong className="promo-code">{promo.code}</strong>
-            <button type="button" onClick={usePromo}>{copied ? t.copied : t.use}<ArrowRight /></button>
+            <div className="promo-result-actions">
+              <button type="button" onClick={usePromo}>{copied ? t.copied : t.use}<ArrowRight /></button>
+              <button type="button" className="promo-again" onClick={start}><RotateCcw />{t.again}</button>
+            </div>
           </div>}
         </div>
       </div>

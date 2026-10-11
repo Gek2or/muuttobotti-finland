@@ -1,89 +1,75 @@
 .promo-game-section {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(280px, .72fr) minmax(540px, 1.28fr);
-  gap: clamp(38px, 6vw, 90px);
-  align-items: center;
-  padding: clamp(78px, 8vw, 118px) clamp(20px, 7vw, 105px);
-  overflow: hidden;
-  color: #f5fbf8;
-  background:
-    radial-gradient(circle at 8% 15%, rgba(212, 255, 114, .13), transparent 25%),
-    radial-gradient(circle at 93% 78%, rgba(61, 138, 148, .2), transparent 28%),
-    linear-gradient(135deg, #05191f, #0a2b32 58%, #0b3438);
+  position: relative; display: grid; grid-template-columns: minmax(280px,.76fr) minmax(500px,1.24fr);
+  gap: clamp(38px,6vw,88px); align-items: center; padding: clamp(76px,8vw,118px) clamp(20px,7vw,105px);
+  overflow: hidden; color: #f5fbf8;
+  background: radial-gradient(circle at 8% 15%,rgba(212,255,114,.13),transparent 25%), radial-gradient(circle at 93% 78%,rgba(61,138,148,.2),transparent 28%), linear-gradient(135deg,#05191f,#0a2b32 58%,#0b3438);
 }
+.promo-game-section::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.16; background-image:radial-gradient(rgba(255,255,255,.24) .65px,transparent .65px); background-size:8px 8px; }
+.promo-game-copy,.promo-puzzle-card { position:relative; z-index:1; }
+.promo-game-copy { max-width:570px; }
+.promo-game-kicker { display:inline-flex; align-items:center; gap:8px; color:#d4ff72; font-size:12px; font-weight:850; letter-spacing:.13em; }
+.promo-game-kicker svg { width:17px; height:17px; }
+.promo-game-copy h2 { margin:18px 0 20px; max-width:610px; font-size:clamp(46px,5vw,74px); line-height:.95; letter-spacing:-.062em; text-wrap:balance; }
+.promo-game-copy>p { max-width:560px; margin:0; color:#bfd0cd; font-size:16px; line-height:1.7; }
+.promo-levels { display:flex; flex-wrap:wrap; gap:8px; margin:25px 0 17px; }
+.promo-levels span { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 11px; border:1px solid rgba(255,255,255,.12); border-radius:999px; color:#c9d7d4; background:rgba(255,255,255,.045); font-size:12px; font-weight:760; }
+.promo-levels span.active { border-color:rgba(212,255,114,.5); color:#071b22; background:#d4ff72; }
+.promo-levels svg { width:14px; height:14px; color:#d4ff72; }
+.promo-levels span.active svg { color:#071b22; }
+.promo-game-copy>small { display:block; color:#879e9b; font-size:11px; line-height:1.55; }
 
-.promo-game-section::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: .16;
-  background-image: radial-gradient(rgba(255,255,255,.24) .65px, transparent .65px);
-  background-size: 8px 8px;
+.promo-puzzle-card { padding:12px; border:1px solid rgba(255,255,255,.16); border-radius:30px; background:rgba(255,255,255,.075); box-shadow:0 42px 110px rgba(0,0,0,.34); backdrop-filter:blur(18px); }
+.promo-puzzle-top { display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:18px; min-height:58px; padding:0 8px; }
+.promo-puzzle-top span { display:grid; grid-template-columns:auto auto; align-items:center; column-gap:7px; color:#fff; }
+.promo-puzzle-top span svg { grid-row:1/3; width:18px; height:18px; color:#d4ff72; }
+.promo-puzzle-top small { color:#91a8a4; font-size:9px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.promo-puzzle-top strong { font-size:16px; line-height:1; }
+.promo-puzzle-top button { justify-self:end; display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:0 12px; border:1px solid rgba(255,255,255,.14); border-radius:999px; color:#dbe9e6; background:rgba(255,255,255,.06); font-size:11px; font-weight:800; cursor:pointer; touch-action:manipulation; }
+.promo-puzzle-top button:disabled { opacity:.48; cursor:default; }
+.promo-puzzle-top button svg { width:15px; height:15px; color:#d4ff72; }
+.promo-puzzle-stage { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.14); border-radius:20px; background:#0a2228; aspect-ratio:1.55/1; }
+.promo-puzzle-grid { position:absolute; inset:0; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:3px; padding:3px; background:#071b22; }
+.promo-puzzle-tile { position:relative; min-width:0; min-height:0; overflow:hidden; border:0; border-radius:5px; background-image:url('/muuttobotti-hero-v2.webp'); background-repeat:no-repeat; background-size:300% 300%; box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); cursor:pointer; transition:transform .16s ease,box-shadow .16s ease,filter .16s ease; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+.promo-puzzle-tile:hover { filter:brightness(1.06); }
+.promo-puzzle-tile:focus-visible { z-index:2; outline:3px solid #d4ff72; outline-offset:-3px; }
+.promo-puzzle-tile.is-selected { z-index:2; transform:scale(.94); box-shadow:inset 0 0 0 4px #d4ff72,0 0 24px rgba(212,255,114,.35); filter:brightness(1.13); }
+.promo-puzzle-tile span { position:absolute; top:7px; left:7px; display:grid; place-items:center; width:24px; height:24px; border-radius:8px; color:#fff; background:rgba(5,25,31,.72); box-shadow:0 3px 8px rgba(0,0,0,.2); font-size:10px; font-weight:900; backdrop-filter:blur(6px); }
+.promo-puzzle-grid.is-preview { gap:0; padding:0; }
+.promo-puzzle-grid.is-preview .promo-puzzle-tile { border-radius:0; pointer-events:none; }
+.promo-puzzle-grid.is-preview .promo-puzzle-tile span { opacity:0; }
+.promo-puzzle-grid.is-preview::after { content:""; position:absolute; inset:0; z-index:3; background:url('/muuttobotti-hero-v2.webp') center/cover no-repeat; animation:promoPreviewIn .22s ease both; }
+.promo-puzzle-tip { position:absolute; z-index:4; left:50%; bottom:13px; width:max-content; max-width:calc(100% - 24px); transform:translateX(-50%); padding:8px 12px; border-radius:999px; color:#e8f2ef; background:rgba(6,27,34,.82); font-size:11px; font-weight:800; text-align:center; backdrop-filter:blur(10px); pointer-events:none; }
+.promo-puzzle-overlay { position:absolute; z-index:8; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center; color:#f5fbf8; background:linear-gradient(135deg,rgba(5,25,31,.94),rgba(10,49,53,.88)); backdrop-filter:blur(5px); }
+.promo-overlay-icon { display:grid; place-items:center; width:58px; height:58px; border-radius:18px; color:#071b22; background:#d4ff72; box-shadow:0 15px 38px rgba(126,172,54,.2); }
+.promo-overlay-icon svg { width:28px; height:28px; }
+.promo-puzzle-overlay h3 { margin:17px 0 8px; max-width:440px; font-size:28px; letter-spacing:-.04em; }
+.promo-puzzle-overlay p { max-width:430px; margin:0; color:#bdd0cc; font-size:13px; line-height:1.55; }
+.promo-puzzle-overlay button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; margin-top:20px; padding:0 18px; border:0; border-radius:999px; color:#071b22; background:#d4ff72; box-shadow:0 15px 34px rgba(126,172,54,.18); font-size:13px; font-weight:850; cursor:pointer; touch-action:manipulation; }
+.promo-puzzle-overlay button svg { width:17px; height:17px; }
+.promo-result>p { margin-top:12px; text-transform:uppercase; letter-spacing:.12em; font-size:10px; font-weight:850; }
+.promo-result h3 { margin:3px 0 10px; color:#d4ff72; font-size:58px; line-height:1; }
+.promo-result>small { color:#8fa4a1; font-size:9px; letter-spacing:.14em; }
+.promo-code { margin-top:5px; padding:8px 13px; border:1px dashed rgba(212,255,114,.45); border-radius:10px; color:#fff; background:rgba(0,0,0,.16); font-family:var(--font-geist-mono),monospace; font-size:19px; letter-spacing:.08em; }
+.promo-result-actions { display:flex; gap:8px; }
+.promo-puzzle-overlay .promo-again { border:1px solid rgba(255,255,255,.18); color:#eaf3f1; background:rgba(255,255,255,.07); box-shadow:none; }
+
+@keyframes promoPreviewIn { from { opacity:0; transform:scale(1.02); } }
+@media (max-width:980px) { .promo-game-section { grid-template-columns:1fr; } .promo-game-copy { max-width:720px; } .promo-puzzle-card { width:min(100%,720px); } }
+@media (max-width:620px) {
+  .promo-game-section { padding:68px 14px; gap:34px; }
+  .promo-game-copy h2 { font-size:44px; }
+  .promo-game-copy>p { font-size:15px; }
+  .promo-puzzle-card { padding:7px; border-radius:21px; }
+  .promo-puzzle-top { grid-template-columns:1fr 1fr; gap:6px 12px; min-height:92px; padding:7px 6px; }
+  .promo-puzzle-top button { grid-column:1/3; justify-self:stretch; min-height:38px; }
+  .promo-puzzle-stage { border-radius:15px; aspect-ratio:1.12/1; }
+  .promo-puzzle-grid { gap:2px; padding:2px; }
+  .promo-puzzle-tile { border-radius:4px; }
+  .promo-puzzle-tile span { top:5px; left:5px; width:22px; height:22px; }
+  .promo-puzzle-overlay { padding:18px 15px; }
+  .promo-puzzle-overlay h3 { font-size:24px; }
+  .promo-result-actions { width:100%; flex-direction:column; gap:0; }
+  .promo-result-actions button { width:100%; margin-top:9px; }
+  .promo-result h3 { font-size:48px; }
 }
-
-.promo-game-copy, .promo-game-card { position: relative; z-index: 1; }
-.promo-game-copy { max-width: 570px; }
-.promo-game-kicker { display: inline-flex; align-items: center; gap: 8px; color: #d4ff72; font-size: 12px; font-weight: 850; letter-spacing: .13em; }
-.promo-game-kicker svg { width: 17px; height: 17px; }
-.promo-game-copy h2 { margin: 18px 0 20px; max-width: 610px; font-size: clamp(46px, 5vw, 74px); line-height: .95; letter-spacing: -.062em; text-wrap: balance; }
-.promo-game-copy > p { max-width: 560px; margin: 0; color: #bfd0cd; font-size: 16px; line-height: 1.7; }
-.promo-levels { display: flex; flex-wrap: wrap; gap: 8px; margin: 25px 0 17px; }
-.promo-levels span { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 11px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: #c9d7d4; background: rgba(255,255,255,.045); font-size: 12px; font-weight: 760; }
-.promo-levels span.active { border-color: rgba(212,255,114,.5); color: #071b22; background: #d4ff72; }
-.promo-levels svg { width: 14px; height: 14px; color: #d4ff72; }
-.promo-levels span.active svg { color: #071b22; }
-.promo-game-copy > small { display: block; color: #879e9b; font-size: 11px; line-height: 1.55; }
-
-.promo-game-card { padding: 14px; border: 1px solid rgba(255,255,255,.16); border-radius: 30px; background: rgba(255,255,255,.07); box-shadow: 0 42px 110px rgba(0,0,0,.34); backdrop-filter: blur(18px); }
-.promo-game-top { display: flex; justify-content: space-between; gap: 14px; min-height: 48px; padding: 0 8px; }
-.promo-game-top span { display: flex; align-items: center; gap: 7px; color: #b8cac7; font-size: 12px; }
-.promo-game-top svg { width: 17px; height: 17px; color: #d4ff72; }
-.promo-game-top strong { color: #fff; font-size: 17px; }
-.promo-playfield { position: relative; height: 340px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 20px; background: linear-gradient(180deg, #dbe4df 0 58%, #364b4d 58% 100%); isolation: isolate; }
-.promo-playfield::before { content: ""; position: absolute; inset: 0 0 42%; background: linear-gradient(90deg, rgba(255,255,255,.32), transparent), repeating-linear-gradient(90deg, transparent 0 84px, rgba(8,40,44,.08) 85px 87px); }
-.promo-road-lines { position: absolute; right: 0; bottom: 19%; left: 0; height: 5px; opacity: .5; background: repeating-linear-gradient(90deg, #fff 0 34px, transparent 34px 66px); }
-.promo-van { position: absolute; z-index: 2; right: 4%; bottom: 16%; display: grid; place-items: center; width: 140px; height: 84px; color: #f8fbf8; filter: drop-shadow(0 17px 12px rgba(0,0,0,.2)); }
-.promo-van svg { width: 132px; height: 78px; fill: #f8fbf8; stroke: #092229; stroke-width: 1.2; }
-.promo-van span { position: absolute; left: 47px; top: 30px; display: grid; place-items: center; width: 30px; height: 24px; border-radius: 7px; color: #092229; background: #d4ff72; font-size: 10px; font-weight: 950; }
-.promo-box { position: absolute; z-index: 5; left: -64px; display: grid; place-items: center; border: 1px solid rgba(70,42,15,.18); border-radius: 9px; color: #503116; background: #d7aa70; box-shadow: 0 12px 22px rgba(24,33,31,.2); cursor: pointer; animation: promoBoxTravel 2.5s linear forwards; touch-action: manipulation; }
-.promo-box.tone-1 { background: #bf8751; }
-.promo-box.tone-2 { background: #e3bd82; }
-.promo-box:hover { border-color: #d4ff72; transform: scale(1.1); }
-.promo-box svg { width: 58%; height: 58%; }
-.promo-instruction { position: absolute; z-index: 3; top: 12px; left: 50%; width: max-content; max-width: calc(100% - 24px); transform: translateX(-50%); padding: 7px 10px; border-radius: 999px; color: #e8f2ef; background: rgba(6,27,34,.72); font-size: 11px; font-weight: 800; backdrop-filter: blur(10px); }
-.promo-game-overlay { position: absolute; z-index: 8; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; color: #f5fbf8; background: linear-gradient(135deg, rgba(5,25,31,.9), rgba(10,49,53,.82)); backdrop-filter: blur(5px); }
-.promo-overlay-icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 18px; color: #071b22; background: #d4ff72; box-shadow: 0 15px 38px rgba(126,172,54,.2); }
-.promo-overlay-icon svg { width: 28px; height: 28px; }
-.promo-game-overlay h3 { margin: 17px 0 8px; font-size: 28px; letter-spacing: -.04em; }
-.promo-game-overlay p { max-width: 430px; margin: 0; color: #bdd0cc; font-size: 13px; line-height: 1.55; }
-.promo-game-overlay button { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; margin-top: 20px; padding: 0 18px; border: 0; border-radius: 999px; color: #071b22; background: #d4ff72; box-shadow: 0 15px 34px rgba(126,172,54,.18); font-size: 13px; font-weight: 850; cursor: pointer; }
-.promo-game-overlay button svg { width: 17px; height: 17px; }
-.promo-result > p { margin-top: 12px; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 850; }
-.promo-result h3 { margin: 3px 0 10px; color: #d4ff72; font-size: 58px; line-height: 1; }
-.promo-result > small { color: #8fa4a1; font-size: 9px; letter-spacing: .14em; }
-.promo-code { margin-top: 5px; padding: 8px 13px; border: 1px dashed rgba(212,255,114,.45); border-radius: 10px; color: #fff; background: rgba(0,0,0,.16); font-family: var(--font-geist-mono), monospace; font-size: 19px; letter-spacing: .08em; }
-
-@keyframes promoBoxTravel { to { left: calc(100% - 152px); } }
-
-@media (max-width: 980px) {
-  .promo-game-section { grid-template-columns: 1fr; }
-  .promo-game-copy { max-width: 720px; }
-}
-
-@media (max-width: 620px) {
-  .promo-game-section { padding: 68px 16px; }
-  .promo-game-copy h2 { font-size: 46px; }
-  .promo-game-card { padding: 8px; border-radius: 22px; }
-  .promo-playfield { height: 320px; border-radius: 16px; }
-  .promo-game-top { min-height: 46px; }
-  .promo-van { right: 1%; transform: scale(.84); transform-origin: right bottom; }
-  .promo-box { animation-duration: 2.8s; }
-  .promo-game-overlay { padding: 18px; }
-  @keyframes promoBoxTravel { to { left: calc(100% - 116px); } }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .promo-box { animation-duration: 4s; }
-}
+@media (prefers-reduced-motion:reduce) { .promo-puzzle-tile,.promo-puzzle-grid.is-preview::after { transition:none; animation:none; } }
