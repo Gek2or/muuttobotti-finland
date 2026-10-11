@@ -1,0 +1,120 @@
+/* Muuttobotti Halloween 2026 — seasonal, still professional. */
+.site-shell.halloween-season {
+  --lime: #ff7a1a;
+  --halloween-orange: #ff7a1a;
+  --halloween-amber: #ffc45a;
+  --halloween-violet: #7b53c6;
+  --halloween-night: #120d18;
+}
+
+.halloween-season .topbar {
+  border-bottom-color: rgba(255,122,26,.18);
+  background: rgba(248,247,243,.9);
+}
+.halloween-season .brand-mark,
+.halloween-season .quote-button,
+.halloween-season .primary-button,
+.halloween-season .step-icon,
+.halloween-season .stats-band { background:#ff7a1a; }
+.halloween-season .brand-mark { box-shadow:0 10px 30px rgba(255,122,26,.22); }
+.halloween-season .hero { background:#120d18; }
+.halloween-season .hero-media { filter:saturate(.72) contrast(1.09) brightness(.67) sepia(.1); }
+.halloween-season .hero::after {
+  background:
+    radial-gradient(circle at 78% 25%,rgba(255,135,39,.17),transparent 22%),
+    linear-gradient(90deg,rgba(15,8,20,.98) 0%,rgba(17,10,22,.91) 31%,rgba(24,12,26,.56) 57%,rgba(20,10,24,.2) 78%),
+    linear-gradient(0deg,rgba(10,5,15,.88),transparent 50%);
+}
+.halloween-season .hero-glow { background:radial-gradient(circle,rgba(255,112,21,.34),transparent 67%); }
+.halloween-season .hero h1 em { color:#ff9a3c; text-shadow:0 0 36px rgba(255,92,14,.2); }
+.halloween-season .eyebrow span { background:#ff7a1a; }
+.halloween-ribbon {
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:14px; padding:8px 12px;
+  border:1px solid rgba(255,158,73,.32); border-radius:999px; color:#ffd3ae;
+  background:rgba(57,22,25,.5); font-size:10px; font-weight:850; letter-spacing:.09em; text-transform:uppercase;
+  box-shadow:0 10px 38px rgba(0,0,0,.18); backdrop-filter:blur(12px);
+}
+.halloween-ribbon svg { width:16px; height:16px; color:#ff8b31; }
+.halloween-moon {
+  position:absolute; z-index:1; right:8%; top:17%; width:clamp(90px,11vw,160px); aspect-ratio:1;
+  border-radius:50%; opacity:.74; pointer-events:none;
+  background:radial-gradient(circle at 39% 36%,#ffe9b8 0 5%,transparent 6%),radial-gradient(circle at 67% 62%,rgba(93,52,58,.22) 0 9%,transparent 10%),radial-gradient(circle at 48% 50%,#ffbd62,#e96c25 72%);
+  box-shadow:0 0 70px rgba(255,121,39,.3);
+}
+.halloween-season .stats-band { color:#1b101a; box-shadow:inset 0 1px rgba(255,255,255,.22); }
+.halloween-season .stats-band span { color:#3b201c; }
+
+.halloween-season .services-section {
+  position:relative; overflow:hidden;
+  background:
+    radial-gradient(circle at 95% 5%,rgba(255,122,26,.12),transparent 25%),
+    radial-gradient(circle at 4% 95%,rgba(123,83,198,.09),transparent 28%),
+    #f5f1eb;
+}
+.halloween-season .services-section::after {
+  content:""; position:absolute; top:-85px; right:-85px; width:220px; height:220px; opacity:.18; pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 50%,transparent 0 20px,#6f537a 21px 22px,transparent 23px 39px);
+  mask-image:linear-gradient(135deg,#000,transparent 70%);
+}
+.service-deck-toolbar { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:-22px 0 22px; }
+.service-deck-toolbar>span { color:#765e55; font-size:11px; font-weight:750; letter-spacing:.04em; }
+.service-deck-toolbar>div { display:flex; align-items:center; gap:10px; }
+.service-deck-toolbar button {
+  display:grid; place-items:center; width:44px; height:44px; border:1px solid rgba(45,25,36,.13); border-radius:50%;
+  color:#251923; background:rgba(255,255,255,.72); cursor:pointer; box-shadow:0 8px 25px rgba(33,18,28,.06);
+}
+.service-deck-toolbar button:hover { color:#fff; background:#271827; transform:translateY(-2px); }
+.service-deck-toolbar button svg { width:18px; }
+.service-deck-toolbar strong { min-width:58px; color:#735d55; font-size:11px; text-align:center; }
+
+.site-shell .service-grid.service-deck {
+  display:flex; gap:18px; margin:0 calc(clamp(24px,7vw,110px) * -1); padding:30px clamp(24px,7vw,110px) 55px;
+  overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scroll-padding-inline:clamp(24px,7vw,110px);
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.site-shell .service-grid.service-deck::-webkit-scrollbar { display:none; }
+.site-shell .service-deck .service-card {
+  position:relative; flex:0 0 min(390px,calc((100vw - clamp(48px,14vw,220px) - 36px)/3)); min-width:280px; min-height:390px;
+  scroll-snap-align:start; overflow:hidden; border:1px solid rgba(55,31,40,.11); border-radius:28px;
+  background:linear-gradient(155deg,#fffaf2 0%,#f2e8df 100%); box-shadow:0 18px 50px rgba(40,22,32,.08);
+  transform-origin:center bottom; cursor:grab; isolation:isolate;
+}
+.site-shell .service-deck .service-card:nth-child(2n) { background:linear-gradient(155deg,#f8f1ff,#ece4ef); }
+.site-shell .service-deck .service-card:nth-child(3n) { background:linear-gradient(155deg,#fff6e8,#eedfd6); }
+.site-shell .service-deck .service-card::before {
+  content:""; position:absolute; z-index:-1; right:-55px; top:-62px; width:170px; height:170px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ffb45f,#ee6b1d 70%); opacity:.2;
+}
+.site-shell .service-deck .service-card.is-pulled {
+  transform:translateY(-22px) rotate(-.8deg)!important; border-color:rgba(255,122,26,.52);
+  box-shadow:0 32px 76px rgba(66,31,32,.2),0 0 0 3px rgba(255,122,26,.09);
+}
+.service-card-number { position:absolute; right:21px; top:18px; color:rgba(56,35,43,.24); font-size:42px; font-weight:900; letter-spacing:-.07em; }
+.halloween-season .service-icon { color:#6c361c; background:rgba(255,151,61,.22); }
+.halloween-season .service-card button { color:#2a1a22; }
+.halloween-season .service-card button svg { color:#e85f12; }
+.halloween-season .kicker { color:#b85117; }
+.dark-theme.halloween-season .topbar { background:rgba(20,13,24,.91); border-bottom-color:rgba(255,122,26,.25); }
+.dark-theme.halloween-season .services-section { background:radial-gradient(circle at 90% 5%,rgba(255,122,26,.11),transparent 25%),#130e17; }
+.dark-theme.halloween-season .service-deck-toolbar>span,.dark-theme.halloween-season .service-deck-toolbar strong { color:#bdaeb6; }
+.dark-theme.halloween-season .service-deck-toolbar button { color:#f7e9df; background:#251a29; border-color:rgba(255,255,255,.1); }
+.dark-theme.halloween-season .service-deck .service-card { color:#20151d; }
+
+@media(max-width:900px) {
+  .site-shell .service-deck .service-card { flex-basis:min(390px,72vw); }
+  .halloween-moon { right:-25px; top:18%; opacity:.48; }
+}
+@media(max-width:640px) {
+  .halloween-ribbon { max-width:100%; white-space:normal; line-height:1.35; }
+  .halloween-moon { width:105px; right:-38px; top:14%; }
+  .service-deck-toolbar { margin-top:-8px; }
+  .service-deck-toolbar>span { max-width:145px; line-height:1.35; }
+  .service-deck-toolbar button { width:42px; height:42px; }
+  .site-shell .service-grid.service-deck { margin-inline:-18px; padding:28px 18px 50px; scroll-padding-inline:18px; }
+  .site-shell .service-deck .service-card { flex-basis:84vw; min-width:0; min-height:345px!important; padding:26px 23px!important; }
+  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-16px) rotate(-.6deg)!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .site-shell .service-grid.service-deck { scroll-behavior:auto; }
+  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-8px)!important; }
+}

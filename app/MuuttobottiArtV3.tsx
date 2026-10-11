@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowRight, Bath, Boxes, Building2, CalendarDays, Check, CheckCircle2, ChevronDown,
-  Clock3, Hammer, Home, Languages, Mail, Menu, MessageCircle, Moon, Navigation,
+  ArrowRight, Bath, Boxes, Building2, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+  Clock3, Ghost, Hammer, Home, Languages, Mail, Menu, MessageCircle, Moon, Navigation,
   PackageCheck, Phone, Recycle, Send, ShieldCheck, Sparkles, Star, Sun, Truck,
   UploadCloud, UserRound, UsersRound, X,
 } from "lucide-react";
@@ -205,6 +205,8 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
   const [size, setSize] = useState(55); const [floor, setFloor] = useState(2); const [distance, setDistance] = useState(18); const [windows, setWindows] = useState(6); const [weight, setWeight] = useState(80);
   const [movers, setMovers] = useState<1 | 2>(2); const [elevator, setElevator] = useState(true); const [packing, setPacking] = useState(false); const [afterClean, setAfterClean] = useState(false); const [cleanType, setCleanType] = useState("regular"); const [express, setExpress] = useState(false);
   const [bookingService, setBookingService] = useState("moving"); const [bookingNotes, setBookingNotes] = useState(""); const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle"); const [bookingResult, setBookingResult] = useState<{bookingId:string; trackingPath:string}|null>(null); const [cookie, setCookie] = useState<boolean | null>(null);
+  const [activeService, setActiveService] = useState(0);
+  const serviceTrackRef = useRef<HTMLDivElement>(null);
   const t = copy[locale];
   const tracking = trackingCopy[locale];
   const surface = homeSurfaceCopy[locale];
@@ -220,6 +222,26 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
   }, [calcMode,size,floor,distance,windows,weight,movers,elevator,packing,afterClean,cleanType,express]);
 
   const scrollTo = (id:string) => { document.getElementById(id)?.scrollIntoView({behavior:"smooth"}); setMenuOpen(false); };
+  const scrollServices = (direction: -1 | 1) => {
+    const track = serviceTrackRef.current;
+    if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>(".service-card"));
+    const next = Math.max(0, Math.min(cards.length - 1, activeService + direction));
+    setActiveService(next);
+    cards[next]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  };
+  const syncServiceIndex = () => {
+    const track = serviceTrackRef.current;
+    if (!track) return;
+    const middle = track.getBoundingClientRect().left + track.clientWidth / 2;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>(".service-card"));
+    const closest = cards.reduce((best, card, index) => {
+      const rect = card.getBoundingClientRect();
+      const distance = Math.abs(rect.left + rect.width / 2 - middle);
+      return distance < best.distance ? { index, distance } : best;
+    }, { index: 0, distance: Number.POSITIVE_INFINITY });
+    setActiveService(closest.index);
+  };
   const chooseLocale = (l:Locale) => { setLocale(l); setLangOpen(false); const u = new URL(location.href); if (l === "fi") u.searchParams.delete("lang"); else u.searchParams.set("lang", l); window.location.assign(`${u.pathname}${u.search}${u.hash}`); };
   const toBooking = () => { setBookingService(calcMode); setBookingNotes(`${t.estimate}: ${estimate.price} €, ${estimate.hours}. ${calcMode === "moving" ? `${movers} movers, ${size} m², floor ${floor}, ${distance} km.` : calcMode === "cleaning" ? `${size} m², ${windows} windows.` : `${distance} km, ${weight} kg.`}`); scrollTo("booking"); };
 
@@ -228,7 +250,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
     try { const data = new FormData(e.currentTarget); const pickup = String(data.get("pickup") ?? ""); if (!String(data.get("destination") ?? "").trim()) data.set("destination", pickup); try { const promo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as {code?:string;discount?:number;expiresAt?:number}|null; if (promo?.code && promo.discount && Number(promo.expiresAt) > Date.now()) { const notes = String(data.get("notes") ?? "").trim(); data.set("notes", [notes, `PROMO: ${promo.code} (-${promo.discount}%)`].filter(Boolean).join("\n")); } } catch { /* invalid local promo is ignored */ } const r = await fetch("/api/bookings", {method:"POST", body:data}); if (!r.ok) throw new Error(); const result = await r.json() as {bookingId:string; trackingPath:string}; setBookingResult(result); setBookingState("done"); e.currentTarget.reset(); setBookingNotes(""); } catch { setBookingState("error"); }
   }
 
-  return <main className={`site-shell ${theme === "dark" ? "dark-theme" : ""}`}>
+  return <main className={`site-shell halloween-season ${theme === "dark" ? "dark-theme" : ""}`}>
     <header className="topbar">
       <button className="brand" onClick={() => scrollTo("home")}><span className="brand-mark"><PackageCheck size={22}/></span><span>muutto<span>botti</span></span></button>
       <nav className="desktop-nav">{t.nav.map((item,i)=><button key={item} onClick={()=>scrollTo(["services","calculator","process","reviews"][i])}>{item}</button>)}</nav>
@@ -236,13 +258,13 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
       {menuOpen && <nav className="mobile-nav">{t.nav.map((item,i)=><button key={item} onClick={()=>scrollTo(["services","calculator","process","reviews"][i])}>{item}</button>)}</nav>}
     </header>
 
-    <section className="hero" id="home"><Image className="hero-media" src="/muuttobotti-hero-v2.webp" alt={surface.heroAlt} fill priority unoptimized sizes="100vw"/><div className="hero-noise"/><div className="hero-glow"/><motion.div className="hero-copy" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}}><div className="eyebrow"><span/>{t.eyebrow}</div><h1>{t.titleA}<br/><em>{t.titleB}</em></h1><p>{t.body}</p><div className="hero-actions"><button className="primary-button" onClick={()=>scrollTo("calculator")}>{t.primary}<ArrowRight size={19}/></button><button className="secondary-button" onClick={()=>scrollTo("booking")}>{t.secondary}</button></div><div className="rating-row verified-rating"><div className="google-g">G</div><div><div className="stars">★★★★★</div><small>{t.rating}</small></div></div></motion.div><div className="availability-pill"><span className="live-dot"/>{t.response}</div><div className="trust-strip">{t.trust.map((item,i)=><div key={item}>{i===0?<ShieldCheck/>:i===1?<Check/>:<Clock3/>}<span>{item}</span></div>)}</div></section>
+    <section className="hero" id="home"><Image className="hero-media" src="/muuttobotti-hero-v2.webp" alt={surface.heroAlt} fill priority unoptimized sizes="100vw"/><div className="hero-noise"/><div className="hero-glow"/><div className="halloween-moon" aria-hidden="true"/><motion.div className="hero-copy" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}}><div className="halloween-ribbon"><Ghost/>{locale === "fi" ? "Halloween-viikko · tarjoukset 5–15 %" : locale === "en" ? "Halloween week · 5–15% offers" : locale === "uk" ? "Halloween-тиждень · знижки 5–15%" : "Halloween-неделя · скидки 5–15%"}</div><div className="eyebrow"><span/>{t.eyebrow}</div><h1>{t.titleA}<br/><em>{t.titleB}</em></h1><p>{t.body}</p><div className="hero-actions"><button className="primary-button" onClick={()=>scrollTo("calculator")}>{t.primary}<ArrowRight size={19}/></button><button className="secondary-button" onClick={()=>scrollTo("booking")}>{t.secondary}</button></div><div className="rating-row verified-rating"><div className="google-g">G</div><div><div className="stars">★★★★★</div><small>{t.rating}</small></div></div></motion.div><div className="availability-pill"><span className="live-dot"/>{t.response}</div><div className="trust-strip">{t.trust.map((item,i)=><div key={item}>{i===0?<ShieldCheck/>:i===1?<Check/>:<Clock3/>}<span>{item}</span></div>)}</div></section>
 
     <section className="stats-band">{t.stats.map(([value,label])=><div key={label}><strong>{value}</strong><span>{label}</span></div>)}<div className="cities"><span>HELSINKI</span><span>ESPOO</span><span>VANTAA</span><span>TUUSULA</span></div></section>
 
     <PromoGame locale={locale} />
 
-    <section className="services-section" id="services"><div className="section-heading"><div><span className="kicker">{t.servicesKicker}</span><h2>{t.servicesTitle}</h2></div><p>{t.servicesBody}</p></div><div className="service-grid">{services.map((s,i)=>{const Icon=s.icon; return <motion.article className={`service-card ${["mint","blue","sand","ice","lavender","peach"][i]}`} key={s.key} initial={{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true}}><div className="service-icon"><Icon size={25}/></div><h3>{s[locale][0]}</h3><p>{s[locale][1]}</p><div className="service-price"><span>{t.from}</span><strong>{s.price}</strong></div><button onClick={()=>{setCalcMode(s.key === "cleaning" ? "cleaning" : s.key === "transport" ? "transport" : "moving"); scrollTo("calculator");}}>{t.book}<ArrowRight size={16}/></button></motion.article>})}</div></section>
+    <section className="services-section" id="services"><div className="section-heading"><div><span className="kicker">{t.servicesKicker}</span><h2>{t.servicesTitle}</h2></div><p>{t.servicesBody}</p></div><div className="service-deck-toolbar"><span>{locale === "fi" ? "Pyyhkäise ja valitse kortti" : locale === "en" ? "Swipe and pull out a card" : locale === "uk" ? "Гортайте та витягніть картку" : "Листайте и вытяните карточку"}</span><div><button type="button" onClick={()=>scrollServices(-1)} aria-label="Previous service"><ChevronLeft/></button><strong>{String(activeService + 1).padStart(2,"0")} / {String(services.length).padStart(2,"0")}</strong><button type="button" onClick={()=>scrollServices(1)} aria-label="Next service"><ChevronRight/></button></div></div><div className="service-grid service-deck" ref={serviceTrackRef} onScroll={syncServiceIndex}>{services.map((s,i)=>{const Icon=s.icon; return <motion.article tabIndex={0} role="group" aria-label={s[locale][0]} onClick={()=>setActiveService(i)} onFocus={()=>setActiveService(i)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setActiveService(i);}}} className={`service-card ${["mint","blue","sand","ice","lavender","peach"][i]} ${activeService===i?"is-pulled":""}`} key={s.key} initial={{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true}}><span className="service-card-number">0{i+1}</span><div className="service-icon"><Icon size={25}/></div><h3>{s[locale][0]}</h3><p>{s[locale][1]}</p><div className="service-price"><span>{t.from}</span><strong>{s.price}</strong></div><button onClick={()=>{setCalcMode(s.key === "cleaning" ? "cleaning" : s.key === "transport" ? "transport" : "moving"); scrollTo("calculator");}}>{t.book}<ArrowRight size={16}/></button></motion.article>})}</div></section>
 
     <section className="calculator-section" id="calculator" aria-label={t.calcTitle}></section>
     {false && <section className="calculator-section legacy-calculator-disabled" aria-hidden="true"><div className="calculator-intro"><span className="kicker light">{t.calcKicker}</span><h2>{t.calcTitle}</h2><p>{t.calcText}</p><div className="smart-note"><Sparkles size={18}/><div><strong>{t.disclaimer}</strong></div></div></div><div className="calculator-card"><div className="calc-tabs">{(["moving","cleaning","transport"] as CalcMode[]).map((m,i)=><button key={m} className={calcMode===m?"active":""} onClick={()=>setCalcMode(m)}>{m==="moving"?<Boxes/>:m==="cleaning"?<Sparkles/>:<Truck/>}{t.modes[i]}</button>)}</div><div className="calc-fields">{calcMode === "moving" && <><label className="movers-field">{t.movers}<div className="mover-selector"><button type="button" className={movers===1?"active":""} onClick={()=>setMovers(1)}><UserRound/>{t.one}<small>59 € / h</small></button><button type="button" className={movers===2?"active":""} onClick={()=>setMovers(2)}><UsersRound/>{t.two}<small>75 € / h</small></button></div></label><label>{t.size}<div className="range-value">{size} m²</div><input type="range" min="15" max="220" value={size} onChange={e=>setSize(+e.target.value)}/></label><label>{t.floor}<div className="range-value">{floor}</div><input type="range" min="0" max="12" value={floor} onChange={e=>setFloor(+e.target.value)}/></label><label>{t.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="500" value={distance} onChange={e=>setDistance(+e.target.value)}/></label><div className="switch-grid"><button type="button" className={elevator?"on":""} onClick={()=>setElevator(!elevator)}><CheckCircle2/>{t.elevator}</button><button type="button" className={packing?"on":""} onClick={()=>setPacking(!packing)}><Boxes/>{t.packing}</button><button type="button" className={afterClean?"on":""} onClick={()=>setAfterClean(!afterClean)}><Sparkles/>{t.afterClean}</button></div></>}{calcMode === "cleaning" && <><label>{t.size}<div className="range-value">{size} m²</div><input type="range" min="20" max="300" value={size} onChange={e=>setSize(+e.target.value)}/></label><label>{t.windows}<div className="range-value">{windows}</div><input type="range" min="0" max="30" value={windows} onChange={e=>setWindows(+e.target.value)}/></label><label>{t.cleanType}<select value={cleanType} onChange={e=>setCleanType(e.target.value)}><option value="regular">{t.regular}</option><option value="moveout">{t.moveout}</option><option value="deep">{t.deep}</option></select></label><div className="feature-list"><span><Bath/> Professional supplies</span><span><ShieldCheck/> Quality guarantee</span></div></>}{calcMode === "transport" && <><label>{t.distance}<div className="range-value">{distance} km</div><input type="range" min="1" max="600" value={distance} onChange={e=>setDistance(+e.target.value)}/></label><label>{t.weight}<div className="range-value">{weight} kg</div><input type="range" min="5" max="1200" step="5" value={weight} onChange={e=>setWeight(+e.target.value)}/></label><label>{t.urgency}<select value={express?"express":"normal"} onChange={e=>setExpress(e.target.value==="express")}><option value="normal">{t.normal}</option><option value="express">{t.express}</option></select></label></>}</div><div className="estimate-box"><div><span>{t.estimate}</span><strong>{estimate.price} €</strong></div><div><span>{t.duration}</span><strong className="time-estimate">{estimate.hours}</strong></div><button onClick={toBooking}>{t.continue}<ArrowRight/></button></div></div></section>}

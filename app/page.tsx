@@ -30,6 +30,7 @@ import "./booking-calculator-attachment.css";
 import "./product-experience-v9.css";
 import "./premium-refresh-v10.css";
 import "./promo-game.css";
+import "./halloween-refresh.css";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
