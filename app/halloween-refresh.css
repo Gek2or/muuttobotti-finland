@@ -1,10 +1,10 @@
 /* Muuttobotti Halloween 2026 — seasonal, still professional. */
 .site-shell.halloween-season {
-  --lime: #ff7a1a;
-  --halloween-orange: #ff7a1a;
-  --halloween-amber: #ffc45a;
-  --halloween-violet: #7b53c6;
-  --halloween-night: #120d18;
+  --lime: #ff7620;
+  --halloween-orange: #ff7620;
+  --halloween-amber: #ffc35a;
+  --halloween-violet: #a373ff;
+  --halloween-night: #100912;
 }
 
 .halloween-season .topbar {
@@ -18,44 +18,52 @@
 .halloween-season .stats-band { background:#ff7a1a; }
 .halloween-season .brand-mark { box-shadow:0 10px 30px rgba(255,122,26,.22); }
 .halloween-season .hero { background:#120d18; }
-.halloween-season .hero-media { filter:saturate(.72) contrast(1.09) brightness(.67) sepia(.1); }
+.halloween-season .hero-media { filter:saturate(.58) contrast(1.13) brightness(.56) sepia(.17); }
 .halloween-season .hero::after {
   background:
-    radial-gradient(circle at 78% 25%,rgba(255,135,39,.17),transparent 22%),
-    linear-gradient(90deg,rgba(15,8,20,.98) 0%,rgba(17,10,22,.91) 31%,rgba(24,12,26,.56) 57%,rgba(20,10,24,.2) 78%),
-    linear-gradient(0deg,rgba(10,5,15,.88),transparent 50%);
+    radial-gradient(ellipse at 81% 70%,rgba(255,100,20,.34),transparent 28%),
+    radial-gradient(circle at 52% 38%,rgba(89,44,138,.22),transparent 35%),
+    linear-gradient(90deg,rgba(12,6,17,.99) 0%,rgba(16,8,20,.93) 32%,rgba(22,9,24,.58) 58%,rgba(20,8,20,.18) 82%),
+    linear-gradient(0deg,rgba(10,4,14,.94),transparent 53%);
 }
-.halloween-season .hero-glow { background:radial-gradient(circle,rgba(255,112,21,.34),transparent 67%); }
-.halloween-season .hero h1 em { color:#ff9a3c; text-shadow:0 0 36px rgba(255,92,14,.2); }
+.halloween-season .hero-glow { background:radial-gradient(circle,rgba(255,93,15,.48),transparent 67%); }
+.halloween-season .hero h1 em { color:#ff9a3c; text-shadow:0 0 42px rgba(255,92,14,.42); }
 .halloween-season .eyebrow span { background:#ff7a1a; }
 .halloween-ribbon {
   display:inline-flex; align-items:center; gap:8px; margin-bottom:14px; padding:8px 12px;
-  border:1px solid rgba(255,158,73,.32); border-radius:999px; color:#ffd3ae;
-  background:rgba(57,22,25,.5); font-size:10px; font-weight:850; letter-spacing:.09em; text-transform:uppercase;
-  box-shadow:0 10px 38px rgba(0,0,0,.18); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,173,85,.55); border-radius:999px; color:#ffe4c6;
+  background:linear-gradient(100deg,rgba(92,31,17,.86),rgba(49,19,65,.86)); font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
+  box-shadow:0 0 30px rgba(255,112,26,.2),0 10px 38px rgba(0,0,0,.24); backdrop-filter:blur(12px);
 }
-.halloween-ribbon svg { width:16px; height:16px; color:#ff8b31; }
+.halloween-ribbon svg { width:17px; height:17px; color:#ff9c38; filter:drop-shadow(0 0 7px rgba(255,122,26,.68)); }
 .halloween-moon {
   position:absolute; z-index:1; right:8%; top:17%; width:clamp(90px,11vw,160px); aspect-ratio:1;
-  border-radius:50%; opacity:.74; pointer-events:none;
-  background:radial-gradient(circle at 39% 36%,#ffe9b8 0 5%,transparent 6%),radial-gradient(circle at 67% 62%,rgba(93,52,58,.22) 0 9%,transparent 10%),radial-gradient(circle at 48% 50%,#ffbd62,#e96c25 72%);
-  box-shadow:0 0 70px rgba(255,121,39,.3);
+  border-radius:50%; opacity:.9; pointer-events:none;
+  background:radial-gradient(circle at 39% 36%,#fff0ca 0 5%,transparent 6%),radial-gradient(circle at 67% 62%,rgba(93,52,58,.3) 0 9%,transparent 10%),radial-gradient(circle at 48% 50%,#ffd27c,#ff6d22 72%);
+  box-shadow:0 0 90px rgba(255,91,27,.48),0 0 170px rgba(111,55,151,.2); animation:halloweenMoonPulse 7s ease-in-out infinite;
 }
+.halloween-season .hero::before { content:"";position:absolute;z-index:2;inset:0;pointer-events:none;opacity:.25;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360' viewBox='0 0 360 360'%3E%3Cg fill='none' stroke='%23d8a0ff' stroke-opacity='.55' stroke-width='1.5'%3E%3Cpath d='M360 0H235Q210 0 210 25v95M360 0L245 115M360 0L285 135M360 0L330 145M360 0Q295 0 295 38v54M360 0Q325 0 325 22v110M210 120q-18-15-33 0t-33 0M210 120q-18 15-33 0t-33 0M245 115q-4-22-24-18t-24 18M245 115q-4 22-24 18t-24-18M285 135q8-22 27-14t12 31M285 135q-8 22-27 14t-12-31M330 145q16-15 30 1t-1 30M330 145q-16 15-30-1t1-30'/%3E%3C/g%3E%3C/svg%3E");background-position:top right;background-repeat:no-repeat;mask-image:linear-gradient(135deg,#000,transparent 45%)}
+@keyframes halloweenMoonPulse { 50% { box-shadow:0 0 112px rgba(255,91,27,.62),0 0 190px rgba(111,55,151,.26); } }
 .halloween-season .stats-band { color:#1b101a; box-shadow:inset 0 1px rgba(255,255,255,.22); }
 .halloween-season .stats-band span { color:#3b201c; }
 
 .halloween-season .services-section {
   position:relative; overflow:hidden;
   background:
-    radial-gradient(circle at 95% 5%,rgba(255,122,26,.12),transparent 25%),
-    radial-gradient(circle at 4% 95%,rgba(123,83,198,.09),transparent 28%),
-    #f5f1eb;
+    radial-gradient(circle at 95% 5%,rgba(255,112,24,.24),transparent 25%),
+    radial-gradient(circle at 4% 95%,rgba(123,83,198,.22),transparent 28%),
+    #17101c;
 }
+.halloween-season .section-heading h2 { color:#fff7ef; }
+.halloween-season .section-heading p { color:#c5b6c1; }
+.halloween-season .services-section .kicker { color:#ffab5b; }
 .halloween-season .services-section::after {
-  content:""; position:absolute; top:-85px; right:-85px; width:220px; height:220px; opacity:.18; pointer-events:none;
-  background:repeating-radial-gradient(circle at 50% 50%,transparent 0 20px,#6f537a 21px 22px,transparent 23px 39px);
+  content:""; position:absolute; top:-85px; right:-85px; width:300px; height:300px; opacity:.42; pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 50%,transparent 0 20px,#c196dc 21px 22px,transparent 23px 39px);
   mask-image:linear-gradient(135deg,#000,transparent 70%);
 }
+.halloween-season .services-section::before { content:"🦇";position:absolute;right:clamp(35px,9vw,130px);top:28px;z-index:1;color:#ab85c2;font-size:30px;opacity:.78;filter:drop-shadow(0 0 14px rgba(186,105,255,.42));animation:halloweenBatFloat 5s ease-in-out infinite;pointer-events:none }
+@keyframes halloweenBatFloat { 50% { transform:translate(-22px,12px) rotate(-8deg); } }
 .service-deck-toolbar { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:-22px 0 22px; }
 .service-deck-toolbar>span { color:#765e55; font-size:11px; font-weight:750; letter-spacing:.04em; }
 .service-deck-toolbar>div { display:flex; align-items:center; gap:10px; }
@@ -76,29 +84,44 @@
 .site-shell .service-deck .service-card {
   position:relative; flex:0 0 min(390px,calc((100vw - clamp(48px,14vw,220px) - 36px)/3)); min-width:280px; min-height:390px;
   scroll-snap-align:start; overflow:hidden; border:1px solid rgba(55,31,40,.11); border-radius:28px;
-  background:linear-gradient(155deg,#fffaf2 0%,#f2e8df 100%); box-shadow:0 18px 50px rgba(40,22,32,.08);
+  color:#fbf1eb; background:linear-gradient(155deg,#38213b 0%,#211725 70%,#24131e 100%); box-shadow:0 20px 55px rgba(0,0,0,.32);
   transform-origin:center bottom; cursor:grab; isolation:isolate;
 }
-.site-shell .service-deck .service-card:nth-child(2n) { background:linear-gradient(155deg,#f8f1ff,#ece4ef); }
-.site-shell .service-deck .service-card:nth-child(3n) { background:linear-gradient(155deg,#fff6e8,#eedfd6); }
+.site-shell .service-deck .service-card:nth-child(2n) { background:linear-gradient(155deg,#302440,#1d1727 70%,#211526); }
+.site-shell .service-deck .service-card:nth-child(3n) { background:linear-gradient(155deg,#40251f,#291a20 70%,#20131b); }
 .site-shell .service-deck .service-card::before {
   content:""; position:absolute; z-index:-1; right:-55px; top:-62px; width:170px; height:170px; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#ffb45f,#ee6b1d 70%); opacity:.2;
+  background:radial-gradient(circle at 35% 35%,#ffd18c,#ff671d 70%); opacity:.47;filter:blur(1px)
 }
+.site-shell .service-deck .service-card::after { content:"";position:absolute;z-index:-1;right:18px;bottom:75px;width:88px;height:88px;border:1px solid rgba(228,180,244,.12);border-radius:50%;box-shadow:0 0 0 12px rgba(228,180,244,.035),0 0 0 25px rgba(228,180,244,.025);pointer-events:none }
+.site-shell .service-deck .service-card h3 { color:#fff8f1; }
+.site-shell .service-deck .service-card p { color:#d5c5cf!important; }
+.site-shell .service-deck .service-card .service-price span { color:#d4bdca!important; }
+.site-shell .service-deck .service-card .service-price strong { color:#ffc07a; }
+.site-shell .service-deck .service-card .service-icon { color:#ffac59; background:rgba(255,123,35,.18);border:1px solid rgba(255,177,106,.2) }
+.site-shell .service-deck .service-card button { color:#fff0e4;border-top-color:rgba(255,220,196,.2) }
 .site-shell .service-deck .service-card.is-pulled {
   transform:translateY(-22px) rotate(-.8deg)!important; border-color:rgba(255,122,26,.52);
   box-shadow:0 32px 76px rgba(66,31,32,.2),0 0 0 3px rgba(255,122,26,.09);
 }
-.service-card-number { position:absolute; right:21px; top:18px; color:rgba(56,35,43,.24); font-size:42px; font-weight:900; letter-spacing:-.07em; }
+.service-card-number { position:absolute; right:21px; top:18px; color:rgba(255,227,207,.28); font-size:42px; font-weight:900; letter-spacing:-.07em; }
 .halloween-season .service-icon { color:#6c361c; background:rgba(255,151,61,.22); }
 .halloween-season .service-card button { color:#2a1a22; }
 .halloween-season .service-card button svg { color:#e85f12; }
 .halloween-season .kicker { color:#b85117; }
 .dark-theme.halloween-season .topbar { background:rgba(20,13,24,.91); border-bottom-color:rgba(255,122,26,.25); }
-.dark-theme.halloween-season .services-section { background:radial-gradient(circle at 90% 5%,rgba(255,122,26,.11),transparent 25%),#130e17; }
+.dark-theme.halloween-season .services-section { background:radial-gradient(circle at 90% 5%,rgba(255,122,26,.19),transparent 25%),#100912; }
 .dark-theme.halloween-season .service-deck-toolbar>span,.dark-theme.halloween-season .service-deck-toolbar strong { color:#bdaeb6; }
 .dark-theme.halloween-season .service-deck-toolbar button { color:#f7e9df; background:#251a29; border-color:rgba(255,255,255,.1); }
-.dark-theme.halloween-season .service-deck .service-card { color:#20151d; }
+.dark-theme.halloween-season .service-deck .service-card { color:#fbf1eb; }
+
+.halloween-season .promo-game-section { background:radial-gradient(circle at 10% 8%,rgba(255,95,20,.23),transparent 26%),radial-gradient(circle at 90% 82%,rgba(134,75,190,.25),transparent 30%),linear-gradient(135deg,#120912,#281126 58%,#10151c); }
+.halloween-season .promo-game-kicker,.halloween-season .promo-game-kicker svg { color:#ffad61; }
+.halloween-season .promo-levels span.active { background:#ff7620;border-color:#ff7620; }
+.halloween-season .promo-puzzle-top button svg { color:#ffab56; }
+.halloween-season .promo-overlay-icon { background:#ff8129; }
+.halloween-season .promo-puzzle-overlay button { background:#ff8129; }
+.halloween-season .promo-puzzle-overlay h3 { color:#fff5ed; }
 
 @media(max-width:900px) {
   .site-shell .service-deck .service-card { flex-basis:min(390px,72vw); }
@@ -115,6 +138,7 @@
   .site-shell .service-deck .service-card.is-pulled { transform:translateY(-16px) rotate(-.6deg)!important; }
 }
 @media(prefers-reduced-motion:reduce) {
+  .halloween-moon,.halloween-season .services-section::before { animation:none; }
   .site-shell .service-grid.service-deck { scroll-behavior:auto; }
   .site-shell .service-deck .service-card.is-pulled { transform:translateY(-8px)!important; }
 }

@@ -207,7 +207,6 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
   const [bookingService, setBookingService] = useState("moving"); const [bookingNotes, setBookingNotes] = useState(""); const [bookingState, setBookingState] = useState<"idle" | "sending" | "done" | "error">("idle"); const [bookingResult, setBookingResult] = useState<{bookingId:string; trackingPath:string}|null>(null); const [cookie, setCookie] = useState<boolean | null>(null);
   const [activeService, setActiveService] = useState(0);
   const serviceTrackRef = useRef<HTMLDivElement>(null);
-  const serviceScrollTimer = useRef<number | undefined>(undefined);
   const t = copy[locale];
   const tracking = trackingCopy[locale];
   const surface = homeSurfaceCopy[locale];
@@ -229,23 +228,19 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
     const cards = Array.from(track.querySelectorAll<HTMLElement>(".service-card"));
     const next = Math.max(0, Math.min(cards.length - 1, activeService + direction));
     setActiveService(next);
-    const card = cards[next];
-    if (card) track.scrollTo({ left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2, behavior: "smooth" });
+    cards[next]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   };
   const syncServiceIndex = () => {
     const track = serviceTrackRef.current;
     if (!track) return;
-    window.clearTimeout(serviceScrollTimer.current);
-    serviceScrollTimer.current = window.setTimeout(() => {
-      const middle = track.getBoundingClientRect().left + track.clientWidth / 2;
-      const cards = Array.from(track.querySelectorAll<HTMLElement>(".service-card"));
-      const closest = cards.reduce((best, card, index) => {
-        const rect = card.getBoundingClientRect();
-        const distance = Math.abs(rect.left + rect.width / 2 - middle);
-        return distance < best.distance ? { index, distance } : best;
-      }, { index: 0, distance: Number.POSITIVE_INFINITY });
-      setActiveService(closest.index);
-    }, 180);
+    const middle = track.getBoundingClientRect().left + track.clientWidth / 2;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>(".service-card"));
+    const closest = cards.reduce((best, card, index) => {
+      const rect = card.getBoundingClientRect();
+      const distance = Math.abs(rect.left + rect.width / 2 - middle);
+      return distance < best.distance ? { index, distance } : best;
+    }, { index: 0, distance: Number.POSITIVE_INFINITY });
+    setActiveService(closest.index);
   };
   const chooseLocale = (l:Locale) => { setLocale(l); setLangOpen(false); const u = new URL(location.href); if (l === "fi") u.searchParams.delete("lang"); else u.searchParams.set("lang", l); window.location.assign(`${u.pathname}${u.search}${u.hash}`); };
   const toBooking = () => { setBookingService(calcMode); setBookingNotes(`${t.estimate}: ${estimate.price} €, ${estimate.hours}. ${calcMode === "moving" ? `${movers} movers, ${size} m², floor ${floor}, ${distance} km.` : calcMode === "cleaning" ? `${size} m², ${windows} windows.` : `${distance} km, ${weight} kg.`}`); scrollTo("booking"); };
