@@ -50,7 +50,7 @@ export default function HeroUXV6(){
       </div>
     </div>,copyTarget)}
     {createPortal(<nav className="mobile-conversion-bar" aria-label={t.quick}>
-      <a href="tel:+3584578767567" aria-label={t.call}><Phone/><span>{t.call}</span></a>
+      <a href="tel:+358458749211" aria-label={t.call}><Phone/><span>{t.call}</span></a>
       <a href="https://wa.me/3584578767567" target="_blank" rel="noreferrer" aria-label={t.whatsapp}><MessageCircle/><span>{t.whatsapp}</span></a>
       <button type="button" className="mobile-calc-action" onClick={scrollCalc}><Truck/><span>{t.calculate}</span></button>
       <button type="button" className="mobile-book-action" onClick={scrollBooking}><CalendarDays/><span>{t.book}</span></button>

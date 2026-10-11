@@ -133,7 +133,7 @@ export default function ClientHomeScreen() {
           </TouchableOpacity>
         ))}</View>
 
-        <View style={styles.contact}><View><Text style={styles.contactKicker}>HUMAN SUPPORT</Text><Text style={styles.contactTitle}>{tr('help')}</Text></View><View style={styles.contactRow}><TouchableOpacity style={styles.contactBtn} onPress={() => void Linking.openURL('tel:+3584578767567')}><Text style={styles.contactText}>Call</Text></TouchableOpacity><TouchableOpacity style={styles.contactBtn} onPress={() => void Linking.openURL('https://wa.me/3584578767567')}><Text style={styles.contactText}>WhatsApp</Text></TouchableOpacity></View></View>
+        <View style={styles.contact}><View><Text style={styles.contactKicker}>HUMAN SUPPORT</Text><Text style={styles.contactTitle}>{tr('help')}</Text></View><View style={styles.contactRow}><TouchableOpacity style={styles.contactBtn} onPress={() => void Linking.openURL('tel:+358458749211')}><Text style={styles.contactText}>Call</Text></TouchableOpacity><TouchableOpacity style={styles.contactBtn} onPress={() => void Linking.openURL('https://wa.me/3584578767567')}><Text style={styles.contactText}>WhatsApp</Text></TouchableOpacity></View></View>
       </Animated.View>
     </ScrollView>
   );

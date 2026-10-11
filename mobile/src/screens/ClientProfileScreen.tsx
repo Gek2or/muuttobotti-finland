@@ -39,7 +39,7 @@ export default function ClientProfileScreen(){
 
   <View style={s.section}><Text style={s.sectionTitle}>{tr('notifications')}</Text><Text style={s.muted}>{pushState||(pushEnabled?t.pushOn:t.pushOff)}</Text><TouchableOpacity style={s.primary} onPress={()=>void enablePush()}><Text style={s.primaryText}>{tr('enableNotifications')}</Text></TouchableOpacity></View>
 
-  <View style={s.section}><Text style={s.sectionTitle}>{t.help}</Text><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('tel:+3584578767567')}><Text style={s.actionText}>045 787 67567</Text></TouchableOpacity><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('https://wa.me/3584578767567')}><Text style={s.actionText}>WhatsApp</Text></TouchableOpacity><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('mailto:autochemixfin@gmail.com')}><Text style={s.actionText}>autochemixfin@gmail.com</Text></TouchableOpacity></View>
+  <View style={s.section}><Text style={s.sectionTitle}>{t.help}</Text><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('tel:+358458749211')}><Text style={s.actionText}>045 874 9211</Text></TouchableOpacity><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('https://wa.me/3584578767567')}><Text style={s.actionText}>WhatsApp</Text></TouchableOpacity><TouchableOpacity style={s.action} onPress={()=>void Linking.openURL('mailto:autochemixfin@gmail.com')}><Text style={s.actionText}>autochemixfin@gmail.com</Text></TouchableOpacity></View>
   <Text style={s.version}>{t.version}</Text>
  </ScrollView>
 }

@@ -376,7 +376,7 @@ export default function MuuttobottiCommercialV2() {
       </header>
 
       <section className="v2-hero" id="home">
-        <Image src="/muuttobotti-hero.png" alt="Muuttobotti moving team with a large van in Finland" fill priority sizes="100vw" className="v2-hero-image" />
+        <Image src="/muuttobotti-hero-v2.webp" alt="Muuttobotti moving team with a large van in Finland" fill priority sizes="100vw" className="v2-hero-image" />
         <div className="v2-hero-overlay" />
         <div className="v2-hero-content">
           <motion.span initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="v2-eyebrow">{t.eyebrow}</motion.span>
@@ -465,7 +465,7 @@ export default function MuuttobottiCommercialV2() {
 
       <section className="v2-contact">
         <div><span>HELSINKI · UUSIMAA · FINLAND</span><h2>{t.contactTitle}</h2><p>{t.contactBody}</p><div className="v2-contact-person"><UserRound /><div><strong>Stanislav Kosytskyy</strong><small>Toimitusjohtaja · Muuttobotti / Autochemix Oy</small></div></div></div>
-        <div className="v2-contact-actions"><a href="tel:+3584578767567"><Phone />045 787 67567</a><a href="https://wa.me/3584578767567"><MessageCircle />WhatsApp</a><a href="mailto:autochemixfin@gmail.com"><Mail />autochemixfin@gmail.com</a><span><Clock3 />{t.hours}</span></div>
+        <div className="v2-contact-actions"><a href="tel:+358458749211"><Phone />045 874 9211</a><a href="https://wa.me/3584578767567"><MessageCircle />WhatsApp</a><a href="mailto:autochemixfin@gmail.com"><Mail />autochemixfin@gmail.com</a><span><Clock3 />{t.hours}</span></div>
       </section>
 
       <footer className="v2-footer"><div className="v2-brand"><span><PackageCheck /></span><b>muutto<i>botti</i></b></div><p>Muuttobotti / Autochemix Oy · Y-tunnus 3543357-8</p><nav><a href="/track">Tracking</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><small>© 2026 Muuttobotti</small></footer>

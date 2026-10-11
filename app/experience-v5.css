@@ -101,7 +101,7 @@ footer strong{font-size:12px}
   inset:-16%;
   z-index:0;
   pointer-events:none;
-  background-image:url('/muuttobotti-hero.png');
+  background-image:url('/muuttobotti-hero-v2.webp');
   background-size:cover;
   background-repeat:no-repeat;
   filter:blur(72px) saturate(.82) contrast(1.02);
@@ -163,7 +163,7 @@ footer strong{font-size:12px}
   inset:-13%;
   z-index:0;
   pointer-events:none;
-  background:url('/muuttobotti-hero.png') center 48% / cover no-repeat;
+  background:url('/muuttobotti-hero-v2.webp') center 48% / cover no-repeat;
   filter:blur(42px) saturate(.78) contrast(1.05);
   opacity:.28;
   transform:scale(1.16);

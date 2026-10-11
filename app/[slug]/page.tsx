@@ -168,8 +168,8 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         "ru-FI": `/${slug}?lang=ru`,
       },
     },
-    openGraph: { title: `${page.title} | Muuttobotti`, description: page.description, url, siteName:"Muuttobotti", locale:ogLocale, type:"website", images:[{url:"/muuttobotti-hero.png",alt:`${page.title} – Muuttobotti`}] },
-    twitter: { card:"summary_large_image", title:`${page.title} | Muuttobotti`, description:page.description, images:["/muuttobotti-hero.png"] },
+    openGraph: { title: `${page.title} | Muuttobotti`, description: page.description, url, siteName:"Muuttobotti", locale:ogLocale, type:"website", images:[{url:"/muuttobotti-hero-v2.webp",alt:`${page.title} – Muuttobotti`}] },
+    twitter: { card:"summary_large_image", title:`${page.title} | Muuttobotti`, description:page.description, images:["/muuttobotti-hero-v2.webp"] },
   };
 }
 
@@ -224,7 +224,7 @@ export default async function ServicePage({ params, searchParams }: { params: Pr
           <strong>{t.help}</strong>
           <p>{t.helpText}</p>
           <span><PackageCheck/> {t.support}</span>
-          <a href="tel:+3584578767567"><Phone/> 045 787 67567</a>
+          <a href="tel:+358458749211"><Phone/> 045 874 9211</a>
           <a href="mailto:autochemixfin@gmail.com"><Mail/> autochemixfin@gmail.com</a>
           <a href="https://wa.me/3584578767567" target="_blank" rel="noreferrer"><MessageCircle/> WhatsApp</a>
           <small>Autochemix Oy · Y-tunnus 3543357-8</small>
