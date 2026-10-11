@@ -17,6 +17,7 @@
 .halloween-season .desktop-nav { border-color:rgba(255,255,255,.11);background:rgba(255,255,255,.055); }
 .halloween-season .desktop-nav button:hover { color:#fff;background:rgba(255,119,32,.25); }
 .halloween-season .theme-button,.halloween-season .lang-button { border-color:rgba(255,255,255,.14); }
+.halloween-season .theme-button { color:#ffaf68;background:rgba(255,255,255,.07); }
 .halloween-season .lang-menu { background:#201425;border-color:rgba(255,255,255,.13); }
 .halloween-season .lang-menu button { color:#fff1e8; }
 .halloween-season .brand-mark,
