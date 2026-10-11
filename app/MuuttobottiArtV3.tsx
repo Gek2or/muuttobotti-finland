@@ -10,6 +10,7 @@ import {
   UploadCloud, UserRound, UsersRound, X,
 } from "lucide-react";
 import { footerCities, homeSurfaceCopy } from "./home-surface-copy";
+import PromoGame, { PROMO_STORAGE_KEY } from "./PromoGame";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type CalcMode = "moving" | "cleaning" | "transport";
@@ -224,7 +225,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
 
   async function submitBooking(e:FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBookingState("sending");
-    try { const data = new FormData(e.currentTarget); const pickup = String(data.get("pickup") ?? ""); if (!String(data.get("destination") ?? "").trim()) data.set("destination", pickup); const r = await fetch("/api/bookings", {method:"POST", body:data}); if (!r.ok) throw new Error(); const result = await r.json() as {bookingId:string; trackingPath:string}; setBookingResult(result); setBookingState("done"); e.currentTarget.reset(); setBookingNotes(""); } catch { setBookingState("error"); }
+    try { const data = new FormData(e.currentTarget); const pickup = String(data.get("pickup") ?? ""); if (!String(data.get("destination") ?? "").trim()) data.set("destination", pickup); try { const promo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as {code?:string;discount?:number;expiresAt?:number}|null; if (promo?.code && promo.discount && Number(promo.expiresAt) > Date.now()) { const notes = String(data.get("notes") ?? "").trim(); data.set("notes", [notes, `PROMO: ${promo.code} (-${promo.discount}%)`].filter(Boolean).join("\n")); } } catch { /* invalid local promo is ignored */ } const r = await fetch("/api/bookings", {method:"POST", body:data}); if (!r.ok) throw new Error(); const result = await r.json() as {bookingId:string; trackingPath:string}; setBookingResult(result); setBookingState("done"); e.currentTarget.reset(); setBookingNotes(""); } catch { setBookingState("error"); }
   }
 
   return <main className={`site-shell ${theme === "dark" ? "dark-theme" : ""}`}>
@@ -238,6 +239,8 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
     <section className="hero" id="home"><Image className="hero-media" src="/muuttobotti-hero-v2.webp" alt={surface.heroAlt} fill priority unoptimized sizes="100vw"/><div className="hero-noise"/><div className="hero-glow"/><motion.div className="hero-copy" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}}><div className="eyebrow"><span/>{t.eyebrow}</div><h1>{t.titleA}<br/><em>{t.titleB}</em></h1><p>{t.body}</p><div className="hero-actions"><button className="primary-button" onClick={()=>scrollTo("calculator")}>{t.primary}<ArrowRight size={19}/></button><button className="secondary-button" onClick={()=>scrollTo("booking")}>{t.secondary}</button></div><div className="rating-row verified-rating"><div className="google-g">G</div><div><div className="stars">★★★★★</div><small>{t.rating}</small></div></div></motion.div><div className="availability-pill"><span className="live-dot"/>{t.response}</div><div className="trust-strip">{t.trust.map((item,i)=><div key={item}>{i===0?<ShieldCheck/>:i===1?<Check/>:<Clock3/>}<span>{item}</span></div>)}</div></section>
 
     <section className="stats-band">{t.stats.map(([value,label])=><div key={label}><strong>{value}</strong><span>{label}</span></div>)}<div className="cities"><span>HELSINKI</span><span>ESPOO</span><span>VANTAA</span><span>TUUSULA</span></div></section>
+
+    <PromoGame locale={locale} />
 
     <section className="services-section" id="services"><div className="section-heading"><div><span className="kicker">{t.servicesKicker}</span><h2>{t.servicesTitle}</h2></div><p>{t.servicesBody}</p></div><div className="service-grid">{services.map((s,i)=>{const Icon=s.icon; return <motion.article className={`service-card ${["mint","blue","sand","ice","lavender","peach"][i]}`} key={s.key} initial={{opacity:0,y:18}} whileInView={{opacity:1,y:0}} viewport={{once:true}}><div className="service-icon"><Icon size={25}/></div><h3>{s[locale][0]}</h3><p>{s[locale][1]}</p><div className="service-price"><span>{t.from}</span><strong>{s.price}</strong></div><button onClick={()=>{setCalcMode(s.key === "cleaning" ? "cleaning" : s.key === "transport" ? "transport" : "moving"); scrollTo("calculator");}}>{t.book}<ArrowRight size={16}/></button></motion.article>})}</div></section>
 
