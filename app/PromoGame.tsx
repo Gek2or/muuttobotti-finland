@@ -15,7 +15,7 @@ const copy = {
     kicker: "MUUTTOBOTTI-PELI", title: "Pakkaa fiksusti. Voita alennus.",
     lead: "Nappaa muuttolaatikot kyytiin 15 sekunnissa. Jokainen pelaaja saa vähintään 5 % alennuksen.",
     start: "Aloita peli", instruction: "Napauta laatikoita ennen kuin ne ehtivät ohi", loaded: "Kyydissä", seconds: "aikaa",
-    ready: "Furgon on valmis", readyText: "Aloita, kun olet valmis. Peli toimii hiirellä ja puhelimella.",
+    ready: "Pakettiauto on valmis", readyText: "Aloita, kun olet valmis. Peli toimii hiirellä ja puhelimella.",
     won: "Sinä voitit", promo: "PROMOKOODI", use: "Käytä varauksessa", copied: "Kopioitu",
     valid: "Voimassa 30 päivää · yksi käyttö · ei voi yhdistää muihin tarjouksiin",
     levels: ["Osallistu: 5 %", "5 laatikkoa: 10 %", "10 laatikkoa: 15 %"],
