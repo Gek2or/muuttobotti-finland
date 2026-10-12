@@ -232,3 +232,9 @@
 @media(prefers-reduced-motion:reduce) {
   .halloween-season .halloween-moon { animation:none; }
 }
+
+/* The mobile light header is pale; keep the full wordmark readable there. */
+@media(max-width:760px) {
+  .site-shell.halloween-season:not(.dark-theme) .topbar .brand { color:#071b22!important; }
+  .site-shell.halloween-season:not(.dark-theme) .topbar .brand>span:last-child>span { color:#356b6d!important; }
+}
