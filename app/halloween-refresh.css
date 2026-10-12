@@ -156,6 +156,8 @@
 
 /* Visual audit pass: keep the Halloween theme, remove decorative clutter. */
 .halloween-season .hero-media { filter:saturate(.72) contrast(1.08) brightness(.58) sepia(.12); }
+.halloween-season .hero-media { animation:none; will-change:auto; }
+.halloween-season .hero-glow,.halloween-season .availability-pill { animation:none; }
 .halloween-season .hero::after {
   background:
     radial-gradient(ellipse at 82% 68%,rgba(255,110,30,.23),transparent 31%),
@@ -179,10 +181,11 @@
   background-color:#17101c;
   background-image:linear-gradient(155deg,#1a1420 0%,#17101c 55%,#1d1420 100%);
 }
-.halloween-season .services-section::before { content:none; }
+.halloween-season .services-section::before { content:none; animation:none; background:none; }
 .halloween-season .services-section::after {
   top:-88px; right:-92px; width:245px; height:245px; opacity:.2;
   background:repeating-radial-gradient(circle at 50% 50%,transparent 0 25px,#bd96d5 26px 27px,transparent 28px 46px);
+  animation:none;
 }
 .halloween-season .services-section .section-heading { gap:32px; margin-bottom:40px; }
 .halloween-season .services-section .section-heading h2 {
@@ -207,7 +210,7 @@
 }
 .halloween-season .service-deck .service-card::after { content:none; }
 .halloween-season .service-deck .service-card.is-pulled {
-  border-color:rgba(255,145,67,.58); box-shadow:0 24px 54px rgba(0,0,0,.3),0 0 0 2px rgba(255,122,26,.08);
+  transform:translateY(-10px)!important; border-color:rgba(255,145,67,.58); box-shadow:0 24px 54px rgba(0,0,0,.3),0 0 0 2px rgba(255,122,26,.08);
 }
 .halloween-season .service-deck .service-card h3 { font-size:23px; }
 .halloween-season .service-deck .service-card p { color:#e1d5dd!important; }
