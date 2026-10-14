@@ -350,7 +350,9 @@ export default function BusinessCalculatorV6() {
   const [locale, setLocale] = useState<Locale>("fi");
   const [mode, setMode] = useState<Mode>("moving");
   const [vehicle, setVehicle] = useState<Vehicle>("van");
-  const [movers, setMovers] = useState<1 | 2>(2);
+  // Match the initial selection to the recommendation for the default move
+  // (40 m², normal load, elevator, 10 km).
+  const [movers, setMovers] = useState<1 | 2>(1);
   const [size, setSize] = useState(40);
   const [load, setLoad] = useState<LoadLevel>("normal");
   const [floor, setFloor] = useState(0);

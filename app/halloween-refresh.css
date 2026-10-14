@@ -146,12 +146,12 @@
   .service-deck-toolbar button { width:42px; height:42px; }
   .site-shell .service-grid.service-deck { margin-inline:-18px; padding:28px 18px 50px; scroll-padding-inline:18px; }
   .site-shell .service-deck .service-card { flex-basis:84vw; min-width:0; min-height:345px!important; padding:26px 23px!important; }
-  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-16px) rotate(-.6deg)!important; }
+  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-6px)!important; }
 }
 @media(prefers-reduced-motion:reduce) {
   .halloween-moon::after,.halloween-season .services-section::before { animation:none; }
   .site-shell .service-grid.service-deck { scroll-behavior:auto; }
-  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-8px)!important; }
+  .site-shell .service-deck .service-card.is-pulled { transform:translateY(-4px)!important; }
 }
 
 /* Visual audit pass: keep the Halloween theme, remove decorative clutter. */
@@ -210,13 +210,21 @@
 }
 .halloween-season .service-deck .service-card::after { content:none; }
 .halloween-season .service-deck .service-card.is-pulled {
-  transform:translateY(-10px)!important; border-color:rgba(255,145,67,.58); box-shadow:0 24px 54px rgba(0,0,0,.3),0 0 0 2px rgba(255,122,26,.08);
+  transform:translateY(-6px)!important; border-color:rgba(255,145,67,.58); box-shadow:0 24px 54px rgba(0,0,0,.3),0 0 0 2px rgba(255,122,26,.08);
 }
 .halloween-season .service-deck .service-card h3 { font-size:23px; }
 .halloween-season .service-deck .service-card p { color:#e1d5dd!important; }
 .halloween-season .service-deck .service-card .service-price strong { color:#ffbd78; }
 .halloween-season .service-deck .service-card button { color:#fff2e8; border-top-color:rgba(255,255,255,.16); }
 @media(max-width:760px) {
+  .site-shell.halloween-season .mobile-conversion-bar .mobile-calc-action {
+    background:#ff7620!important;
+    color:#201018!important;
+    box-shadow:0 0 18px rgba(255,118,32,.24);
+  }
+  .site-shell.halloween-season .mobile-conversion-bar .mobile-book-action svg {
+    color:#ffad61!important;
+  }
   .halloween-season .hero h1 { font-size:clamp(47px,12.6vw,64px); line-height:.96; }
   .halloween-season .halloween-moon { width:82px; right:14px; top:10%; opacity:.72; }
   .halloween-season .services-section .section-heading { display:block; margin-bottom:30px; }
