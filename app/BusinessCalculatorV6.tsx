@@ -95,6 +95,7 @@ const copy = {
     continue: "Jatka varaukseen",
     attached: "Laskelma lisätään varaukseen erillisenä AI-tietona.",
     finalNote: "Tämä on alustava arvio. Lopullinen hinta vahvistetaan ennen työn alkua.",
+    finalNoteMove: "Muuttoauto sisältyy arvioon. Vahvistettu tarjous kertoo, sisältyvätkö polttoaine ja ALV hintaan.",
   },
   en: {
     tabs: ["Moving", "Cleaning", "Transport"],
@@ -161,6 +162,7 @@ const copy = {
     continue: "Continue to booking",
     attached: "The estimate will be attached to the booking as separate AI information.",
     finalNote: "This is a preliminary estimate. Final price is confirmed before work starts.",
+    finalNoteMove: "The moving van is included. The confirmed quote states whether fuel and VAT are included.",
   },
   uk: {
     tabs: ["Переїзд", "Прибирання", "Перевезення"],
@@ -227,6 +229,7 @@ const copy = {
     continue: "До бронювання",
     attached: "Розрахунок буде додано до заявки як окрема AI-інформація.",
     finalNote: "Це попередня оцінка. Остаточну ціну підтверджуємо до початку роботи.",
+    finalNoteMove: "Автомобіль для переїзду включено. У підтвердженій пропозиції буде вказано, чи включені пальне та ПДВ.",
   },
   ru: {
     tabs: ["Переезд", "Уборка", "Перевозка"],
@@ -293,6 +296,7 @@ const copy = {
     continue: "К бронированию",
     attached: "Расчёт будет прикреплён к форме как отдельная AI-информация.",
     finalNote: "Это предварительная оценка. Итоговую цену подтверждаем до начала работы.",
+    finalNoteMove: "Машина для переезда включена. В подтверждённом предложении будет указано, входят ли топливо и НДС.",
   },
 } as const;
 
@@ -723,7 +727,7 @@ export default function BusinessCalculatorV6() {
           <div>{breakdown.map((row, index) => <small key={`${row.label}-${index}`}><i>{row.icon}</i><span>{row.label}</span><b>{money(row.value)} €</b></small>)}</div>
         </div>
         <button type="button" className="bc8-continue" onClick={continueBooking}>{t.continue}<ArrowRight /></button>
-        <p>{t.attached} {t.finalNote}</p>
+        <p>{t.attached} {t.finalNote} {mode === "moving" && t.finalNoteMove}</p>
       </div>
     </div>,
     target,

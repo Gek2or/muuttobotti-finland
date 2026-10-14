@@ -241,6 +241,68 @@
   .halloween-season .halloween-moon { animation:none; }
 }
 
+/* Make the service deck feel varied through its service icons and color cues,
+   while keeping the card itself steady and easy to scan. */
+.site-shell.halloween-season .service-deck .service-card,
+.site-shell.halloween-season .service-deck .service-card:hover {
+  cursor:default;
+  transform:none!important;
+  touch-action:pan-x;
+}
+.site-shell.halloween-season .service-deck .service-card.is-pulled {
+  transform:none!important;
+  border-color:rgba(255,145,67,.58);
+  box-shadow:0 24px 54px rgba(0,0,0,.3),0 0 0 2px rgba(255,122,26,.08);
+}
+.site-shell.halloween-season .service-deck .service-card:nth-child(1) { --service-accent:#ff9a4c; }
+.site-shell.halloween-season .service-deck .service-card:nth-child(2) { --service-accent:#8dbbff; }
+.site-shell.halloween-season .service-deck .service-card:nth-child(3) { --service-accent:#8ed9a5; }
+.site-shell.halloween-season .service-deck .service-card:nth-child(4) { --service-accent:#d4a4ff; }
+.site-shell.halloween-season .service-deck .service-card:nth-child(5) { --service-accent:#ffd171; }
+.site-shell.halloween-season .service-deck .service-card:nth-child(6) { --service-accent:#ff8d83; }
+.site-shell.halloween-season .service-deck .service-card::before {
+  background:radial-gradient(circle at 35% 35%,#ffe5b4,var(--service-accent) 68%,transparent 72%);
+}
+.site-shell.halloween-season .service-deck .service-card .service-icon {
+  color:var(--service-accent)!important;
+  background:color-mix(in srgb,var(--service-accent) 15%,transparent)!important;
+  border-color:color-mix(in srgb,var(--service-accent) 34%,transparent)!important;
+  box-shadow:0 8px 24px color-mix(in srgb,var(--service-accent) 12%,transparent);
+}
+
+@media(max-width:760px) {
+  .site-shell.halloween-season .hero {
+    min-height:0!important;
+    padding:30px 18px 0!important;
+    display:block!important;
+  }
+  .site-shell.halloween-season .hero-copy .rating-row { display:none!important; }
+  .site-shell.halloween-season .hero-copy>p {
+    margin-bottom:0!important;
+    font-size:17px!important;
+    line-height:1.5!important;
+  }
+  .site-shell.halloween-season .hero-actions {
+    gap:9px!important;
+    margin:22px 0 0!important;
+  }
+  .site-shell.halloween-season .hero-actions button {
+    min-height:54px!important;
+  }
+  .site-shell.halloween-season .trust-strip {
+    position:relative!important;
+    inset:auto!important;
+    margin:24px -18px 0!important;
+    padding:14px 18px!important;
+    border-radius:0!important;
+    border-left:0!important;
+    border-right:0!important;
+    justify-content:flex-start!important;
+    gap:18px!important;
+  }
+  .site-shell.halloween-season .availability-pill { display:none!important; }
+}
+
 /* The mobile light header is pale; keep the full wordmark readable there. */
 @media(max-width:760px) {
   .site-shell.halloween-season:not(.dark-theme) .topbar .brand { color:#071b22!important; }
