@@ -2,6 +2,7 @@ type NotifyEnv = {
   DB?: any;
   RESEND_API_KEY?: string;
   RESEND_FROM?: string;
+  BOOKING_NOTIFY_EMAIL?: string;
 };
 
 type NoticeKind = 'confirmed' | 'assigned' | 'on_the_way' | 'in_progress' | 'completed' | 'cancelled' | 'quote' | 'change_requested';
@@ -85,6 +86,68 @@ async function sendEmail(env: NotifyEnv, to: string, title: string, body: string
       html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>${title}</h2><p>${body}</p><p><strong>${bookingId}</strong></p><p><a href="https://muuttobotti.fi/mobile-preview.html">Avaa Muuttobotti</a></p></div>`,
     }),
   });
+  return response.ok;
+}
+
+function escapeHtml(value: unknown) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character] as string);
+}
+
+export async function notifyNewBooking(env: NotifyEnv, booking: {
+  id: string;
+  service: string;
+  name: string;
+  phone: string;
+  email: string;
+  pickup: string;
+  destination: string;
+  date: string;
+  time: string;
+  notes: string;
+  photoCount: number;
+  estimate?: string;
+  duration?: string;
+  recommendation: string;
+}) {
+  const to = env.BOOKING_NOTIFY_EMAIL || 'autochemixfin@gmail.com';
+  if (!env.RESEND_API_KEY) return false;
+
+  const labels: Record<string, string> = {
+    moving: 'Muutto', transport: 'Kuljetus', cleaning: 'Siivous',
+    window_cleaning: 'Ikkunanpesu', furniture_assembly: 'Kalusteasennus',
+    junk_removal: 'Kierrätys ja poisvienti',
+  };
+  const fields: Array<[string, string]> = [
+    ['Varausnumero', booking.id],
+    ['Palvelu', labels[booking.service] || booking.service],
+    ['Asiakas', booking.name],
+    ['Puhelin', booking.phone],
+    ['Sähköposti', booking.email],
+    ['Nouto / palveluosoite', booking.pickup],
+    ['Kohdeosoite', booking.destination],
+    ['Päivä ja aika', `${booking.date} klo ${booking.time}`],
+    ...(booking.estimate ? [['Alustava arvio', `${booking.estimate} €${booking.duration ? ` / ${booking.duration}` : ''}`] as [string, string]] : []),
+    ['Kuvia', String(booking.photoCount)],
+    ['Lisätiedot', booking.notes || '—'],
+    ['Järjestelmän huomio', booking.recommendation || '—'],
+  ];
+  const text = fields.map(([label, value]) => `${label}:\n${value}`).join('\n\n');
+  const rows = fields.map(([label, value]) => `<tr><th align="left" valign="top" style="padding:8px 12px 8px 0;color:#64706d">${escapeHtml(label)}</th><td style="padding:8px 0;white-space:pre-wrap">${escapeHtml(value)}</td></tr>`).join('');
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: env.RESEND_FROM || 'Muuttobotti <noreply@muuttobotti.fi>',
+      to: [to],
+      subject: `Uusi verkkovaraus ${booking.id} · ${booking.name}`,
+      text,
+      html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#142326"><h2>Uusi verkkovaraus</h2><table style="border-collapse:collapse;width:100%">${rows}</table><p style="color:#64706d">Avaa varaus Muuttobotin hallinnassa.</p></div>`,
+    }),
+  });
+  if (!response.ok) console.error('Owner booking email rejected by provider', response.status);
   return response.ok;
 }
 

@@ -78,6 +78,18 @@ For a production-style check:
 npm test
 ```
 
+## Booking email notifications
+
+New web bookings are stored in Cloudflare D1 and sent to `BOOKING_NOTIFY_EMAIL` through Resend. The notification recipient defaults to the public business address `autochemixfin@gmail.com` when `BOOKING_NOTIFY_EMAIL` is not set.
+
+For production, configure these values in the Cloudflare Worker `muuttobotti-finland` under **Settings → Variables and Secrets**:
+
+- `RESEND_API_KEY` — secret API key from Resend;
+- `RESEND_FROM` — sender address on a domain verified in Resend, for example `Muuttobotti <noreply@muuttobotti.fi>`;
+- `BOOKING_NOTIFY_EMAIL` — optional destination for new booking alerts; defaults to `autochemixfin@gmail.com`.
+
+The booking is kept in D1 even if the email provider is unavailable. The API records whether the owner email was sent or failed, so email delivery is not treated as the booking itself.
+
 For the inventory contract tests:
 
 ```bash

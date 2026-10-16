@@ -1,4 +1,5 @@
 import { ensureBookingSchema } from "./schema";
+import { notifyNewBooking } from "./notifications";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxFileSize = 8 * 1024 * 1024;
@@ -311,6 +312,24 @@ export async function POST(request: Request) {
     console.error("Booking API storage failure; using WhatsApp fallback", error);
     return fallbackResponse(payload, files.length, "DB_WRITE_FAILED");
   }
+
+  let ownerEmailSent = false;
+  try {
+    ownerEmailSent = await notifyNewBooking(env as any, {
+      id,
+      ...payload,
+      photoCount: storedPhotoCount,
+      estimate: numberValue(calculatorSnapshot?.quotedPrice, 0) > 0 ? String(calculatorSnapshot?.quotedPrice) : undefined,
+      duration: String(calculatorSnapshot?.quotedDuration ?? ''),
+      recommendation: recommendation.text,
+    });
+  } catch (error) {
+    console.error("Owner booking email delivery failed", error);
+  }
+  await db.prepare("UPDATE bookings SET notification_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .bind(ownerEmailSent ? "owner_email_sent" : "owner_email_failed", id)
+    .run()
+    .catch((error: unknown) => console.error("Could not record owner email status", error));
 
   return Response.json(
     {
