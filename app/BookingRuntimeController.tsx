@@ -21,27 +21,10 @@ function attachPromoCode(data: FormData) {
   try {
     const promo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as { code?: string; discount?: number; expiresAt?: number } | null;
     if (!promo?.code || ![5, 10, 15].includes(Number(promo.discount)) || Number(promo.expiresAt) <= Date.now()) return;
-    if (!new RegExp(`^PUZZLE${promo.discount}-[A-Z0-9]{3}"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { ArrowRight, Check, CheckCircle2, Copy, KeyRound, Link2, MessageCircle, X } from "lucide-react";
-import { PROMO_STORAGE_KEY } from "./PromoGame";
-
-type Locale = "fi" | "en" | "uk" | "ru";
-type CopiedTarget = "" | "link" | "key";
-
-type BookingResult = {
-  bookingId: string;
-  trackingPath: string;
-  accessKey: string;
-  warning?: string;
-};
-
-).test(promo.code)) return;
+    if (!new RegExp(`^PUZZLE${promo.discount}-[A-Z0-9]{3}$`).test(promo.code)) return;
     const notes = String(data.get("notes") ?? "").trim();
     if (notes.includes(promo.code)) return;
-    // Codes are generated client-side. Preserve them for manual verification; never trust them as a server-approved discount.
+    // Promo codes are client-generated; preserve for manual verification, never auto-apply a discount.
     data.set("notes", [notes, `PROMO: ${promo.code} (-${promo.discount}%, verify before confirmation)`].filter(Boolean).join("\n").slice(0, 2000));
   } catch { /* Invalid local promo must not prevent booking. */ }
 }
