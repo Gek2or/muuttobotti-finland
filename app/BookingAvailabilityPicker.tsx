@@ -137,7 +137,7 @@ export default function BookingAvailabilityPicker() {
   }, [data]);
 
   const isTimeBlocked = (date: string, time: string) => {
-    if (!isBookableStart(date, time) || fullDays.has(date)) return true;
+    if (fullDays.has(date)) return true;
     if (bookedByDate.get(date)?.has(time)) return true;
     const minute = minutes(time);
     return (blocksByDate.get(date) ?? []).some(block => minute >= minutes(block.start) && minute < minutes(block.end));
@@ -176,7 +176,7 @@ export default function BookingAvailabilityPicker() {
   };
 
   const chooseTime = (time: string) => {
-    if (!selectedDate || isTimeBlocked(selectedDate, time)) return;
+    if (!selectedDate || !isBookableStart(selectedDate, time) || isTimeBlocked(selectedDate, time)) return;
     setSelectedTime(time);
     timeInput.value = time;
     timeInput.dispatchEvent(new Event("change", { bubbles: true }));
