@@ -163,6 +163,8 @@ export default function BookingRuntimeController() {
         if (!response.ok || !payload.bookingId || !payload.trackingPath || !payload.accessKey) throw new Error(payload.error || "Booking request failed");
 
         setResult({ bookingId: payload.bookingId, trackingPath: payload.trackingPath, accessKey: payload.accessKey, warning: payload.warning });
+        // A successful booking consumes the browser's one-use puzzle offer.
+        if (String(data.get("notes") ?? "").includes("PROMO: PUZZLE")) localStorage.removeItem(PROMO_STORAGE_KEY);
         form.reset();
       } catch (requestError) {
         console.error("Booking submit failed", requestError);
