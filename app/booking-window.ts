@@ -54,10 +54,12 @@ export function isBookableStart(date: string, time: string, now: Date = new Date
 export function availableStartTimes(date: string, now: Date = new Date()): string[] {
   const hours = workingHoursForDate(date);
   if (!hours) return [];
+  const current = helsinkiNow(now);
+  if (date < current.date || date > addBookingDays(current.date, BOOKING_HORIZON_DAYS)) return [];
   const times: string[] = [];
   for (let minute = hours.open; minute + 30 <= hours.close; minute += 30) {
-    const time = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
-    if (isBookableStart(date, time, now)) times.push(time);
+    if (date === current.date && minute <= current.minutes) continue;
+    times.push(`${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`);
   }
   return times;
 }
