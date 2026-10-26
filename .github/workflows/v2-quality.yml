@@ -48,6 +48,12 @@ jobs:
           PY
           node --check /tmp/mobile-v2-inline.js
 
+      - name: Booking window regression tests
+        run: node --experimental-strip-types --test tests/booking-window.test.mjs
+
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+
       - name: Production build
         run: npm run build
 
