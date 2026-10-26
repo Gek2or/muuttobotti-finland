@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { addBookingDays, availableStartTimes, helsinkiNow } from "../booking-window";
 import {
   ArrowLeft, CalendarDays, Check, CheckCircle2, Clock3, Edit3,
   LoaderCircle, LockKeyhole, MapPin, PackageCheck, Phone, Save,
@@ -58,8 +59,11 @@ export default function TrackingClient({ initialLocale = "fi" }: { initialLocale
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
+  const [editDate, setEditDate] = useState("");
   const [notice, setNotice] = useState("");
   const t = copy[locale];
+  const bookingToday = helsinkiNow().date;
+  const editTimes = availableStartTimes(editDate);
   const activeStep = booking?.status === "cancelled" ? -1 : statusIndex[booking?.status ?? "new"] ?? 0;
   const canEdit = booking ? ["new", "confirmed", "assigned", "change_requested"].includes(booking.status) : false;
 
@@ -147,7 +151,7 @@ export default function TrackingClient({ initialLocale = "fi" }: { initialLocale
             <article><Truck/><span>{t.service}</span><strong>{serviceNames[booking.service]?.[locale] ?? booking.service}</strong><small>{booking.photo_count} {t.photos}</small></article>
           </div>
           {booking.notes && <div className="tracking-notes"><span>{t.notes}</span><p>{booking.notes}</p></div>}
-          {canEdit && <div className="tracking-actions"><button type="button" onClick={() => setEditing(true)}><Edit3/>{t.change}</button><button type="button" className="danger" onClick={() => window.confirm(t.confirmCancel) && void updateBooking("cancel")}><Trash2/>{t.cancel}</button></div>}
+          {canEdit && <div className="tracking-actions"><button type="button" onClick={() => { setEditDate(booking.preferred_date); setEditing(true); }}><Edit3/>{t.change}</button><button type="button" className="danger" onClick={() => window.confirm(t.confirmCancel) && void updateBooking("cancel")}><Trash2/>{t.cancel}</button></div>}
         </motion.div>}
       </AnimatePresence>
     </section>
@@ -156,7 +160,7 @@ export default function TrackingClient({ initialLocale = "fi" }: { initialLocale
       <div className="tracking-modal-head"><h3>{t.change}</h3><button type="button" onClick={() => setEditing(false)} aria-label={t.close}><XCircle/></button></div>
       <label>{t.pickup}<input name="pickup" defaultValue={booking.pickup} required/></label>
       <label>{t.destination}<input name="destination" defaultValue={booking.destination} required/></label>
-      <div className="tracking-form-row"><label>{t.date}<input name="date" type="date" defaultValue={booking.preferred_date} required/></label><label>{t.time}<input name="time" type="time" defaultValue={booking.preferred_time} required/></label></div>
+      <div className="tracking-form-row"><label>{t.date}<input name="date" type="date" defaultValue={booking.preferred_date} min={bookingToday} max={addBookingDays(bookingToday, 180)} onChange={event => setEditDate(event.target.value)} required/></label><label>{t.time}<input name="time" type="time" defaultValue={booking.preferred_time} min={editTimes[0] ?? ""} max={editTimes[editTimes.length - 1] ?? ""} step={1800} required/></label></div>
       <label>{t.notes}<textarea name="notes" rows={3} defaultValue={booking.notes}/></label>
       <button type="submit" className="tracking-primary" disabled={busy}>{busy ? <LoaderCircle className="spin"/> : <Save/>}{t.save}</button>
     </motion.form></motion.div>}</AnimatePresence>
