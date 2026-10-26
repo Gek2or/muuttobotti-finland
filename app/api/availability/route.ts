@@ -1,5 +1,6 @@
 import { ensureBookingSchema } from "../bookings/schema";
-import { ensureAvailabilitySchema, validDate } from "./schema";
+import { ensureAvailabilitySchema } from "./schema";
+import { addBookingDays, helsinkiNow, validBookingDate } from "../../booking-window";
 
 function noStore(payload: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -7,26 +8,17 @@ function noStore(payload: unknown, init: ResponseInit = {}) {
   return Response.json(payload, { ...init, headers });
 }
 
-function addDays(date: string, days: number) {
-  const [y, m, d] = date.split("-").map(Number);
-  const value = new Date(Date.UTC(y, m - 1, d + days));
-  return value.toISOString().slice(0, 10);
-}
-
-function todayUtc() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export async function GET(request: Request) {
   const { env } = await import("cloudflare:workers");
   if (!env.DB) return noStore({ ok: true, fullDays: [], blocks: [], bookedStarts: [], db: false });
 
   const url = new URL(request.url);
-  const fallbackFrom = todayUtc();
-  const from = validDate(url.searchParams.get("from") || "") ? String(url.searchParams.get("from")) : fallbackFrom;
-  let to = validDate(url.searchParams.get("to") || "") ? String(url.searchParams.get("to")) : addDays(from, 180);
-  if (to < from) to = from;
-  if (to > addDays(from, 240)) to = addDays(from, 240);
+  const today = helsinkiNow().date;
+  const maxDate = addBookingDays(today, 180);
+  const requestedFrom = url.searchParams.get("from") || "";
+  const requestedTo = url.searchParams.get("to") || "";
+  const from = validBookingDate(requestedFrom) && requestedFrom >= today && requestedFrom <= maxDate ? requestedFrom : today;
+  const to = validBookingDate(requestedTo) && requestedTo >= from && requestedTo <= maxDate ? requestedTo : maxDate;
 
   await ensureAvailabilitySchema(env.DB);
   await ensureBookingSchema(env.DB);
