@@ -1,4 +1,6 @@
 import { appendBookingEvent, ensureBookingSchema, getBookingEvents, touchBooking } from '../schema';
+import { isBookableStart } from '../../../booking-window';
+import { isUnavailable } from '../../availability/schema';
 
 type BookingRow = {
   id: string; service: string; customer_name: string; phone?: string; email?: string;
@@ -73,7 +75,11 @@ export async function PATCH(request: Request) {
       await appendBookingEvent(env.DB,id,'cancelled','status','client','Client cancelled booking');
     } else if (action === 'modify') {
       const pickup=text(body.pickup), destination=text(body.destination), date=text(body.date,20), time=text(body.time,20), notes=text(body.notes,2000);
-      if (!pickup || !destination || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return Response.json({error:'Invalid booking details'},{status:400});
+      if (!pickup || !destination || !isBookableStart(date, time)) return Response.json({error:'INVALID_BOOKING_TIME'},{status:400});
+      if (await isUnavailable(env.DB, date, time)) return Response.json({error:'TIME_UNAVAILABLE'},{status:409});
+      const conflicting = await env.DB.prepare(`SELECT id FROM bookings WHERE id <> ? AND preferred_date = ? AND preferred_time = ?
+        AND status IN ('confirmed', 'assigned', 'on_the_way', 'in_progress') LIMIT 1`).bind(id, date, time).first();
+      if (conflicting) return Response.json({error:'TIME_UNAVAILABLE'},{status:409});
       await env.DB.prepare(`UPDATE bookings SET pickup=?, destination=?, preferred_date=?, preferred_time=?, notes=?, status='change_requested', updated_at=CURRENT_TIMESTAMP WHERE id=?`)
         .bind(pickup,destination,date,time,notes,id).run();
       await appendBookingEvent(env.DB,id,'change_requested','change','client','Client requested booking changes');
