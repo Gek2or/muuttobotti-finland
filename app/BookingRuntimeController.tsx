@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, Check, CheckCircle2, Copy, KeyRound, Link2, MessageCircle, X } from "lucide-react";
+import { PROMO_STORAGE_KEY } from "./PromoGame";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type CopiedTarget = "" | "link" | "key";
@@ -16,26 +17,42 @@ type BookingResult = {
 
 const CALCULATOR_SNAPSHOT_KEY = "muuttobotti-calculator-snapshot";
 
+function attachPromoCode(data: FormData) {
+  try {
+    const promo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as { code?: string; discount?: number; expiresAt?: number } | null;
+    if (!promo?.code || ![5, 10, 15].includes(Number(promo.discount)) || Number(promo.expiresAt) <= Date.now()) return;
+    if (!new RegExp(`^PUZZLE${promo.discount}-[A-Z0-9]{3}$`).test(promo.code)) return;
+    const notes = String(data.get("notes") ?? "").trim();
+    if (notes.includes(promo.code)) return;
+    // Promo codes are client-generated; preserve for manual verification, never auto-apply a discount.
+    data.set("notes", [notes, `PROMO: ${promo.code} (-${promo.discount}%, verify before confirmation)`].filter(Boolean).join("\n").slice(0, 2000));
+  } catch { /* Invalid local promo must not prevent booking. */ }
+}
+
 const labels = {
   fi: {
+    invalidTime: "Valitse tuleva aloitusaika palveluaikojen sisällä (enintään 180 päivää).", unavailableTime: "Valittu aika ei ole enää vapaa. Valitse toinen aika.",
     success: "Varaus vastaanotettu!", saved: "Varaus on tallennettu. Säilytä varausnumero, pääsykoodi ja yksityinen seurantalinkki.", tracking: "Avaa seuranta",
     error: "Varausta ei voitu lähettää. Yritä uudelleen tai lähetä tiedot WhatsAppissa.", fallback: "Verkkotallennus ei ole juuri nyt käytettävissä. Avaamme valmiiksi täytetyn WhatsApp-varauksen.", whatsapp: "Avaa WhatsApp",
     booking: "Varausnumero", privateLink: "Yksityinen seurantalinkki", accessCode: "Yksityinen pääsykoodi", copyLink: "Kopioi linkki", copyCode: "Kopioi koodi", copied: "Kopioitu", sendWhatsapp: "Lähetä WhatsAppiin",
     privateNote: "Pidä tämä linkki ja pääsykoodi yksityisenä. Niillä voi nähdä ja hallita varausta.", close:"Sulje",
   },
   en: {
+    invalidTime: "Choose a future start within opening hours (up to 180 days).", unavailableTime: "This time is no longer available. Please choose another.",
     success: "Booking received!", saved: "Your booking is saved. Keep the booking number, access code and private tracking link.", tracking: "Open tracking",
     error: "The booking could not be sent. Please try again or send the details on WhatsApp.", fallback: "Online storage is temporarily unavailable. We are opening a pre-filled WhatsApp booking.", whatsapp: "Open WhatsApp",
     booking: "Booking number", privateLink: "Private tracking link", accessCode: "Private access code", copyLink: "Copy link", copyCode: "Copy code", copied: "Copied", sendWhatsapp: "Send to WhatsApp",
     privateNote: "Keep this link and access code private. They can be used to view and manage the booking.", close:"Close",
   },
   uk: {
+    invalidTime: "Оберіть майбутній час у робочі години (до 180 днів).", unavailableTime: "Цей час уже недоступний. Оберіть інший.",
     success: "Заявку отримано!", saved: "Заявку збережено. Збережіть номер, код доступу та приватне посилання для відстеження.", tracking: "Відкрити відстеження",
     error: "Не вдалося надіслати заявку. Спробуйте ще раз або надішліть дані у WhatsApp.", fallback: "Онлайн-збереження тимчасово недоступне. Відкриваємо заповнену заявку у WhatsApp.", whatsapp: "Відкрити WhatsApp",
     booking: "Номер заявки", privateLink: "Приватне посилання", accessCode: "Приватний код доступу", copyLink: "Копіювати посилання", copyCode: "Копіювати код", copied: "Скопійовано", sendWhatsapp: "Надіслати у WhatsApp",
     privateNote: "Не передавайте це посилання та код стороннім. Вони дають доступ до перегляду й керування заявкою.", close:"Закрити",
   },
   ru: {
+    invalidTime: "Выберите будущее время в рабочие часы (до 180 дней).", unavailableTime: "Это время уже недоступно. Выберите другое.",
     success: "Заявка получена!", saved: "Заявка сохранена. Сохраните номер, код доступа и приватную ссылку для отслеживания.", tracking: "Открыть отслеживание",
     error: "Не удалось отправить заявку. Попробуйте ещё раз или отправьте данные в WhatsApp.", fallback: "Онлайн-хранилище временно недоступно. Открываем заполненную заявку в WhatsApp.", whatsapp: "Открыть WhatsApp",
     booking: "Номер заявки", privateLink: "Приватная ссылка", accessCode: "Приватный код доступа", copyLink: "Копировать ссылку", copyCode: "Копировать код", copied: "Скопировано", sendWhatsapp: "Отправить в WhatsApp",
@@ -133,6 +150,7 @@ export default function BookingRuntimeController() {
         const destination = String(data.get("destination") ?? "").trim();
         if (!destination) data.set("destination", pickup);
         attachLeadContext(data);
+        attachPromoCode(data);
 
         const response = await fetch("/api/bookings", { method: "POST", body: data, headers: { Accept: "application/json" } });
         const payload = await response.json().catch(() => ({})) as { bookingId?: string; trackingPath?: string; accessKey?: string; fallback?: string; whatsappUrl?: string; warning?: string; error?: string };
@@ -145,10 +163,14 @@ export default function BookingRuntimeController() {
         if (!response.ok || !payload.bookingId || !payload.trackingPath || !payload.accessKey) throw new Error(payload.error || "Booking request failed");
 
         setResult({ bookingId: payload.bookingId, trackingPath: payload.trackingPath, accessKey: payload.accessKey, warning: payload.warning });
+        // A successful booking consumes the browser's one-use puzzle offer.
+        if (String(data.get("notes") ?? "").includes("PROMO: PUZZLE")) localStorage.removeItem(PROMO_STORAGE_KEY);
         form.reset();
       } catch (requestError) {
         console.error("Booking submit failed", requestError);
-        setError(labels[getLocale()].error);
+        const reason = requestError instanceof Error ? requestError.message : "";
+        const currentLabels = labels[getLocale()];
+        setError(reason === "INVALID_BOOKING_TIME" ? currentLabels.invalidTime : reason === "TIME_UNAVAILABLE" ? currentLabels.unavailableTime : currentLabels.error);
       } finally {
         if (submitButton) { submitButton.disabled = false; submitButton.removeAttribute("aria-busy"); }
       }

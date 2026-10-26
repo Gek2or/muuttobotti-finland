@@ -1,5 +1,7 @@
 import { ensureBookingSchema } from "./schema";
 import { notifyNewBooking } from "./notifications";
+import { isBookableStart } from "../../booking-window";
+import { isUnavailable } from "../availability/schema";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxFileSize = 8 * 1024 * 1024;
@@ -260,6 +262,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
   if (!/^\S+@\S+\.\S+$/.test(payload.email)) return Response.json({ error: "Invalid email" }, { status: 400 });
+  if (!isBookableStart(payload.date, payload.time)) {
+    return Response.json({ error: "INVALID_BOOKING_TIME" }, { status: 400 });
+  }
 
   const files = data.getAll("photos").filter((item): item is File => item instanceof File && item.size > 0);
   if (files.length > 5 || files.some(file => file.size > maxFileSize || !allowedTypes.has(file.type))) {
@@ -284,6 +289,14 @@ export async function POST(request: Request) {
 
   try {
     await ensureBookingSchema(db);
+    if (await isUnavailable(db, payload.date, payload.time)) {
+      return Response.json({ error: "TIME_UNAVAILABLE" }, { status: 409 });
+    }
+    const conflicting = await db.prepare(`SELECT id FROM bookings
+      WHERE preferred_date = ? AND preferred_time = ?
+        AND status IN ('confirmed', 'assigned', 'on_the_way', 'in_progress') LIMIT 1`)
+      .bind(payload.date, payload.time).first();
+    if (conflicting) return Response.json({ error: "TIME_UNAVAILABLE" }, { status: 409 });
 
     await db.prepare(`INSERT INTO bookings (
       id, service, customer_name, phone, email, pickup, destination,

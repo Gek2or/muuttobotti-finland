@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, LockKeyhole } from "lucide-react";
+import { addBookingDays, availableStartTimes, helsinkiNow, isBookableStart, workingHoursForDate } from "./booking-window";
 
 type Locale = "fi" | "en" | "uk" | "ru";
 type PartialBlock = { date: string; start: string; end: string };
@@ -31,31 +32,14 @@ function isoDate(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function todayLocal() {
-  const now = new Date();
-  return isoDate(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function addDays(value: string, days: number) {
-  const [y, m, d] = value.split("-").map(Number);
-  const date = new Date(y, m - 1, d + days);
-  return isoDate(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
 function minutes(value: string) {
-  const [h, m] = value.slice(0, 5).split(":").map(Number);
-  return h * 60 + m;
+  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  return hour * 60 + minute;
 }
 
-function makeSlots() {
-  const values: string[] = [];
-  for (let minute = 8 * 60; minute <= 22 * 60; minute += 30) {
-    values.push(`${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`);
-  }
-  return values;
+function asTime(minutes: number) {
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
-
-const slots = makeSlots();
 
 export default function BookingAvailabilityPicker() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
@@ -65,8 +49,10 @@ export default function BookingAvailabilityPicker() {
   const [data, setData] = useState<AvailabilityPayload | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const now = new Date();
-  const [viewMonth, setViewMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [viewMonth, setViewMonth] = useState(() => {
+    const [year, month] = helsinkiNow().date.split("-").map(Number);
+    return new Date(year, month - 1, 1);
+  });
 
   useEffect(() => {
     const form = document.querySelector<HTMLFormElement>(".booking-form");
@@ -82,10 +68,23 @@ export default function BookingAvailabilityPicker() {
 
     const previousMin = date.min;
     const previousMax = date.max;
-    const from = todayLocal();
-    const to = addDays(from, 180);
+    const from = helsinkiNow().date;
+    const to = addBookingDays(from, 180);
     date.min = from;
     date.max = to;
+    const previousTimeMin = time.min;
+    const previousTimeMax = time.max;
+    const previousTimeStep = time.step;
+    const updateNativeBounds = () => {
+      const hours = workingHoursForDate(date.value);
+      const starts = availableStartTimes(date.value);
+      time.step = "1800";
+      time.min = starts[0] ?? (hours ? asTime(hours.open) : "");
+      time.max = starts[starts.length - 1] ?? (hours ? asTime(hours.close - 30) : "");
+      if (time.value && !isBookableStart(date.value, time.value)) time.value = "";
+    };
+    date.addEventListener("change", updateNativeBounds);
+    updateNativeBounds();
 
     const languageObserver = new MutationObserver(() => setLocale(localeCode()));
     languageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
@@ -114,6 +113,10 @@ export default function BookingAvailabilityPicker() {
       time.removeAttribute("tabindex");
       date.min = previousMin;
       date.max = previousMax;
+      date.removeEventListener("change", updateNativeBounds);
+      time.min = previousTimeMin;
+      time.max = previousTimeMax;
+      time.step = previousTimeStep;
     };
   }, []);
 
@@ -140,8 +143,8 @@ export default function BookingAvailabilityPicker() {
     return (blocksByDate.get(date) ?? []).some(block => minute >= minutes(block.start) && minute < minutes(block.end));
   };
 
-  const freeSlotsFor = (date: string) => slots.filter(time => !isTimeBlocked(date, time));
-  const dayDisabled = (date: string) => date < todayLocal() || fullDays.has(date) || freeSlotsFor(date).length === 0;
+  const freeSlotsFor = (date: string) => availableStartTimes(date).filter(time => !isTimeBlocked(date, time));
+  const dayDisabled = (date: string) => fullDays.has(date) || freeSlotsFor(date).length === 0;
   const dayPartial = (date: string) => !dayDisabled(date) && ((blocksByDate.get(date)?.length ?? 0) > 0 || (bookedByDate.get(date)?.size ?? 0) > 0);
 
   const monthCells = useMemo(() => {
@@ -173,15 +176,17 @@ export default function BookingAvailabilityPicker() {
   };
 
   const chooseTime = (time: string) => {
-    if (!selectedDate || isTimeBlocked(selectedDate, time)) return;
+    if (!selectedDate || !isBookableStart(selectedDate, time) || isTimeBlocked(selectedDate, time)) return;
     setSelectedTime(time);
     timeInput.value = time;
     timeInput.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
-  const canPrevious = viewMonth.getFullYear() > now.getFullYear() || viewMonth.getMonth() > now.getMonth();
-  const maxMonth = new Date(now.getFullYear(), now.getMonth() + 5, 1);
-  const canNext = viewMonth < maxMonth;
+  const today = helsinkiNow().date;
+  const [todayYear, todayMonth] = today.split("-").map(Number);
+  const [lastYear, lastMonth] = addBookingDays(today, 180).split("-").map(Number);
+  const canPrevious = viewMonth.getFullYear() > todayYear || (viewMonth.getFullYear() === todayYear && viewMonth.getMonth() + 1 > todayMonth);
+  const canNext = viewMonth.getFullYear() < lastYear || (viewMonth.getFullYear() === lastYear && viewMonth.getMonth() + 1 < lastMonth);
 
   const dateLabel = (date:string) => new Intl.DateTimeFormat(intlLocale, { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(new Date(`${date}T12:00:00`));
 
@@ -212,7 +217,7 @@ export default function BookingAvailabilityPicker() {
       <div className={`availability-times ${selectedDate ? "active" : ""}`}>
         <div className="availability-time-head"><Clock3 /><strong>{t.time}</strong>{selectedDate && <span>{new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "short" }).format(new Date(`${selectedDate}T12:00:00`))}</span>}</div>
         {!selectedDate ? <p>{t.date}</p> : freeTimes.length === 0 ? <p><LockKeyhole />{t.noTimes}</p> : <div className="availability-time-grid">
-          {slots.map(time => {
+          {availableStartTimes(selectedDate).map(time => {
             const blocked = isTimeBlocked(selectedDate, time);
             return <button type="button" key={time} disabled={blocked} className={selectedTime === time ? "selected" : ""} onClick={() => chooseTime(time)} aria-pressed={selectedTime === time}>{time}</button>;
           })}
