@@ -1,5 +1,15 @@
 type NotifyEnv = {
   DB?: any;
+  OWNER_EMAIL?: {
+    send(message: {
+      from: string;
+      to: string;
+      subject: string;
+      text?: string;
+      html?: string;
+      replyTo?: string;
+    }): Promise<{ messageId: string }>;
+  };
   RESEND_API_KEY?: string;
   RESEND_FROM?: string;
   BOOKING_NOTIFY_EMAIL?: string;
@@ -112,7 +122,6 @@ export async function notifyNewBooking(env: NotifyEnv, booking: {
   recommendation: string;
 }) {
   const to = env.BOOKING_NOTIFY_EMAIL || 'autochemixfin@gmail.com';
-  if (!env.RESEND_API_KEY) return false;
 
   const labels: Record<string, string> = {
     moving: 'Muutto', transport: 'Kuljetus', cleaning: 'Siivous',
@@ -136,15 +145,29 @@ export async function notifyNewBooking(env: NotifyEnv, booking: {
   const text = fields.map(([label, value]) => `${label}:\n${value}`).join('\n\n');
   const rows = fields.map(([label, value]) => `<tr><th align="left" valign="top" style="padding:8px 12px 8px 0;color:#64706d">${escapeHtml(label)}</th><td style="padding:8px 0;white-space:pre-wrap">${escapeHtml(value)}</td></tr>`).join('');
 
+  const message = {
+    from: env.RESEND_FROM || 'Muuttobotti <noreply@muuttobotti.fi>',
+    to,
+    subject: `Uusi verkkovaraus ${booking.id} · ${booking.name}`,
+    text,
+    html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#142326"><h2>Uusi verkkovaraus</h2><table style="border-collapse:collapse;width:100%">${rows}</table><p style="color:#64706d">Avaa varaus Muuttobotin hallinnassa.</p></div>`,
+    replyTo: booking.email,
+  };
+
+  if (env.OWNER_EMAIL) {
+    await env.OWNER_EMAIL.send(message);
+    return true;
+  }
+
+  if (!env.RESEND_API_KEY) return false;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: env.RESEND_FROM || 'Muuttobotti <noreply@muuttobotti.fi>',
-      to: [to],
-      subject: `Uusi verkkovaraus ${booking.id} · ${booking.name}`,
-      text,
-      html: `<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#142326"><h2>Uusi verkkovaraus</h2><table style="border-collapse:collapse;width:100%">${rows}</table><p style="color:#64706d">Avaa varaus Muuttobotin hallinnassa.</p></div>`,
+      ...message,
+      to: [message.to],
+      reply_to: message.replyTo,
+      replyTo: undefined,
     }),
   });
   if (!response.ok) console.error('Owner booking email rejected by provider', response.status);
