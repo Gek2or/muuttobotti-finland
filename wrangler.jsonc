@@ -16,5 +16,11 @@
       "database_name": "muuttobotti-db",
       "database_id": "89027a74-62e9-4f73-9fec-11daf0c6d0c3"
     }
+  ],
+  "send_email": [
+    {
+      "name": "OWNER_EMAIL",
+      "destination_address": "autochemixfin@gmail.com"
+    }
   ]
 }
