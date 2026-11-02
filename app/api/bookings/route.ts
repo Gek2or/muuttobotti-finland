@@ -281,7 +281,8 @@ export async function POST(request: Request) {
   const accessTokenHash = await hashAccessKey(accessKey);
   const db = env.DB;
   const canStorePhotos = Boolean(env.BUCKET);
-  const storedPhotoCount = canStorePhotos ? files.length : 0;
+  let storedPhotoCount = canStorePhotos ? files.length : 0;
+  let photosNotStored = files.length > 0 && !canStorePhotos;
   const calculatorSnapshotRaw = field(data, "calculator_snapshot", 6000);
   const calculatorSnapshot = parseSnapshot(calculatorSnapshotRaw);
   const recommendation = buildRecommendation(payload, calculatorSnapshot);
@@ -314,12 +315,26 @@ export async function POST(request: Request) {
         meta.utmSource, meta.utmMedium, meta.utmCampaign,
       ).run();
 
-    if (files.length > 0 && env.BUCKET) {
-      await Promise.all(files.map((file, index) => env.BUCKET.put(
-        `bookings/${id}/${index + 1}-${safeFileName(file.name)}`,
-        file.stream(),
-        { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
-      )));
+    const bucket = env.BUCKET;
+    if (files.length > 0 && bucket) {
+      const keys = files.map((file, index) => `bookings/${id}/${index + 1}-${safeFileName(file.name)}`);
+      try {
+        await Promise.all(files.map((file, index) => bucket.put(
+          keys[index],
+          file.stream(),
+          { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
+        )));
+      } catch (uploadError) {
+        // The booking is already saved. Never redirect it to WhatsApp as a
+        // "failed booking" or the customer could accidentally book twice.
+        console.error("Booking photos failed to upload", uploadError);
+        photosNotStored = true;
+        storedPhotoCount = 0;
+        await Promise.allSettled(keys.map(key => bucket.delete(key)));
+        await db.prepare("UPDATE bookings SET photo_count = 0 WHERE id = ?")
+          .bind(id).run()
+          .catch((error: unknown) => console.error("Could not reset failed photo count", error));
+      }
     }
   } catch (error) {
     console.error("Booking API storage failure; using WhatsApp fallback", error);
@@ -350,7 +365,7 @@ export async function POST(request: Request) {
       bookingId: id,
       accessKey,
       trackingPath: `/track#id=${encodeURIComponent(id)}&key=${encodeURIComponent(accessKey)}`,
-      warning: files.length > 0 && !canStorePhotos ? "PHOTOS_NOT_STORED" : undefined,
+      warning: photosNotStored ? "PHOTOS_NOT_STORED" : undefined,
     },
     { status: 201, headers: { "Cache-Control": "no-store" } },
   );
