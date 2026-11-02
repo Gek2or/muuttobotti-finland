@@ -318,16 +318,17 @@ export async function POST(request: Request) {
     const bucket = env.BUCKET;
     if (files.length > 0 && bucket) {
       const keys = files.map((file, index) => `bookings/${id}/${index + 1}-${safeFileName(file.name)}`);
-      try {
-        await Promise.all(files.map((file, index) => bucket.put(
-          keys[index],
-          file.stream(),
-          { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
-        )));
-      } catch (uploadError) {
+      // Wait for every upload to settle before cleaning up, avoiding a race
+      // where a late successful PUT recreates an already-deleted object.
+      const uploads = await Promise.allSettled(files.map((file, index) => bucket.put(
+        keys[index],
+        file.stream(),
+        { httpMetadata: { contentType: file.type }, customMetadata: { bookingId: id } },
+      )));
+      if (uploads.some(upload => upload.status === "rejected")) {
         // The booking is already saved. Never redirect it to WhatsApp as a
         // "failed booking" or the customer could accidentally book twice.
-        console.error("Booking photos failed to upload", uploadError);
+        console.error("Booking photos failed to upload", uploads.filter(upload => upload.status === "rejected"));
         photosNotStored = true;
         storedPhotoCount = 0;
         await Promise.allSettled(keys.map(key => bucket.delete(key)));
