@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Bath, Boxes, Building2, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Clock3, Ghost, Hammer, Home, Languages, Mail, Menu, MessageCircle, Moon, Navigation,
+  Clock3, Hammer, Home, Languages, Mail, Menu, MessageCircle, Moon, Navigation,
   PackageCheck, Phone, Recycle, Send, ShieldCheck, Sparkles, Star, Sun, Truck,
   UploadCloud, UserRound, UsersRound, X,
 } from "lucide-react";
@@ -250,7 +250,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
     try { const data = new FormData(e.currentTarget); const pickup = String(data.get("pickup") ?? ""); if (!String(data.get("destination") ?? "").trim()) data.set("destination", pickup); try { const promo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY) || "null") as {code?:string;discount?:number;expiresAt?:number}|null; if (promo?.code && promo.discount && Number(promo.expiresAt) > Date.now()) { const notes = String(data.get("notes") ?? "").trim(); data.set("notes", [notes, `PROMO: ${promo.code} (-${promo.discount}%)`].filter(Boolean).join("\n")); } } catch { /* invalid local promo is ignored */ } const r = await fetch("/api/bookings", {method:"POST", body:data}); if (!r.ok) throw new Error(); const result = await r.json() as {bookingId:string; trackingPath:string}; setBookingResult(result); setBookingState("done"); e.currentTarget.reset(); setBookingNotes(""); } catch { setBookingState("error"); }
   }
 
-  return <main className={`site-shell halloween-season ${theme === "dark" ? "dark-theme" : ""}`}>
+  return <main className={`site-shell ${theme === "dark" ? "dark-theme" : ""}`}>
     <header className="topbar">
       <button className="brand" onClick={() => scrollTo("home")}><span className="brand-mark"><PackageCheck size={22}/></span><span>muutto<span>botti</span></span></button>
       <nav className="desktop-nav">{t.nav.map((item,i)=><button key={item} onClick={()=>scrollTo(["services","calculator","process","reviews"][i])}>{item}</button>)}</nav>
@@ -258,7 +258,7 @@ export default function MuuttobottiArtV3({ initialLocale = "fi", localeTitles }:
       {menuOpen && <nav className="mobile-nav" id="mobile-navigation">{t.nav.map((item,i)=><button key={item} onClick={()=>scrollTo(["services","calculator","process","reviews"][i])}>{item}</button>)}</nav>}
     </header>
 
-    <section className="hero" id="home"><Image className="hero-media" src="/muuttobotti-hero-v2.webp" alt={surface.heroAlt} fill priority unoptimized sizes="100vw"/><div className="hero-noise"/><div className="hero-glow"/><div className="halloween-moon" aria-hidden="true"/><motion.div className="hero-copy" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}}><div className="halloween-ribbon"><Ghost/>{locale === "fi" ? "Halloween-viikko · tarjoukset 5–15 %" : locale === "en" ? "Halloween week · 5–15% offers" : locale === "uk" ? "Halloween-тиждень · знижки 5–15%" : "Halloween-неделя · скидки 5–15%"}</div><div className="eyebrow"><span/>{t.eyebrow}</div><h1>{t.titleA}<br/><em>{t.titleB}</em></h1><p>{t.body}</p><div className="hero-actions"><button className="primary-button" onClick={()=>scrollTo("calculator")}>{t.primary}<ArrowRight size={19}/></button><button className="secondary-button" onClick={()=>scrollTo("booking")}>{t.secondary}</button></div><div className="rating-row verified-rating"><div className="google-g">G</div><div><div className="stars">★★★★★</div><small>{t.rating}</small></div></div></motion.div><div className="availability-pill"><span className="live-dot"/>{t.response}</div><div className="trust-strip">{t.trust.map((item,i)=><div key={item}>{i===0?<ShieldCheck/>:i===1?<Check/>:<Clock3/>}<span>{item}</span></div>)}</div></section>
+    <section className="hero" id="home"><Image className="hero-media" src="/muuttobotti-hero-v2.webp" alt={surface.heroAlt} fill priority unoptimized sizes="100vw"/><div className="hero-noise"/><div className="hero-glow"/><motion.div className="hero-copy" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}}><div className="eyebrow"><span/>{t.eyebrow}</div><h1>{t.titleA}<br/><em>{t.titleB}</em></h1><p>{t.body}</p><div className="hero-actions"><button className="primary-button" onClick={()=>scrollTo("calculator")}>{t.primary}<ArrowRight size={19}/></button><button className="secondary-button" onClick={()=>scrollTo("booking")}>{t.secondary}</button></div><div className="rating-row verified-rating"><div className="google-g">G</div><div><div className="stars">★★★★★</div><small>{t.rating}</small></div></div></motion.div><div className="availability-pill"><span className="live-dot"/>{t.response}</div><div className="trust-strip">{t.trust.map((item,i)=><div key={item}>{i===0?<ShieldCheck/>:i===1?<Check/>:<Clock3/>}<span>{item}</span></div>)}</div></section>
 
     <section className="stats-band">{t.stats.map(([value,label])=><div key={label}><strong>{value}</strong><span>{label}</span></div>)}<div className="cities"><span>HELSINKI</span><span>ESPOO</span><span>VANTAA</span><span>TUUSULA</span></div></section>
 
