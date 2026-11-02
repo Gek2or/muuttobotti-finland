@@ -2,7 +2,7 @@ type NotifyEnv = {
   DB?: any;
   OWNER_EMAIL?: {
     send(message: {
-      from: string;
+      from: string | { email: string; name?: string };
       to: string;
       subject: string;
       text?: string;
@@ -155,7 +155,13 @@ export async function notifyNewBooking(env: NotifyEnv, booking: {
   };
 
   if (env.OWNER_EMAIL) {
-    await env.OWNER_EMAIL.send(message);
+    // Cloudflare's structured Email API accepts a bare address or an EmailAddress
+    // object. The Resend-style "Name <address>" string is not a bare address.
+    const fromAddress = message.from.match(/<([^<>]+)>/)?.[1] || message.from;
+    await env.OWNER_EMAIL.send({
+      ...message,
+      from: { email: fromAddress.trim(), name: 'Muuttobotti' },
+    });
     return true;
   }
 
