@@ -141,3 +141,33 @@ test("does not server-render legacy calculator controls", async () => {
   assert.doesNotMatch(html, /type=["']range["']/i);
   assert.doesNotMatch(html, /legacy-calculator-disabled/i);
 });
+
+test("no expired Halloween branding remains on any homepage locale", async () => {
+  for (const locale of ["fi", "en", "uk", "ru"]) {
+    const html = await render(locale === "fi" ? "/" : `/?lang=${locale}`);
+    assert.doesNotMatch(html, /halloween-season|halloween-ribbon|Halloween(?:-viikko| week|-тиждень|-неделя)/i);
+  }
+  const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(page, /halloween-refresh\.css/);
+});
+
+test("booking integrity guards confirmed slots and reports failed photo uploads", () => {
+  const admin = readFileSync(new URL("../app/api/admin/bookings/route.ts", import.meta.url), "utf8");
+  assert.match(admin, /NOT EXISTS\s*\(/);
+  assert.match(admin, /other\.preferred_date = bookings\.preferred_date/);
+  assert.match(admin, /TIME_UNAVAILABLE/);
+
+  const api = readFileSync(new URL("../app/api/bookings/route.ts", import.meta.url), "utf8");
+  assert.match(api, /Promise\.allSettled\(files\.map/);
+  assert.match(api, /photosNotStored \? "PHOTOS_NOT_STORED"/);
+  const confirmation = readFileSync(new URL("../app/BookingRuntimeController.tsx", import.meta.url), "utf8");
+  assert.match(confirmation, /result\.warning === "PHOTOS_NOT_STORED"/);
+  for (const translation of ["photosWarning", "sendPhotos"]) {
+    assert.equal((confirmation.match(new RegExp(translation + ":", "g")) ?? []).length, 4);
+  }
+});
+
+test("Cloudflare owner notification uses structured sender address", () => {
+  const notifications = readFileSync(new URL("../app/api/bookings/notifications.ts", import.meta.url), "utf8");
+  assert.match(notifications, /from: \{ email: fromAddress\.trim\(\), name: 'Muuttobotti' \}/);
+});

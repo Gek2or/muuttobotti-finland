@@ -35,28 +35,28 @@ const labels = {
     success: "Varaus vastaanotettu!", saved: "Varaus on tallennettu. Säilytä varausnumero, pääsykoodi ja yksityinen seurantalinkki.", tracking: "Avaa seuranta",
     error: "Varausta ei voitu lähettää. Yritä uudelleen tai lähetä tiedot WhatsAppissa.", fallback: "Verkkotallennus ei ole juuri nyt käytettävissä. Avaamme valmiiksi täytetyn WhatsApp-varauksen.", whatsapp: "Avaa WhatsApp",
     booking: "Varausnumero", privateLink: "Yksityinen seurantalinkki", accessCode: "Yksityinen pääsykoodi", copyLink: "Kopioi linkki", copyCode: "Kopioi koodi", copied: "Kopioitu", sendWhatsapp: "Lähetä WhatsAppiin",
-    privateNote: "Pidä tämä linkki ja pääsykoodi yksityisenä. Niillä voi nähdä ja hallita varausta.", close:"Sulje",
+    privateNote: "Pidä tämä linkki ja pääsykoodi yksityisenä. Niillä voi nähdä ja hallita varausta.", photosWarning:"Varaus tallennettiin, mutta kuvat eivät tallentuneet. Lähetä kuvat erikseen ja mainitse varausnumero.", sendPhotos:"Lähetä kuvat WhatsAppissa", close:"Sulje",
   },
   en: {
     invalidTime: "Choose a future start within opening hours (up to 180 days).", unavailableTime: "This time is no longer available. Please choose another.",
     success: "Booking received!", saved: "Your booking is saved. Keep the booking number, access code and private tracking link.", tracking: "Open tracking",
     error: "The booking could not be sent. Please try again or send the details on WhatsApp.", fallback: "Online storage is temporarily unavailable. We are opening a pre-filled WhatsApp booking.", whatsapp: "Open WhatsApp",
     booking: "Booking number", privateLink: "Private tracking link", accessCode: "Private access code", copyLink: "Copy link", copyCode: "Copy code", copied: "Copied", sendWhatsapp: "Send to WhatsApp",
-    privateNote: "Keep this link and access code private. They can be used to view and manage the booking.", close:"Close",
+    privateNote: "Keep this link and access code private. They can be used to view and manage the booking.", photosWarning:"Your booking was saved, but the photos were not. Please send the photos separately with your booking number.", sendPhotos:"Send photos on WhatsApp", close:"Close",
   },
   uk: {
     invalidTime: "Оберіть майбутній час у робочі години (до 180 днів).", unavailableTime: "Цей час уже недоступний. Оберіть інший.",
     success: "Заявку отримано!", saved: "Заявку збережено. Збережіть номер, код доступу та приватне посилання для відстеження.", tracking: "Відкрити відстеження",
     error: "Не вдалося надіслати заявку. Спробуйте ще раз або надішліть дані у WhatsApp.", fallback: "Онлайн-збереження тимчасово недоступне. Відкриваємо заповнену заявку у WhatsApp.", whatsapp: "Відкрити WhatsApp",
     booking: "Номер заявки", privateLink: "Приватне посилання", accessCode: "Приватний код доступу", copyLink: "Копіювати посилання", copyCode: "Копіювати код", copied: "Скопійовано", sendWhatsapp: "Надіслати у WhatsApp",
-    privateNote: "Не передавайте це посилання та код стороннім. Вони дають доступ до перегляду й керування заявкою.", close:"Закрити",
+    privateNote: "Не передавайте це посилання та код стороннім. Вони дають доступ до перегляду й керування заявкою.", photosWarning:"Заявку збережено, але фото не завантажилися. Надішліть їх окремо, вказавши номер заявки.", sendPhotos:"Надіслати фото у WhatsApp", close:"Закрити",
   },
   ru: {
     invalidTime: "Выберите будущее время в рабочие часы (до 180 дней).", unavailableTime: "Это время уже недоступно. Выберите другое.",
     success: "Заявка получена!", saved: "Заявка сохранена. Сохраните номер, код доступа и приватную ссылку для отслеживания.", tracking: "Открыть отслеживание",
     error: "Не удалось отправить заявку. Попробуйте ещё раз или отправьте данные в WhatsApp.", fallback: "Онлайн-хранилище временно недоступно. Открываем заполненную заявку в WhatsApp.", whatsapp: "Открыть WhatsApp",
     booking: "Номер заявки", privateLink: "Приватная ссылка", accessCode: "Приватный код доступа", copyLink: "Копировать ссылку", copyCode: "Копировать код", copied: "Скопировано", sendWhatsapp: "Отправить в WhatsApp",
-    privateNote: "Не передавайте эту ссылку и код посторонним. Они дают доступ к просмотру и управлению заявкой.", close:"Закрыть",
+    privateNote: "Не передавайте эту ссылку и код посторонним. Они дают доступ к просмотру и управлению заявкой.", photosWarning:"Заявка сохранена, но фотографии не загрузились. Отправьте их отдельно, указав номер заявки.", sendPhotos:"Отправить фото в WhatsApp", close:"Закрыть",
   },
 } as const;
 
@@ -219,6 +219,7 @@ export default function BookingRuntimeController() {
           <div className="success-status-icon"><CheckCircle2 /></div>
           <h3>{t.success}</h3><p>{t.saved}</p>
           <div className="booking-reference booking-success-primary"><span>{t.booking}</span><strong>{result.bookingId}</strong></div>
+           {result.warning === "PHOTOS_NOT_STORED" && <div className="booking-photo-warning" role="alert"><span>{t.photosWarning}</span><a href={`https://wa.me/3584578767567?text=${encodeURIComponent(`${t.booking}: ${result.bookingId}`)}`} target="_blank" rel="noreferrer">{t.sendPhotos}<ArrowRight /></a></div>}
 
           <div className="booking-private-data">
             <div className="booking-private-row">
