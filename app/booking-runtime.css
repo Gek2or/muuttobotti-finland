@@ -2,3 +2,10 @@
 .booking-fallback-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2200;width:min(92vw,760px);display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:14px 15px;border-radius:16px;background:#0b2b32;color:#fff;box-shadow:0 22px 60px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);font-family:var(--font-geist-sans),Arial,sans-serif}
 .booking-fallback-toast>svg{width:22px;color:#c8ff65}.booking-fallback-toast span{font-size:13px;line-height:1.45;color:#d9e7e4}.booking-fallback-toast a{min-height:42px;padding:0 14px;border-radius:11px;background:#49ad5b;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:850}.booking-fallback-toast a svg{width:15px}.booking-fallback-toast button{width:36px;height:36px;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#fff;display:grid;place-items:center;cursor:pointer}.booking-fallback-toast button svg{width:16px}.booking-runtime-success .success-card{max-width:520px}.booking-form .submit-button[aria-busy="true"]{opacity:.72;cursor:wait}
 @media(max-width:700px){.booking-fallback-toast{grid-template-columns:auto 1fr auto;bottom:14px;padding:13px}.booking-fallback-toast a{grid-column:1/-1;width:100%;justify-content:center}.booking-fallback-toast button{position:absolute;right:8px;top:8px}.booking-runtime-error{bottom:14px;font-size:13px}}
+
+/* Photo uploads are optional; surface partial success instead of hiding data loss. */
+.booking-photo-warning{display:grid;gap:10px;margin:14px 0;padding:14px 16px;border:1px solid #e6bc6e;border-radius:14px;background:#fff6e6;color:#5e3d10;font-size:13px;line-height:1.5}
+.booking-photo-warning a{display:inline-flex;align-items:center;gap:6px;justify-self:start;color:#234d30;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.booking-photo-warning a svg{width:15px;height:15px}
+.dark-theme .booking-photo-warning{background:#392b19;border-color:#916e38;color:#ffe3b5}
+.dark-theme .booking-photo-warning a{color:#bce8bb}
