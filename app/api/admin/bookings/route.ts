@@ -18,5 +18,31 @@ export async function PATCH(request:Request){
   const {env}=await import('cloudflare:workers');if(!env.DB)return noStore({error:'DB_UNAVAILABLE'},{status:503});
   const body=await request.json().catch(()=>({})) as {id?:string;status?:string};const id=String(body.id||'').trim();const status=String(body.status||'').trim();
   if(!/^MB-[A-Z0-9-]{4,40}$/.test(id)||!STATUSES.has(status))return noStore({error:'INVALID_UPDATE'},{status:400});
-  try{await ensureBookingSchema(env.DB);const result=await env.DB.prepare('UPDATE bookings SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(status,id).run();if((result.meta?.changes??0)>0){await appendBookingEvent(env.DB,id,status,'status','admin',`Admin changed status to ${status}`);const booking:any=await env.DB.prepare('SELECT id,email,locale FROM bookings WHERE id=? LIMIT 1').bind(id).first();if(booking&&['confirmed','assigned','on_the_way','in_progress','completed','cancelled','change_requested'].includes(status))void notifyBooking(env as any,booking,status as any).catch(()=>{})}return noStore({ok:true,id,status,changes:result.meta?.changes??0})}catch(error){console.error('Admin status update failed',error);return noStore({error:'STATUS_UPDATE_FAILED'},{status:500})}
+  try{
+    await ensureBookingSchema(env.DB);
+    // One conditional SQLite write prevents concurrent admin confirmations from
+    // reserving the same start time. New requests remain unconfirmed enquiries.
+    const result=await env.DB.prepare(`UPDATE bookings SET status=?, updated_at=CURRENT_TIMESTAMP
+      WHERE id=? AND (
+        ? NOT IN ('confirmed','assigned','on_the_way','in_progress')
+        OR NOT EXISTS (
+          SELECT 1 FROM bookings AS other
+          WHERE other.id <> bookings.id
+            AND other.preferred_date = bookings.preferred_date
+            AND other.preferred_time = bookings.preferred_time
+            AND other.status IN ('confirmed','assigned','on_the_way','in_progress')
+        )
+      )`).bind(status,id,status).run();
+    if((result.meta?.changes??0)===0){
+      const existing=await env.DB.prepare('SELECT id FROM bookings WHERE id=? LIMIT 1').bind(id).first();
+      return noStore({error:existing?'TIME_UNAVAILABLE':'NOT_FOUND'},{status:existing?409:404});
+    }
+    await appendBookingEvent(env.DB,id,status,'status','admin',`Admin changed status to ${status}`);
+    const booking:any=await env.DB.prepare('SELECT id,email,locale FROM bookings WHERE id=? LIMIT 1').bind(id).first();
+    if(booking&&['confirmed','assigned','on_the_way','in_progress','completed','cancelled','change_requested'].includes(status)){
+      // Await the delivery attempt: an untracked promise may be killed when the Worker request ends.
+      await notifyBooking(env as any,booking,status as any).catch((error:unknown)=>console.error('Booking status notification failed',error));
+    }
+    return noStore({ok:true,id,status,changes:result.meta?.changes??0});
+  }catch(error){console.error('Admin status update failed',error);return noStore({error:'STATUS_UPDATE_FAILED'},{status:500})}
 }
